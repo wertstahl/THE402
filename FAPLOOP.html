@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<!-- saved from url=(0037)http://dentbox.crabdance.com/faploop/ -->
+<html lang="de"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta content="True" name="HandheldFriendly">
+    <meta content="320" name="MobileOptimized">
+    <meta content="on" http-equiv="cleartype">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#323742">
+    <link rel="stylesheet" href="faploop.css">
+    <script src="jquery.js" type="text/javascript"></script>
+    <script src="faploop.js" type="text/javascript"></script>
+    <title>FAPLOOP</title>
+  </head>
+  <body>
+
+    <!-- what is it, what can it do for me? -->
+    <header>
+      <h1 class="title">FAPLOOP <x id="current-loop-time"></x></h1>
+      <canvas id="loop-visualizer" class="hide"></canvas>
+      <button target="add-loop"><i class="material-icons">eject</i></button>
+    </header>
+
+    <!-- something for our readers -->
+    <div id="introduction" class="">
+      <h3>no loops present</h3>
+      <h4>welcome</h4>
+      <h4>adding loops to list</h4>
+      <p>add loops to this player by clicking the corresponding button in the upper right corner.
+      as soon as the first playable loop hits memory, the looper and its list will show up.</p>
+      <h4>play modes</h4>
+      <p>by shuffling and muting loops this is what you got!</p>
+      <h4>something else</h4>
+      <p>you can wait for.</p>
+    </div>
+
+    <!-- the future loop-player -->
+    <audio id="looper" class="hide" preload=""></audio>
+
+    <!-- all in here is loops -->
+    <div id="loops">
+
+      <!-- looper audio-transport-elements, current-loop-progress -->
+      <div id="looper-transport" class="hide">
+        <h2 id="current-loop-name">No loop playing...</h2>
+        <button target="clear-loops"><i class="material-icons">clear</i></button>
+        <button target="toggle-boards"><i class="material-icons">settings_input_svideo</i></button>
+        <button target="shuffle-loops"><i class="material-icons">shuffle</i></button>
+        <button target="repeat-loop-mode" mode="none"><i class="material-icons">repeat</i></button>
+        <button target="stop-playing-loops"><i class="material-icons">stop</i></button>
+        <button target="play-all-loops"><i class="material-icons">play_arrow</i></button>
+        <div id="current-loop-progress"></div>
+      </div>
+
+      <!-- looper audio-transport-elements, current-loop-progress -->
+      <div id="boards" class="no-select hide">
+        <label for="boards" class="no-select">CRANK</label>
+        <section id="distortion" class="knob plugin">
+          <label class="knob__label">GAIN</label>
+          <div class="knob__control"><span class="knob__controlHandle"></span></div>
+          <input name="gain" class="knob__value" type="number" value="0" step="0.1" min="0" max="100" required="required">
+        </section>
+        <section id="gain" class="knob plugin">
+          <label class="knob__label">DISTORQUE</label>
+          <div class="knob__control"><span class="knob__controlHandle"></span></div>
+          <input name="distortion" class="knob__value" type="number" value="0" step="0.1" min="0" max="100" required="required">
+        </section>
+        <section id="cutoff" class="knob plugin">
+          <label class="knob__label">CUTOFF</label>
+          <div class="knob__control"><span class="knob__controlHandle"></span></div>
+          <input name="cutoff" class="knob__value" type="number" value="0" step="0.1" min="0" max="100" required="required">
+        </section>
+        <section id="resonance" class="knob plugin">
+          <label class="knob__label">RESO</label>
+          <div class="knob__control"><span class="knob__controlHandle"></span></div>
+          <input name="resonance" class="knob__value" type="number" value="0" step="0.1" min="0" max="100" required="required">
+        </section>
+      </div>
+
+      <!-- file-dialog-trigger, file-input-element -->
+      <div id="loop-selector" class="hide">
+        <form enctype="multipart/form-data" novalidate="" autocomplete="off" class="loop-selector-form">
+          <input type="file" name="data" id="file-input" class="hide" accept="audio/*" multiple="">
+        </form>
+      </div>
+
+      <!-- loop-list and loop-counter -->
+      <div id="loops-container" class="hide">
+        <table>
+          <thead>
+            <tr>
+              <th class="name">name</th>
+              <th class="length">length</th>
+              <th class="size">size</th>
+              <th class="type">type</th>
+              <th class="options"></th>
+            </tr>
+          </thead>
+          <tbody id="loop-list"></tbody>
+        </table>
+        <div id="loops-counter"><b>0</b></div>
+      </div>
+    </div>
+
+  
+</body></html>
