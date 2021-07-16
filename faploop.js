@@ -14,14 +14,14 @@ __todo: die
 
 */
 
+const USING_GAPLESS_5 = true;
+
 $(document).ready( function() {
 
-  // offer audio context old
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  // and new
   const audioContext = new AudioContext();
-  
   var analyser = audioContext.createAnalyser();
+  const gapless = new Gapless5();
+  gapless.loop = true;
 
   // create audio element from audio element. 1 naise sache.
   const looper = document.querySelector('audio');
@@ -160,11 +160,22 @@ $(document).ready( function() {
       </tr>");
 
     // put file object into loops attribute
-    $("#"+hash).attr("loop-blob", URL.createObjectURL(file));
+    const blob = URL.createObjectURL(file);
+    $("#"+hash).attr("loop-blob", blob);
+
+    if (USING_GAPLESS_5) {
+      gapless.addTrack(blob);
+    }
 
     // arm remove-loop button
     $("button[target=remove-loop]").on("click", function() {
-      $(this).parent().parent().fadeOut("fast", function(){ $(this).parent().remove();
+      $(this).parent().parent().fadeOut("fast", function() { 
+        if (USING_GAPLESS_5) {
+          const hash = $(this).parent().attr("id");
+          const blob = $("#"+hash).attr("loop-blob");
+          gapless.removeTrack(blob);
+        }
+        $(this).parent().remove();
         loop_counter_callback();
       });
     });
@@ -178,10 +189,19 @@ $(document).ready( function() {
       if (el[0].hasAttribute("skip")) {
         $(this).removeClass("active");
         el.removeAttr("skip");
-      }
-      else {
+        if (USING_GAPLESS_5) {
+          const blob = $("#"+el.attr("id")).attr("loop-blob");
+          const index = get_play_position($(this).parent().parent(), false);
+          gapless.insertTrack(index, blob);
+        }
+      } else {
         $(this).addClass("active");
         el.attr("skip", true);
+        if (USING_GAPLESS_5) {
+          const hash = el.attr("id");
+          const blob = $("#"+hash).attr("loop-blob");
+          gapless.removeTrack(blob);
+        }
       }
     });
 
@@ -266,7 +286,30 @@ $(document).ready( function() {
     }
   }
 
+  // given a loop, tells you its position in the playlist 
+  function get_play_position(loop, inclSkipped) {
+    const loopId = loop.first().attr("id");
+    const loops = $("#loop-list tr");
+    let index = 0;
+    for (let i=0; i<loops.length; i++) {
+      if (loops[i].id === loopId) {
+        break;
+      }
+      if (inclSkipped || loops[i].skip !== 'true') {
+        index++;
+      }
+    }
+    return index;
+  }
+
   function play_loop(hash) {
+    if (USING_GAPLESS_5) {
+      const blob = $("#"+hash).attr("loop-blob");
+      gapless.gotoTrack(blob);
+      gapless.play();
+      return;
+    }
+    
     loop = $("#"+hash);
     
     looper.pause();
@@ -383,6 +426,7 @@ $(document).ready( function() {
     // stop playing loops, reset to play first next
     $("#looper-transport button[target=stop-playing-loops]").off().on("click", function() {
       looper.pause();
+      gapless.stop();
       setTimeout(function(){
         $("#loop-list tr[last=true]").removeAttr("last").removeAttr("playing");
         $("#loop-list button[target=play-loop] i").text("play_arrow");
@@ -394,6 +438,8 @@ $(document).ready( function() {
 
     // play all loops or play current one
     $("#looper-transport button[target=play-all-loops]").off().on("click", function() {
+      gapless.gotoTrack(0);
+      gapless.start();
       if ($("#loop-list tr[last=true]").length == 0) {
         play_loop($("#loop-list tr:first").attr("id"));
       }
