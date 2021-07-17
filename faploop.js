@@ -478,7 +478,7 @@ $(document).ready( function() {
     // play all loops or play current one
     $("#looper-transport button[target=play-all-loops]").off().on("click", function() {
       gapless.gotoTrack(0);
-      gapless.start();
+      gapless.play();
       if ($("#loop-list tr[last=true]").length == 0) {
         play_loop($("#loop-list tr:first").attr("id"));
       }
