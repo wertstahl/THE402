@@ -15,21 +15,57 @@ __todo: die
 */
 
 const USING_GAPLESS_5 = true;
+const LOOPS = [
+  "379A_130_FOOSBARR",
+  "380D_110_SLWDRP",
+  "381A_105_DIGITHAL",
+  "382D_107_FLUTI",
+  "383A_123_DRGNSLAY",
+  "384D_098_KLAPPER",
+  "385A_193_CAPHEART",
+  "386D_100_D34DCHIM",
+  "387A_130_GHETBACK",
+  "388D_140_HIRSCH",
+  "389A_130_GOTSHALK",
+  "390D_096_OGLOCAVE",
+  "391A_210_EMILIONG",
+  "392D_175_DACROWDS",
+  "393A_143_LUKSUS",
+  "394D_140_SLITE",
+];
+const LOOP_FORMAT = {
+  ext: "wav",
+  type: "audio/x-wav",
+};
 
 $(document).ready( function() {
-
   const audioContext = new AudioContext();
   var analyser = audioContext.createAnalyser();
   const gapless = new Gapless5();
   gapless.loop = true;
+  for (let i=0; i<LOOPS.length; i++) {
+    const fileName = `${LOOPS[i]}.${LOOP_FORMAT.ext}`;
+    const loopPath = `loops/${fileName}`;
+    fetch(loopPath).then(response => response.blob())
+    .then(blob => {
+      const file = new File([blob], fileName, {type:LOOP_FORMAT.type});
+      add_file_to_looplist(file);
+    }).catch(err => console.error(err));
+  }
 
   // create audio element from audio element. 1 naise sache.
   const looper = document.querySelector('audio');
   // init track object for audio context as media element source
   const track = audioContext.createMediaElementSource(looper);
   track.connect(analyser);
+
+  // silence loop
+  const gainNode = audioContext.createGain();
+  gainNode.gain.value = 0;
+  gainNode.connect(audioContext.destination)
+
   // connect source to destination
-  analyser.connect(audioContext.destination);
+  analyser.connect(gainNode);
   analyser.minDecibels = -90;
   analyser.maxDecibels = -10;
   analyser.smoothingTimeConstant = 0.85;
@@ -186,11 +222,11 @@ $(document).ready( function() {
     // arm skip-loop-button
     $("#"+hash).find("button[target=skip-loop]").on("click", function() {
       el = $(this).parent().parent();
+      const blob = $("#"+el.attr("id")).attr("loop-blob");
       if (el[0].hasAttribute("skip")) {
         $(this).removeClass("active");
         el.removeAttr("skip");
         if (USING_GAPLESS_5) {
-          const blob = $("#"+el.attr("id")).attr("loop-blob");
           const index = get_play_position($(this).parent().parent(), false);
           gapless.insertTrack(index, blob);
         }
@@ -198,8 +234,6 @@ $(document).ready( function() {
         $(this).addClass("active");
         el.attr("skip", true);
         if (USING_GAPLESS_5) {
-          const hash = el.attr("id");
-          const blob = $("#"+hash).attr("loop-blob");
           gapless.removeTrack(blob);
         }
       }
@@ -303,13 +337,6 @@ $(document).ready( function() {
   }
 
   function play_loop(hash) {
-    if (USING_GAPLESS_5) {
-      const blob = $("#"+hash).attr("loop-blob");
-      gapless.gotoTrack(blob);
-      gapless.play();
-      return;
-    }
-    
     loop = $("#"+hash);
     
     looper.pause();
@@ -321,12 +348,18 @@ $(document).ready( function() {
       audioContext.resume();
     }
 
+
+    const blob = $("#"+hash).attr("loop-blob");
     // loop playing?
     if (loop.attr("playing") === undefined) {
       $("#loop-visualizer").fadeIn();
-      looper.src = $("#"+hash).attr("loop-blob");
+      looper.src = blob;
       looper.load();
       looper.play();
+      if (USING_GAPLESS_5) {
+        gapless.gotoTrack(blob);
+        gapless.play();
+      }
       $("#loop-list tr").removeAttr("last");
       loop.attr("last", true); // the last loop played
       loop.attr("playing", true); // the current loop playing
@@ -337,6 +370,9 @@ $(document).ready( function() {
     else {
       if (loop.attr("playing") == "paused") {
         looper.play();
+        if (USING_GAPLESS_5) {
+          gapless.play();
+        }
         loop.attr("playing", true);
         loop.find("button[target=play-loop] i").text("pause");
         $("#loop-visualizer").fadeOut();
@@ -344,6 +380,9 @@ $(document).ready( function() {
       else {
         loop.attr("playing", "paused")
         looper.pause();
+        if (USING_GAPLESS_5) {
+          gapless.pause();
+        }
         loop.find("button[target=play-loop] i").text("play_arrow");
         $("#loop-visualizer").fadeOut();
       }
