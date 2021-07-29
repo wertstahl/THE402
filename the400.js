@@ -41,8 +41,10 @@ const LOOP_FORMAT = {
 $(document).ready( function() {
   const audioContext = new AudioContext();
   var analyser = audioContext.createAnalyser();
-  const gapless = new Gapless5();
-  gapless.loop = true;
+  const gapless = new Gapless5('', {
+    loop: false,
+    singleMode: true,
+  });
   for (let i=0; i<LOOPS.length; i++) {
     const fileName = `${LOOPS[i]}.${LOOP_FORMAT.ext}`;
     const loopPath = `loops/${fileName}`;
@@ -59,13 +61,16 @@ $(document).ready( function() {
   const track = audioContext.createMediaElementSource(looper);
   track.connect(analyser);
 
-  // silence loop
-  const gainNode = audioContext.createGain();
-  gainNode.gain.value = 0;
-  gainNode.connect(audioContext.destination)
+  if (USING_GAPLESS_5) {
+    // silence loop
+    const gainNode = audioContext.createGain();
+    gainNode.gain.value = 0;
+    gainNode.connect(audioContext.destination);
+    analyser.connect(gainNode);
+  } else {
+    analyser.connect(audioContext.destination);
+  }
 
-  // connect source to destination
-  analyser.connect(gainNode);
   analyser.minDecibels = -90;
   analyser.maxDecibels = -10;
   analyser.smoothingTimeConstant = 0.85;
@@ -316,6 +321,7 @@ $(document).ready( function() {
 
       // play nothing
       case "none":
+        gapless.stop();
         return;
     }
   }
@@ -448,14 +454,20 @@ $(document).ready( function() {
       mode = $(this).attr("mode");
       switch(mode) {
         case "none":
+          gapless.singleMode = true;
+          gapless.loop = false;
           $(this).find("i").text("repeat");
           $(this).attr("mode", "all")
         break;
         case "all":
+          gapless.singleMode = false;
+          gapless.loop = true;
           $(this).find("i").text("repeat_one");
           $(this).attr("mode", "one");
         break;
         case "one":
+          gapless.singleMode = true;
+          gapless.loop = true;
           $(this).find("i").text("repeat");
           $(this).attr("mode", "none");
         break;
