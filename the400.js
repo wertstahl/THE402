@@ -84,7 +84,6 @@ $(document).ready( function() {
   function visualize() {
     analyser.fftSize = 2048;
     var bufferLength = analyser.fftSize;
-    console.log(bufferLength);
     var dataArray = new Uint8Array(bufferLength);
 
     var draw = function() {
@@ -195,7 +194,6 @@ $(document).ready( function() {
         <td class='type'>"+(file["type"]?(file["type"]):("<x style='color: orange'>unknown</x>"))+"</td>\
         <td class='options'>\
               <button target='play-loop'><i class='material-icons'>play_arrow</i></button>\
-              <button target='skip-loop'><i class='material-icons'>redo</button>\
               <button target='remove-loop'><i class='material-icons'>clear</i></button>\
         </td>\
       </tr>");
@@ -223,26 +221,6 @@ $(document).ready( function() {
 
     // arm button with click event
     arm_play_from_looplist(hash);
-
-    // arm skip-loop-button
-    $("#"+hash).find("button[target=skip-loop]").on("click", function() {
-      el = $(this).parent().parent();
-      const blob = $("#"+el.attr("id")).attr("loop-blob");
-      if (el[0].hasAttribute("skip")) {
-        $(this).removeClass("active");
-        el.removeAttr("skip");
-        if (USING_GAPLESS_5) {
-          const index = get_play_position($(this).parent().parent(), false);
-          gapless.insertTrack(index, blob);
-        }
-      } else {
-        $(this).addClass("active");
-        el.attr("skip", true);
-        if (USING_GAPLESS_5) {
-          gapless.removeTrack(blob);
-        }
-      }
-    });
 
     // update loops counter
     loop_counter_callback();
@@ -303,12 +281,12 @@ $(document).ready( function() {
     
     switch(mode) {
 
-      // play all loops, try to find next not skippable one,
-      // if undefined, play first which should not be skipped
+      // play all loops, try to find next,
+      // if undefined, play first
       case "all":
-        next = loop.nextAll().not("[skip=true]").first().attr("id");
+        next = loop.nextAll().first().attr("id");
         if (next===undefined || !next) {
-          next = $("#loop-list tr").not("[skip=true]").first().attr("id");
+          next = $("#loop-list tr").first().attr("id");
         }
         play_loop(next);
         break;
@@ -324,22 +302,6 @@ $(document).ready( function() {
         gapless.stop();
         return;
     }
-  }
-
-  // given a loop, tells you its position in the playlist 
-  function get_play_position(loop, inclSkipped) {
-    const loopId = loop.first().attr("id");
-    const loops = $("#loop-list tr");
-    let index = 0;
-    for (let i=0; i<loops.length; i++) {
-      if (loops[i].id === loopId) {
-        break;
-      }
-      if (inclSkipped || loops[i].skip !== 'true') {
-        index++;
-      }
-    }
-    return index;
   }
 
   function play_loop(hash) {
