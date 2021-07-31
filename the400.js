@@ -1,13 +1,13 @@
 /*
-
-_|_|_|_|    _|_|    _|_|_|    _|          _|_|      _|_|    _|_|_|    
-_|        _|    _|  _|    _|  _|        _|    _|  _|    _|  _|    _|  
-_|_|_|    _|_|_|_|  _|_|_|    _|        _|    _|  _|    _|  _|_|_|    
-_|        _|    _|  _|        _|        _|    _|  _|    _|  _|        
-_|        _|    _|  _|        _|_|_|_|    _|_|      _|_|    _|
+ _   _             ___  ____  ____ 
+| | | |           /   |/ _  \/  _ \
+| |_| |__   ___  / /| | |/' || |/' |
+| __| '_ \ / _ \/ /_| |  /| ||  /| |
+| |_| | | |  __/\___  | |_/ /\ |_/ /
+ \__|_| |_|\___|    |_/\___/  \___/ 
 
 __type: js
-__version: 0.1
+__version: 0.2
 __author: gandalf
 __propose: universal powers
 __todo: die
@@ -45,16 +45,19 @@ $(document).ready( function() {
     loop: false,
     singleMode: true,
   });
-  for (let i=0; i<LOOPS.length; i++) {
-    const fileName = `${LOOPS[i]}.${LOOP_FORMAT.ext}`;
-    const loopPath = `loops/${fileName}`;
-    fetch(loopPath).then(response => response.blob())
-    .then(blob => {
-      const file = new File([blob], fileName, {type:LOOP_FORMAT.type});
-      add_file_to_looplist(file);
-    }).catch(err => console.error(err));
+  // Fetches from 'file://...' are not supported
+  // To run locally, call 'python -m http.server 8000' and visit http://localhost:8000
+  if (window.location.protocol !== 'file:') {
+    for (let i=0; i<LOOPS.length; i++) {
+      const fileName = `${LOOPS[i]}.${LOOP_FORMAT.ext}`;
+      const loopPath = `loops/${fileName}`;
+      fetch(loopPath).then(response => response.blob())
+      .then(blob => {
+        const file = new File([blob], fileName, {type:LOOP_FORMAT.type});
+        add_file_to_looplist(file);
+      }).catch(err => console.error(err));
+    }
   }
-
   // create audio element from audio element. 1 naise sache.
   const looper = document.querySelector('audio');
   // init track object for audio context as media element source
@@ -124,6 +127,17 @@ $(document).ready( function() {
     draw();
   }
 
+  const get_next_mode = (mode) => {
+    switch(mode) {
+      case "none":
+        return "all";
+      case "all":
+        return "one";
+      default:
+        return "none";
+    }
+   };
+
   // arm add-loop button
   $("button[target=add-loop]").off().on("click", function() {
 
@@ -185,14 +199,14 @@ $(document).ready( function() {
     }
 
     // arm remove-loop button
-    $("button[target=remove-loop]").on("click", function() {
+    $("#"+hash+" button[target=remove-loop]").off().on("click", function() {
       $(this).parent().parent().fadeOut("fast", function() { 
         if (USING_GAPLESS_5) {
-          const hash = $(this).parent().attr("id");
+          const hash = $(this).attr("id");
           const blob = $("#"+hash).attr("loop-blob");
           gapless.removeTrack(blob);
         }
-        $(this).parent().remove();
+        $(this).remove();
         loop_counter_callback();
       });
     });
@@ -207,7 +221,7 @@ $(document).ready( function() {
   // handle ui play button state
   function arm_play_from_looplist(hash) {
     $("#"+hash+" button[target=play-loop]").off().on("click", function() {
-      play_loop($(this).parent().parent().attr("id"));
+      play_loop($(this).parent().parent().attr("id"), USING_GAPLESS_5);
     });
   }
 
@@ -230,25 +244,26 @@ $(document).ready( function() {
       if (clt > -4 && !el.hasClass("ending")) { el.addClass("ending"); }
       else { el.removeClass("ending"); }
       // update current-loop-time text
-      if (clt != "NaN") $("#current-loop-time").text(clt+"s");
+      if (clt !== "NaN") $("#current-loop-time").text(clt+"s");
       // moving progress bar
       $("#current-loop-progress").stop(true,true).animate({'width':(currentTime +.25)/duration*100+'%'},200,'linear');
     });
 
     // remove playing attribute when loop ended
-    looper.addEventListener('ended', () => {
-      $("#current-loop-time").text("");
+    gapless.onfinishedtrack = () => {
       loop = $("tr[loop-blob='"+looper.src+"']");
-      $("button[target=play-loop] i").text("play_arrow");
-      $("#loop-list tr").removeAttr("playing");
-      $("#loop-visualizer").fadeOut();
       reset_current_loop_progress();
+      // TODO: get actual next track from gapless to accomodate shuffle
       continuity(loop);
-    }, false);
+    };
   }
 
-
   function reset_current_loop_progress() {
+    $("#loop-list tr[last=true]").removeAttr("last").removeAttr("playing");
+    $("#loop-list button[target=play-loop] i").text("play_arrow");
+    $("#current-loop-name").text("No loop playing...");
+    $("#current-loop-time").text("").removeClass("ending");
+    $("#loop-visualizer").fadeOut();
     $("#current-loop-progress").stop(true,true).animate({'width':'0%'},500,'linear');
   }
 
@@ -266,23 +281,22 @@ $(document).ready( function() {
         if (next===undefined || !next) {
           next = $("#loop-list tr").first().attr("id");
         }
-        play_loop(next);
+        play_loop(next, false);
         break;
 
       // play same again
       case "one":
         next = loop.attr("id");
-        play_loop(next);
+        play_loop(next, false);
         break;
 
       // play nothing
       case "none":
-        gapless.stop();
         return;
     }
   }
 
-  function play_loop(hash) {
+  function play_loop(hash, playAudio) {
     loop = $("#"+hash);
     
     looper.pause();
@@ -302,7 +316,7 @@ $(document).ready( function() {
       looper.src = blob;
       looper.load();
       looper.play();
-      if (USING_GAPLESS_5) {
+      if (playAudio) {
         gapless.gotoTrack(blob);
         gapless.play();
       }
@@ -314,19 +328,19 @@ $(document).ready( function() {
     }
     // loop paused?
     else {
-      if (loop.attr("playing") == "paused") {
+      if (loop.attr("playing") === "paused") {
         looper.play();
-        if (USING_GAPLESS_5) {
+        if (playAudio) {
           gapless.play();
         }
         loop.attr("playing", true);
         loop.find("button[target=play-loop] i").text("pause");
-        $("#loop-visualizer").fadeOut();
+        $("#loop-visualizer").fadeIn();
       }
       else {
         loop.attr("playing", "paused")
         looper.pause();
-        if (USING_GAPLESS_5) {
+        if (playAudio) {
           gapless.pause();
         }
         loop.find("button[target=play-loop] i").text("play_arrow");
@@ -356,7 +370,12 @@ $(document).ready( function() {
     // clear/remove all loops
     $("#looper-transport button[target=clear-loops]").off().on("click", function() {
       $("#loop-list tr").remove();
-      setTimeout(function() { loop_counter_callback(); }, 10);
+      looper.pause();
+      gapless.removeAllTracks();
+      setTimeout(function() { 
+        reset_current_loop_progress();
+        loop_counter_callback();
+      }, 10);
     });
 
     // shuffle loops, shuffling by caleb miller (https://codepen.io/MillerTime/pen/grZOBo)
@@ -391,25 +410,25 @@ $(document).ready( function() {
 
     // arm repeat-loop-mode button
     $("button[target=repeat-loop-mode]").on("click", function() {
-      mode = $(this).attr("mode");
-      switch(mode) {
+       const next_mode = get_next_mode($(this).attr("mode"));
+       switch (next_mode) {
         case "none":
-          gapless.singleMode = true;
           gapless.loop = false;
+          gapless.singleMode = true;
+          $(this).find("i").text("repeat");
+          $(this).attr("mode", "none");
+          break;
+        case "all":
+          gapless.loop = true;
+          gapless.singleMode = false;
           $(this).find("i").text("repeat");
           $(this).attr("mode", "all")
         break;
-        case "all":
-          gapless.singleMode = false;
+        case "one":
           gapless.loop = true;
+          gapless.singleMode = true;
           $(this).find("i").text("repeat_one");
           $(this).attr("mode", "one");
-        break;
-        case "one":
-          gapless.singleMode = true;
-          gapless.loop = true;
-          $(this).find("i").text("repeat");
-          $(this).attr("mode", "none");
         break;
       }
     });
@@ -419,10 +438,6 @@ $(document).ready( function() {
       looper.pause();
       gapless.stop();
       setTimeout(function(){
-        $("#loop-list tr[last=true]").removeAttr("last").removeAttr("playing");
-        $("#loop-list button[target=play-loop] i").text("play_arrow");
-        $("#current-loop-name").text("No loop playing...");
-        $("#current-loop-time").text("").removeClass("ending");
         reset_current_loop_progress();
       }, 100);
     });
@@ -431,14 +446,13 @@ $(document).ready( function() {
     $("#looper-transport button[target=play-all-loops]").off().on("click", function() {
       gapless.gotoTrack(0);
       gapless.play();
-      if ($("#loop-list tr[last=true]").length == 0) {
-        play_loop($("#loop-list tr:first").attr("id"));
+      if ($("#loop-list tr[last=true]").length === 0) {
+        play_loop($("#loop-list tr:first").attr("id"), USING_GAPLESS_5);
       }
       else {
         looper.play();
       }
     });
-
   }
 
   // return easy readable file sizes
@@ -615,7 +629,7 @@ function add32(a, b) {
 return (a + b) & 0xFFFFFFFF;
 }
 
-if (md5('hello') != '5d41402abc4b2a76b9719d911017c592') {
+if (md5('hello') !== '5d41402abc4b2a76b9719d911017c592') {
 function add32(x, y) {
 var lsw = (x & 0xFFFF) + (y & 0xFFFF),
 msw = (x >> 16) + (y >> 16) + (lsw >> 16);

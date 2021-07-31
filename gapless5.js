@@ -976,6 +976,9 @@ this.removeTrack = function (pointOrPath) {
   if (point < 0 || point >= that.sources.length) return;
 
   const curSource = that.sources[point];
+  if (!curSource) {
+    return;
+  }
   let wasPlaying = false;
 
   if (curSource.getState() === Gapless5State.Loading) {
