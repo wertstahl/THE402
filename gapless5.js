@@ -263,17 +263,19 @@ function Gapless5Source(parentPlayer, inContext, inOutputNode) {
     state = Gapless5State.Loading;
     if (parent.useWebAudio) {
       const onLoadWebAudio = function(data) {
-        context.decodeAudioData(data,
-          function(incomingBuffer) {
-            onLoadedWebAudio(incomingBuffer);
-          }
-        );
+        if (data) {
+          context.decodeAudioData(data,
+            function(incomingBuffer) {
+              onLoadedWebAudio(incomingBuffer);
+            }
+          );
+        }
       };
       if (inAudioPath.startsWith("blob:")) {
-        request = new FileReader();
-        request.onload = () => onLoadWebAudio(request.result);
         fetch(inAudioPath).then(r => {
           r.blob().then(blob => {
+            request = new FileReader();
+            request.onload = () => { if (request) onLoadWebAudio(request.result); };
             request.readAsArrayBuffer(blob);
           });
         });
@@ -281,7 +283,7 @@ function Gapless5Source(parentPlayer, inContext, inOutputNode) {
         request = new XMLHttpRequest();
         request.open('get', inAudioPath, true);
         request.responseType = 'arraybuffer';
-        request.onload = () => onLoadWebAudio(request.response);
+        request.onload = () => { if (request) onLoadWebAudio(request.response); };
         request.send();
       }
     }

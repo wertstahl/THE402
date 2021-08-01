@@ -8,13 +8,12 @@
 
 __type: js
 __version: 0.2
-__author: gandalf
+__authors: gandalf, LeDentist, Rego Sen
 __propose: universal powers
 __todo: die
 
 */
 
-const USING_GAPLESS_5 = true;
 const LOOPS = [
   "379A_130_FOOSBARR",
   "380D_110_SLWDRP",
@@ -64,15 +63,11 @@ $(document).ready( function() {
   const track = audioContext.createMediaElementSource(looper);
   track.connect(analyser);
 
-  if (USING_GAPLESS_5) {
-    // silence loop
-    const gainNode = audioContext.createGain();
-    gainNode.gain.value = 0;
-    gainNode.connect(audioContext.destination);
-    analyser.connect(gainNode);
-  } else {
-    analyser.connect(audioContext.destination);
-  }
+  // silence loop
+  const gainNode = audioContext.createGain();
+  gainNode.gain.value = 0;
+  gainNode.connect(audioContext.destination);
+  analyser.connect(gainNode);
 
   analyser.minDecibels = -90;
   analyser.maxDecibels = -10;
@@ -194,18 +189,15 @@ $(document).ready( function() {
     const blob = URL.createObjectURL(file);
     $("#"+hash).attr("loop-blob", blob);
 
-    if (USING_GAPLESS_5) {
-      gapless.addTrack(blob);
-    }
+    gapless.addTrack(blob);
 
     // arm remove-loop button
     $("#"+hash+" button[target=remove-loop]").off().on("click", function() {
       $(this).parent().parent().fadeOut("fast", function() { 
-        if (USING_GAPLESS_5) {
-          const hash = $(this).attr("id");
-          const blob = $("#"+hash).attr("loop-blob");
-          gapless.removeTrack(blob);
-        }
+        const hash = $(this).attr("id");
+        const blob = $("#"+hash).attr("loop-blob");
+        gapless.removeTrack(blob);
+
         $(this).remove();
         loop_counter_callback();
       });
@@ -221,7 +213,7 @@ $(document).ready( function() {
   // handle ui play button state
   function arm_play_from_looplist(hash) {
     $("#"+hash+" button[target=play-loop]").off().on("click", function() {
-      play_loop($(this).parent().parent().attr("id"), USING_GAPLESS_5);
+      play_loop($(this).parent().parent().attr("id"), true);
     });
   }
 
@@ -307,8 +299,6 @@ $(document).ready( function() {
     if (audioContext.state === 'suspended') {
       audioContext.resume();
     }
-
-
     const blob = $("#"+hash).attr("loop-blob");
     // loop playing?
     if (loop.attr("playing") === undefined) {
@@ -378,34 +368,38 @@ $(document).ready( function() {
       }, 10);
     });
 
-    // shuffle loops, shuffling by caleb miller (https://codepen.io/MillerTime/pen/grZOBo)
     $("#looper-transport button[target=shuffle-loops]").off().on("click", function() {
+
+      // TODO: get current play state and location and resume play after shuffle
+      // const isPlaying = gapless.isPlaying();
+      looper.pause();
+      setTimeout(reset_current_loop_progress, 100);
+      
+      gapless.toggleShuffle();
+      gapless.gotoTrack(0); // this forces the shuffle
+      if (!gapless.isShuffled()) {
+          // to re-shuffle, you have to un-shuffle first
+          gapless.toggleShuffle();
+          gapless.gotoTrack(0);
+      }
+    
+      // get array of new indices
       $elements = $("#loop-list tr");
-
-      var i, index1, index2, temp_val;
-      var count = $elements.length;
-      var $parent = $elements.parent();
-      var shuffled_array = [];
-
-      // populate array of indexes
-      for (i = 0; i < count; i++) {
-        shuffled_array.push(i);
+      const shuffled_elements = {};
+      const count = $elements.length;
+      for (let i = 0; i < count; i++) {
+        const hash = $elements.eq(i).attr("id");
+        const blob = $("#"+hash).attr("loop-blob");
+        const new_index = gapless.findTrack(blob);
+        shuffled_elements[new_index] = $elements.eq(i);
       }
-
-      // shuffle indexes
-      for (i = 0; i < count; i++) {
-        index1 = (Math.random() * count) | 0;
-        index2 = (Math.random() * count) | 0;
-        temp_val = shuffled_array[index1];
-        shuffled_array[index1] = shuffled_array[index2];
-        shuffled_array[index2] = temp_val;
-      }
-
-      // apply random order to elements
+      // apply new order to elements
+      const $parent = $elements.parent();
       $elements.detach();
       for (i = 0; i < count; i++) {
-        $parent.append( $elements.eq(shuffled_array[i]) );
+        $parent.append( shuffled_elements[i] );
       }
+
     });
 
     // arm repeat-loop-mode button
@@ -437,9 +431,7 @@ $(document).ready( function() {
     $("#looper-transport button[target=stop-playing-loops]").off().on("click", function() {
       looper.pause();
       gapless.stop();
-      setTimeout(function(){
-        reset_current_loop_progress();
-      }, 100);
+      setTimeout(reset_current_loop_progress, 100);
     });
 
     // play all loops or play current one
@@ -447,7 +439,7 @@ $(document).ready( function() {
       gapless.gotoTrack(0);
       gapless.play();
       if ($("#loop-list tr[last=true]").length === 0) {
-        play_loop($("#loop-list tr:first").attr("id"), USING_GAPLESS_5);
+        play_loop($("#loop-list tr:first").attr("id"), true);
       }
       else {
         looper.play();
