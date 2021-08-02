@@ -63,7 +63,6 @@ function Gapless5Source(parentPlayer, inContext, inOutputNode) {
   let initMS = new Date().getTime();
 
   this.uiDirty = false;
-  const that = this;
   const parent = parentPlayer;
 
   this.setGain = (val) => {
@@ -94,7 +93,7 @@ function Gapless5Source(parentPlayer, inContext, inOutputNode) {
     position = 0;
     endpos = 0;
     initMS = (new Date().getTime());
-    that.uiDirty = true;
+    this.uiDirty = true;
   }
 
   const onEnded = () =>{
@@ -123,14 +122,14 @@ function Gapless5Source(parentPlayer, inContext, inOutputNode) {
       //console.log("switching from HTML5 to WebAudio");
       position = (new Date().getTime()) - startTime;
       if (!window.hasWebKit) position -= tickMS;
-      that.setPosition(position, true);
+      this.setPosition(position, true);
     }
     if (state === Gapless5State.Loading) {
       state = Gapless5State.Stop;
     }
     // once we have WebAudio data loaded, we don't need the HTML5 audio stream anymore
     audio = null;
-    that.uiDirty = true;
+    this.uiDirty = true;
   }
 
   const onLoadedHTML5Audio = () => {
@@ -146,7 +145,7 @@ function Gapless5Source(parentPlayer, inContext, inOutputNode) {
     if (queuedState === Gapless5State.Play) {
       playAudioFile(true);
     }
-    that.uiDirty = true;
+    this.uiDirty = true;
   }
 
   this.stop = () => {
@@ -166,7 +165,7 @@ function Gapless5Source(parentPlayer, inContext, inOutputNode) {
     }
 
     setState(Gapless5State.Stop);
-    that.uiDirty = true;
+    this.uiDirty = true;
   };
 
   const playAudioFile = () => {
@@ -202,14 +201,14 @@ function Gapless5Source(parentPlayer, inContext, inOutputNode) {
       audio.play();
       setState(Gapless5State.Play);
     }
-    that.uiDirty = true;
+    this.uiDirty = true;
   };
 
   // PUBLIC FUNCTIONS
 
   this.inPlayState = () => (state === Gapless5State.Play); 
 
-  this.isPlayActive = () => (that.inPlayState() || queuedState === Gapless5State.Play) && !that.audioFinished; 
+  this.isPlayActive = () => (this.inPlayState() || queuedState === Gapless5State.Play) && !this.audioFinished; 
 
   this.getPosition = () => position;
 
@@ -239,9 +238,9 @@ function Gapless5Source(parentPlayer, inContext, inOutputNode) {
 
   this.setPosition = (newPosition, bResetPlay) => {
     position = newPosition;
-    if (bResetPlay && that.inPlayState()) {
-      that.stop();
-      that.play();
+    if (bResetPlay && this.inPlayState()) {
+      this.stop();
+      this.play();
     }
   };
 
@@ -304,17 +303,18 @@ function Gapless5Source(parentPlayer, inContext, inOutputNode) {
       }
     }
     // cancel if url doesn't exist, but don't download again
+    const { cancelRequest } = this;
     $.ajax({
       url: inAudioPath,
       type: "HEAD",
     }).fail(function() { 
-      that.cancelRequest(true);
+      cancelRequest(true);
     });
   }
 }
 
 // A Gapless5FileList "class". Processes an array of JSON song objects, taking 
-// the "file" members out to constitute the that.sources[] in the Gapless5 player
+// the "file" members out to constitute the this.sources[] in the Gapless5 player
 const Gapless5FileList = function(inPlayList, inStartingTrack, inShuffle) {
 
   // OBJECT STATE
@@ -334,12 +334,10 @@ const Gapless5FileList = function(inPlayList, inStartingTrack, inShuffle) {
   this.currentItem = this.startingTrack;
   this.trackNumber = this.startingTrack;  // Displayed track index in GUI
 
-  const that = this;
-
   // If the tracklist ordering changes, after a pre/next song,
   // the playlist needs to be regenerated
-  let shuffleMode = !!inShuffle;  // Ordered (false) or Shuffle (true)
-  let remakeList = false;         // Will need to re-order list upon track changing
+  this.shuffleMode = !!inShuffle;  // Ordered (false) or Shuffle (true)
+  this.remakeList = false;         // Will need to re-order list upon track changing
 
   // PRIVATE METHODS
   // Clone an object so it's not passed by reference
@@ -390,7 +388,7 @@ const Gapless5FileList = function(inPlayList, inStartingTrack, inShuffle) {
     // After shuffling, move the current-playing track to the 0th
     // place in the index. So regardless of the next move, this track
     // will be appropriately far away in the list
-    const swapIndex = that.lastIndex(index, that.current, outputList);
+    const swapIndex = this.lastIndex(index, this.current, outputList);
     if ( swapIndex !== 0 )
       swapElements(outputList, swapIndex, 0);
 
@@ -402,42 +400,42 @@ const Gapless5FileList = function(inPlayList, inStartingTrack, inShuffle) {
   // Already pressed the shuffle button once from normal mode.
   // Revert to previous list / item, and terminate.
   const revertShuffle = () => {
-    that.current = that.previous;
-    that.currentItem = that.previousItem;
+    this.current = this.previous;
+    this.currentItem = this.previousItem;
 
-    shuffleMode = !shuffleMode;
-    remakeList = false;
+    this.shuffleMode = !this.shuffleMode;
+    this.remakeList = false;
   }
 
   // Going into shuffle mode. Tell the Player to remake the list
   // as soon as a new track is reached or chosen. 
   const enableShuffle = () => {
     // Save old state in case we need to revert
-    that.previous = clone(that.current);
-    that.previousItem = that.currentItem;
+    this.previous = clone(this.current);
+    this.previousItem = this.currentItem;
 
-    that.current = shuffle(that.original, that.currentItem);
-    that.currentItem = 0;
+    this.current = shuffle(this.original, this.currentItem);
+    this.currentItem = 0;
   
-    shuffleMode = true;
-    remakeList = true;
+    this.shuffleMode = true;
+    this.remakeList = true;
   }
 
   // Leaving shuffle mode. Tell the Player to remake the list
   // as soon as a new track is reached or chosen. 
   const disableShuffle = () => {
     // Save old state in case we need to revert
-    that.previous = clone(that.current);
-    that.previousItem = that.currentItem;
+    this.previous = clone(this.current);
+    this.previousItem = this.currentItem;
 
     // Find where current song is in original playlist, and make that
     // the head of the new unshuffled playlist
-    const point = that.lastIndex(that.currentItem, that.current, that.original);
-    that.current = reorder(that.original, point);
+    const point = this.lastIndex(this.currentItem, this.current, this.original);
+    this.current = reorder(this.original, point);
 
-    that.currentItem = 0;  // Position to head of list
-    shuffleMode = false;
-    remakeList = true;
+    this.currentItem = 0;  // Position to head of list
+    this.shuffleMode = false;
+    this.remakeList = true;
   }
 
   // Add a song to a single member of the FileList object, adjusting
@@ -495,13 +493,13 @@ const Gapless5FileList = function(inPlayList, inStartingTrack, inShuffle) {
   }
 
   this.removeAllTracks = () => {
-    that.original = [];  
-    that.previous = [];
-    that.current = [];
-    that.previousItem = 0;
-    that.startingTrack = -1;
-    that.currentItem = this.startingTrack;
-    that.trackNumber = this.startingTrack;
+    this.original = [];  
+    this.previous = [];
+    this.current = [];
+    this.previousItem = 0;
+    this.startingTrack = -1;
+    this.currentItem = this.startingTrack;
+    this.trackNumber = this.startingTrack;
   }
 
   // Toggle shuffle mode or not, and prepare for rebasing the playlist
@@ -511,50 +509,50 @@ const Gapless5FileList = function(inPlayList, inStartingTrack, inShuffle) {
     if (forceReshuffle) {
       return enableShuffle();
     }
-    if ( remakeList ) {
+    if ( this.remakeList ) {
       return revertShuffle();  
     }
 
-    return shuffleMode ? disableShuffle() : enableShuffle();
+    return this.shuffleMode ? disableShuffle() : enableShuffle();
   }
 
   // After toggling the list, the next/prev track action must trigger
   // the list getting remade, with the next desired track as the head.
   // This function will remake the list as needed.
   this.rebasePlayList = (index) => {
-    if ( shuffleMode )
-      that.current = reorder(that.current, index);
+    if ( this.shuffleMode )
+      this.current = reorder(this.current, index);
 
-    that.currentItem = 0;    // Position to head of the list
-    remakeList = false;    // Rebasing is finished.
+    this.currentItem = 0;    // Position to head of the list
+    this.remakeList = false;    // Rebasing is finished.
   }
 
   // Signify to this object that at the next track change, it will be OK 
   // to reorder the current playlist starting at the next desired track.
-  this.readyToRemake = () => remakeList;
+  this.readyToRemake = () => this.remakeList;
 
   // Are we in shuffle mode or not? If we just came out of shuffle mode,
   // the player object will want to know.
-  this.isShuffled = () => shuffleMode;
+  this.isShuffled = () => this.shuffleMode;
 
   // PlayList manipulation requires us to keep state on which track is     
   // playing. Player object state changes may need to update the current    
   // index in the FileList object as well.    
   this.set = (index) => {
-    that.previousItem = that.currentItem;  
-    that.currentItem = index;
-    that.trackNumber = this.current[index]._index;    
+    this.previousItem = this.currentItem;  
+    this.currentItem = index;
+    this.trackNumber = this.current[index]._index;    
   }
 
   // Get the "highlighted" track in the current playlist. After a shuffle,
   // this may not be the track that is currently playing.  
-  this.get = () => that.currentItem;
+  this.get = () => this.currentItem;
 
   // Helper: find the given index in the current playlist
   this.getIndex = (index) => {
-    if ( that.isShuffled() ) {
-      for ( let i=0; i < that.current.length; i++ )
-        if ( that.current[i]._index === index )
+    if ( this.isShuffled() ) {
+      for ( let i=0; i < this.current.length; i++ )
+        if ( this.current[i]._index === index )
           return i - 1;
     } else {
       return index;
@@ -565,56 +563,58 @@ const Gapless5FileList = function(inPlayList, inStartingTrack, inShuffle) {
   // TODO: this should take objects, not files, as input
   //   Consider rewriting deshuffle to rely entirely on _index vals
   this.add = (index, file) => {
-    that.previous = clone(that.current);
-    that.previousItem = that.currentItem;
+    const { current, original, remakeList, shuffleMode } = this;
+    this.previous = clone(current);
+    this.previousItem = this.currentItem;
 
     // Update current list
-    addFile(index, file, that.current, shuffleMode);
+    addFile(index, file, current, shuffleMode);
 
     // Update original list. Assume it doesn't start in shuffle
-    addFile(index, file, that.original, false);
+    addFile(index, file, original, false);
 
     // Update the previous list too. If readyToRemake, that means
     // the last list is the opposite shuffleMode of the current.
     if ( remakeList )
-      addFile(index, file, that.previous, !shuffleMode);
+      addFile(index, file, this.previous, !shuffleMode);
     else
-      addFile(index, file, that.previous, shuffleMode);
+      addFile(index, file, this.previous, shuffleMode);
 
     // Shift currentItem if the insert file is earlier in the list
-    if ( index <= that.currentItem || that.currentItem === -1 )
-      that.currentItem = that.currentItem + 1;
+    if ( index <= this.currentItem || this.currentItem === -1 )
+      this.currentItem = this.currentItem + 1;
 
-    that.trackNumber = that.current[that.currentItem]._index;
+    this.trackNumber = current[this.currentItem]._index;
   }
 
   // Remove a song from the FileList object.
   this.remove = (index) => {
-    that.previous = clone(that.current);
-    that.previousItem = that.currentItem;
+    const { current, original, remakeList, shuffleMode } = this;
+    this.previous = clone(current);
+    this.previousItem = this.currentItem;
 
     // Remove from current array
-    removeFile(index, that.current, shuffleMode);      
+    removeFile(index, current, shuffleMode);      
 
     // Remove from the unshuffled array as well
-    removeFile(index, that.original, shuffleMode);      
+    removeFile(index, original, shuffleMode);      
 
     // Update previous list too
-    removeFile(index, that.previous, remakeList ? !shuffleMode : shuffleMode);
+    removeFile(index, this.previous, remakeList ? !shuffleMode : shuffleMode);
 
     // Stay at the same song index, unless currentItem is after the
     // removed index, or was removed at the edge of the list 
-    if (( index < that.currentItem ) || ( index >= that.previous.length - 1))
-      if ( that.currentItem > 0 )
-        that.currentItem = that.currentItem - 1;
+    if (( index < this.currentItem ) || ( index >= this.previous.length - 1))
+      if ( this.currentItem > 0 )
+        this.currentItem = this.currentItem - 1;
 
-    that.trackNumber = that.current[that.currentItem]._index;
+    this.trackNumber = current[this.currentItem]._index;
   }
 
   // Get an array of songfile paths from this object, appropriate for 
   // including in a Player object.
   this.files = () => {
-    return that.current.map(function (song) { return song.file });
+    return this.current.map(function (song) { return song.file });
   }
 
   if (this.original.length > 0) {
@@ -625,7 +625,7 @@ const Gapless5FileList = function(inPlayList, inStartingTrack, inShuffle) {
     this.trackNumber = this.original[this.startingTrack]._index;
 
     // Create the current playing list, based on startingTrack and shuffleMode.
-    if ( shuffleMode ) {
+    if ( this.shuffleMode ) {
       // If shuffle mode is on, shuffle the starting list
       this.current = clone(this.original);
       enableShuffle();
@@ -660,12 +660,12 @@ const statusText = {
   loading:  "loading\u2026",
   error: "error!",
 };
-let scrubWidth = 0;
-let scrubPosition = 0;
-let isScrubbing = false;
+this.scrubWidth = 0;
+this.scrubPosition = 0;
+this.isScrubbing = false;
 
 // System
-let initialized = false;
+this.initialized = false;
 const isMobileBrowser = window.mobilecheck();
 
 this.loop = ('loop' in options) && (options.loop);
@@ -689,10 +689,9 @@ this.loadQueue = [];    // List of files to consume
 this.loadingTrack = -1;    // What file to consume
 
 // Callback and Execution logic
-let inCallback = false;
-const that = this;
-let isPlayButton = true;
-const keyMappings = {};
+this.inCallback = false;
+this.isPlayButton = true;
+this.keyMappings = {};
 
 // Callbacks
 this.onprev = null;
@@ -709,18 +708,19 @@ this.onfinishedall = null;
 
 // INTERNAL HELPERS
 const getUIPos = () => {
-  const position = isScrubbing ? scrubPosition : that.sources[dispIndex()].getPosition();
-  return (position / that.sources[dispIndex()].getLength()) * scrubSize;
+  const { isScrubbing, scrubPosition, sources } = this;
+  const position = isScrubbing ? scrubPosition : sources[dispIndex()].getPosition();
+  return (position / sources[dispIndex()].getLength()) * scrubSize;
 };
 
 const getSoundPos = (uiPosition) => {
-  return ((uiPosition / scrubSize) * that.sources[dispIndex()].getLength());
+  return ((uiPosition / scrubSize) * this.sources[dispIndex()].getLength());
 };
 
 const numTracks = () => {
   // FileList object must be initiated
-  if ( that.sources.length > 0 && that.trk !== null )
-    return that.trk.current.length;
+  if ( this.sources.length > 0 && this.trk !== null )
+    return this.trk.current.length;
   else
     return 0;
 };
@@ -728,8 +728,8 @@ const numTracks = () => {
 // Index for calculating actual playlist location
 const index = () => {
   // FileList object must be initiated
-  if ( that.trk !== null )
-    return that.trk.get();
+  if ( this.trk !== null )
+    return this.trk.get();
   else
     return -1;
 };
@@ -737,19 +737,19 @@ const index = () => {
 // Index for displaying the currently playing
 // track, suitable for use in update functions
 const dispIndex = () => {
-  const maxIndex = that.sources.length - 1;
+  const maxIndex = this.sources.length - 1;
   if ( readyToRemake() )
-    return Math.min(that.trk.previousItem, maxIndex);
-  else if ( that.trk !== null )
-    return Math.min(that.trk.get(), maxIndex);
+    return Math.min(this.trk.previousItem, maxIndex);
+  else if ( this.trk !== null )
+    return Math.min(this.trk.get(), maxIndex);
   else
     return -1;
 }
 
 const readyToRemake = () => {
   // FileList object must be initiated
-  if ( that.trk.readyToRemake() !== null )
-    return that.trk.readyToRemake();
+  if ( this.trk.readyToRemake() !== null )
+    return this.trk.readyToRemake();
   else
     return false;
 };
@@ -769,10 +769,10 @@ const getFormattedTime = (inMS) => {
 
 const getTotalPositionText = () => {
   let text = statusText.loading;
-  if (that.sources.length === 0) {
+  if (this.sources.length === 0) {
     return text;
   } 
-  const source = that.sources[dispIndex()];
+  const source = this.sources[dispIndex()];
   const srcLength = source.getLength();
   if (numTracks() === 0) {
     text = getFormattedTime(0);
@@ -786,39 +786,39 @@ const getTotalPositionText = () => {
 
 const runCallback = (cb) => {
   if (cb) {
-    inCallback = true;
+    this.inCallback = true;
     cb();
-    inCallback = false;
+    this.inCallback = false;
   }
 };
 
 // after shuffle mode toggle and track change, re-grab the tracklist
 const refreshTracks = (newIndex) => {
   // prevent updates while tracks are coming in
-  initialized = false;
+  this.initialized = false;
 
-  that.removeAllTracks(false);
-  that.trk.rebasePlayList(newIndex);
+  this.removeAllTracks(false);
+  this.trk.rebasePlayList(newIndex);
 
-  const tracks = that.getTracks();
+  const tracks = this.getTracks();
   for (let i = 0; i < tracks.length; i++ ) {
-    that.addInitialTrack(tracks[i]);
+    this.addInitialTrack(tracks[i]);
   }
 
   // re-enable GUI updates
-  initialized = true;
+  this.initialized = true;
 };
 
 // Determines how and when the next track should be loaded.
 this.dequeueNextLoad = () => {
-  if (that.loadQueue.length > 0) {
-    const entry = that.loadQueue.shift();
-    that.loadingTrack = entry[0];
-    if (that.loadingTrack < that.sources.length) {
-      that.sources[that.loadingTrack].load(entry[1]);
+  if (this.loadQueue.length > 0) {
+    const entry = this.loadQueue.shift();
+    this.loadingTrack = entry[0];
+    if (this.loadingTrack < this.sources.length) {
+      this.sources[this.loadingTrack].load(entry[1]);
     }
   } else {
-    that.loadingTrack = -1;
+    this.loadingTrack = -1;
   }
 }
 
@@ -831,17 +831,17 @@ this.mapKeys = (options) => {
   for (let key in options) {
     const uppercode = options[key].toUpperCase().charCodeAt(0);
     const lowercode = options[key].toLowerCase().charCodeAt(0);
-    const player = gapless5Players[that.id];
+    const player = gapless5Players[this.id];
     if (player.hasOwnProperty(key)) {
-      keyMappings[uppercode] = player[key];
-      keyMappings[lowercode] = player[key];
+      this.keyMappings[uppercode] = player[key];
+      this.keyMappings[lowercode] = player[key];
     } else {
       console.error(`Gapless5 mapKeys() error: no function named '${key}'`);
     }
   }
   $(window).keydown((e) => {
-    if (e.keyCode in keyMappings) {
-      keyMappings[e.keyCode](e);
+    if (e.keyCode in this.keyMappings) {
+      this.keyMappings[e.keyCode](e);
     }
   });
 };
@@ -849,83 +849,82 @@ this.mapKeys = (options) => {
 this.setGain = (uiPos) => {
   const normalized = uiPos / scrubSize;
   gainNode.gain.value = normalized;
-  that.sources[dispIndex()].setGain(normalized);
+  this.sources[dispIndex()].setGain(normalized);
 };
 
 this.scrub = (uiPos) => {
-  scrubPosition = getSoundPos(uiPos);
-  $("#currentPosition" + that.id).html(getFormattedTime(scrubPosition));
-  enableButton('prev', that.loop || (index() !== 0 || scrubPosition !== 0));
-  if (!isScrubbing) {
-    that.sources[dispIndex()].setPosition(scrubPosition, true);
+  this.scrubPosition = getSoundPos(uiPos);
+  $("#currentPosition" + this.id).html(getFormattedTime(this.scrubPosition));
+  enableButton('prev', this.loop || (index() !== 0 || this.scrubPosition !== 0));
+  if (!this.isScrubbing) {
+    this.sources[dispIndex()].setPosition(this.scrubPosition, true);
   }
 };
 
 this.setLoadedSpan = (percent) => {
-  $("#loaded-span" + that.id).width(percent * scrubWidth);
+  $("#loaded-span" + this.id).width(percent * this.scrubWidth);
   if (percent === 1) {
-    $("#totalPosition" + that.id).html(getTotalPositionText());
+    $("#totalPosition" + this.id).html(getTotalPositionText());
   }
 };
 
 this.onEndedCallback = () => {
   // we've finished playing the track
   resetPosition();
-  that.sources[dispIndex()].stop(true);
-  if (that.loop || index() < numTracks() - 1) {
-    if (that.singleMode) {
-      that.prev(true);
+  this.sources[dispIndex()].stop(true);
+  if (this.loop || index() < numTracks() - 1) {
+    if (this.singleMode) {
+      this.prev(true);
     } else {
-      that.next(true);
+      this.next(true);
     }
-    runCallback(that.onfinishedtrack);
+    runCallback(this.onfinishedtrack);
   } else {
-    runCallback(that.onfinishedtrack);
-    runCallback(that.onfinishedall);
+    runCallback(this.onfinishedtrack);
+    runCallback(this.onfinishedall);
   }
 };
 
 this.onStartedScrubbing = () => {
-  isScrubbing = true;
+  this.isScrubbing = true;
 };
 
 this.onFinishedScrubbing = () => {
-  isScrubbing = false;
-  const newPosition = scrubPosition;
-  if (that.sources[dispIndex()].inPlayState() && newPosition >= that.sources[dispIndex()].getLength()) {
-    that.next(true);
+  this.isScrubbing = false;
+  if (this.sources[dispIndex()].inPlayState() && this.scrubPosition >= this.sources[dispIndex()].getLength()) {
+    this.next(true);
   } else {
-    that.sources[dispIndex()].setPosition(newPosition, true);
+    this.sources[dispIndex()].setPosition(this.scrubPosition, true);
   }
 };
 
 // Assume the FileList already accounts for this track, and just add it to the
-// loading queue. Until that.sources[] lives in the FileList object, this compromise
+// loading queue. Until this.sources[] lives in the FileList object, this compromise
 // ensures addTrack/removeTrack functions can modify the FileList object when
 // called by Gapless applications.
 this.addInitialTrack = (audioPath) => {
-  const next = that.sources.length;
-  that.sources[next] = new Gapless5Source(this, context, gainNode);
-  that.loadQueue.push([next, audioPath]);
-  if (that.loadingTrack === -1) {
-    that.dequeueNextLoad();
+  const next = this.sources.length;
+  this.sources[next] = new Gapless5Source(this, context, gainNode);
+  this.loadQueue.push([next, audioPath]);
+  if (this.loadingTrack === -1) {
+    this.dequeueNextLoad();
   }
-  if (initialized) {
+  if (this.initialized) {
     updateDisplay();
   }
 };
 
 this.addTrack = (audioPath) => {
-  const next = that.sources.length;
-  that.sources[next] = new Gapless5Source(this, context, gainNode);
+  const next = this.sources.length;
+  this.sources[next] = new Gapless5Source(this, context, gainNode);
   // TODO: refactor to take an entire JSON object
   // TODO: move this function to the fileList object
-  that.trk.add(next, audioPath);
-  that.loadQueue.push([next, audioPath]);
-  if (that.loadingTrack === -1) {
-    that.dequeueNextLoad();
+  this.trk.add(next, audioPath);
+  this.loadQueue.push([next, audioPath]);
+  if (this.loadingTrack === -1) {
+    this.dequeueNextLoad();
   }
-  if (initialized) {
+  if (this.initialized) {
     updateDisplay();
   }
 };
@@ -934,38 +933,38 @@ this.insertTrack = (point, audioPath) => {
   const trackCount = numTracks();
   point = Math.min(Math.max(point, 0), trackCount);
   if (point === trackCount) {
-    that.addTrack(audioPath);
+    this.addTrack(audioPath);
   } else {
-    that.sources.splice(point, 0, new Gapless5Source(this, context, gainNode));
+    this.sources.splice(point, 0, new Gapless5Source(this, context, gainNode));
     // TODO: refactor to take an entire JSON object
     // TODO: move this function to the fileList object
-    that.trk.add(point, audioPath);
+    this.trk.add(point, audioPath);
     //re-enumerate queue
-    for (let i in that.loadQueue) {
-      const entry = that.loadQueue[i];
+    for (let i in this.loadQueue) {
+      const entry = this.loadQueue[i];
       if (entry[0] >= point) {
         entry[0] += 1;
       }
     }
-    that.loadQueue.splice(0,0,[point,audioPath]);
+    this.loadQueue.splice(0,0,[point,audioPath]);
     updateDisplay();
   }
 };
 
-this.getTracks = () => that.trk.files();
+this.getTracks = () => this.trk.files();
 
 this.findTrack = (path) => {
-  return that.getTracks().indexOf(path);
+  return this.getTracks().indexOf(path);
 };
 
 this.removeTrack = (pointOrPath) => {
   const point = (typeof pointOrPath === 'string') ?
-    that.findTrack(pointOrPath) :
+    this.findTrack(pointOrPath) :
     pointOrPath;
 
-  if (point < 0 || point >= that.sources.length) return;
+  if (point < 0 || point >= this.sources.length) return;
 
-  const curSource = that.sources[point];
+  const curSource = this.sources[point];
   if (!curSource) {
     return;
   }
@@ -979,8 +978,8 @@ this.removeTrack = (pointOrPath) => {
   }
   
   let removeIndex = -1;
-  for (let i in that.loadQueue) {
-    const entry = that.loadQueue[i];
+  for (let i in this.loadQueue) {
+    const entry = this.loadQueue[i];
     if (entry[0] === point) {
       removeIndex = i;
     } else if (entry[0] > point) {
@@ -988,58 +987,58 @@ this.removeTrack = (pointOrPath) => {
     }
   }
   if (removeIndex >= 0) {
-    that.loadQueue.splice(removeIndex,1);
+    this.loadQueue.splice(removeIndex,1);
   }
   // TODO: move this functionality into the FileList object
-  that.sources.splice(point, 1);
-  that.trk.remove(point);
+  this.sources.splice(point, 1);
+  this.trk.remove(point);
 
-  if (that.loadingTrack === point) {
-    that.dequeueNextLoad();
+  if (this.loadingTrack === point) {
+    this.dequeueNextLoad();
   }
-  if ( point === that.trk.currentItem ) {
-    that.next();  // Don't stop after a delete
+  if ( point === this.trk.currentItem ) {
+    this.next();  // Don't stop after a delete
     if ( wasPlaying )
-      that.play();
+      this.play();
   }
 
-  if (initialized) {
+  if (this.initialized) {
     updateDisplay();
   }
 };
 
 this.replaceTrack = (point, audioPath) => {
-  that.removeTrack(point);
-  that.insertTrack(point, audioPath);
+  this.removeTrack(point);
+  this.insertTrack(point, audioPath);
 }
 
 this.removeAllTracks = (flushPlaylist = true) => {
-  for (let i = 0; i < that.sources.length; i++) {
-    if (that.sources[i].getState() === Gapless5State.Loading) {
-      that.sources[i].cancelRequest();
+  for (let i = 0; i < this.sources.length; i++) {
+    if (this.sources[i].getState() === Gapless5State.Loading) {
+      this.sources[i].cancelRequest();
     }
-    that.sources[i].stop();
+    this.sources[i].stop();
   }
   if (flushPlaylist) {
-    that.trk.removeAllTracks();
+    this.trk.removeAllTracks();
   }
-  that.loadingTrack = -1;
+  this.loadingTrack = -1;
   // TODO: move this function into the FileList object
-  that.sources = [];
-  that.loadQueue = [];
-  if (initialized) {
+  this.sources = [];
+  this.loadQueue = [];
+  if (this.initialized) {
     updateDisplay();
   }
 };
 
-this.isShuffled = () => that.trk.isShuffled();
+this.isShuffled = () => this.trk.isShuffled();
 
 this.toggleShuffle = (forceReshuffle = false) => {
   if (!canShuffle()) return;
 
-  that.trk.toggleShuffle(forceReshuffle);
+  this.trk.toggleShuffle(forceReshuffle);
 
-  if (initialized) {
+  if (this.initialized) {
     updateDisplay();
   }
 };
@@ -1047,9 +1046,9 @@ this.toggleShuffle = (forceReshuffle = false) => {
 this.shuffleToggle = this.toggleShuffle;
 
 this.gotoTrack = (pointOrPath, bForcePlay) => {
-  if (inCallback) return;
+  if (this.inCallback) return;
   const newIndex = (typeof pointOrPath === 'string') ?
-    that.findTrack(pointOrPath) :
+    this.findTrack(pointOrPath) :
     pointOrPath;
 
   let justRemade = false;
@@ -1062,176 +1061,174 @@ this.gotoTrack = (pointOrPath, bForcePlay) => {
     justRemade = true;
   }
 
-  const trackDiff = newIndex - index();
-
   // No shuffle / unshuffle occurred, and we're just restarting a track
-  if (trackDiff === 0 && !justRemade) {
+  if (!justRemade && newIndex === index()) {
     resetPosition();
-    if ((bForcePlay) || that.sources[index()].isPlayActive()) {
-      that.sources[newIndex].play();
+    if ((bForcePlay) || this.sources[index()].isPlayActive()) {
+      this.sources[newIndex].play();
     }
   }
 
   // A shuffle or an unshuffle just occurred
   else if ( justRemade ) {
-    that.trk.set(newIndex);
-    that.sources[newIndex].load(that.getTracks()[newIndex]);
-    that.sources[newIndex].play();
+    this.trk.set(newIndex);
+    this.sources[newIndex].load(this.getTracks()[newIndex]);
+    this.sources[newIndex].play();
 
     updateDisplay();
   } else {
     // A normal track change just occurred
     const oldIndex = index();
-    that.trk.set(newIndex);
+    this.trk.set(newIndex);
     // Cancel any track that's in loading state right now
-    if (that.sources[oldIndex].getState() === Gapless5State.Loading) {
-      that.sources[oldIndex].cancelRequest();
+    if (this.sources[oldIndex].getState() === Gapless5State.Loading) {
+      this.sources[oldIndex].cancelRequest();
       // TODO: better way to have just the file list?
-      that.loadQueue.push([oldIndex, that.getTracks()[oldIndex]]);
+      this.loadQueue.push([oldIndex, this.getTracks()[oldIndex]]);
     }
 
     resetPosition(true); // make sure this comes after currentIndex has been updated
-    if (that.sources[newIndex].getState() === Gapless5State.None) {
+    if (this.sources[newIndex].getState() === Gapless5State.None) {
       // TODO: better way to have just the file list?
-      that.sources[newIndex].load(that.getTracks()[newIndex]);
+      this.sources[newIndex].load(this.getTracks()[newIndex]);
 
       //re-sort queue so that this track is at the head of the list
-      for (let i in that.loadQueue) {
-        const entry = that.loadQueue.shift();
+      for (let i in this.loadQueue) {
+        const entry = this.loadQueue.shift();
         if (entry[0] === newIndex) {
           break;
         }
-        that.loadQueue.push(entry);
+        this.loadQueue.push(entry);
       }
     }
     updateDisplay();
     
-    if ((bForcePlay) || that.sources[oldIndex].isPlayActive()) {
-      that.sources[newIndex].play();
+    if ((bForcePlay) || this.sources[oldIndex].isPlayActive()) {
+      this.sources[newIndex].play();
     }
-    that.sources[oldIndex].stop(); // call this last
+    this.sources[oldIndex].stop(); // call this last
 
   }
-  enableButton('prev', that.loop || (!that.singleMode && newIndex > 0));
-  enableButton('next', that.loop || (!that.singleMode && newIndex < numTracks() - 1));
+  enableButton('prev', this.loop || (!this.singleMode && newIndex > 0));
+  enableButton('next', this.loop || (!this.singleMode && newIndex < numTracks() - 1));
 };
 
 this.prevtrack = () => {
-  if (that.sources.length === 0) return;
+  if (this.sources.length === 0) return;
   let track = 0;
   if (index() > 0) {
     track = index() - 1;
-  } else if (that.loop) {
+  } else if (this.loop) {
     track = numTracks() - 1;
   } else {
     return;
   }
-  that.gotoTrack(track);
-  runCallback(that.onprev);
+  this.gotoTrack(track);
+  runCallback(this.onprev);
 };
 
 this.prev = (e) => {
-  if (that.sources.length === 0) return;
+  if (this.sources.length === 0) return;
   let wantsCallback = true;
   let track = 0;
   if ( readyToRemake() ) {
     // jump to start of track that's in a new position
     // at the head of the re-made list.
     wantsCallback = false
-  } else if (that.sources[index()].getPosition() > 0) {
+  } else if (this.sources[index()].getPosition() > 0) {
     // jump to start of track if we're not there
     track = index();
     wantsCallback = false;
-  } else if (that.singleMode && that.loop) {
+  } else if (this.singleMode && this.loop) {
     track = index();
   } else if (index() > 0) {
     track = index() - 1;
-  } else if (that.loop) {
+  } else if (this.loop) {
     track = numTracks() - 1;
   } else {
     return;
   }
-  that.gotoTrack(track, e === true);
+  this.gotoTrack(track, e === true);
   if (wantsCallback) {
-    runCallback(that.onprev);
+    runCallback(this.onprev);
   }
 };
 
 this.next = (e) => {
-  if (that.sources.length === 0) return;
+  if (this.sources.length === 0) return;
   let track = 0;
-  if (that.singleMode) {
+  if (this.singleMode) {
     track = index();
   } else if (index() < numTracks() - 1) {
     track = index() + 1;
-  } else if (!that.loop) {
+  } else if (!this.loop) {
     return;
   }
-  that.gotoTrack(track, e === true);
-  runCallback(that.onnext);
+  this.gotoTrack(track, e === true);
+  runCallback(this.onnext);
 };
 
 this.play = () => {
-  if (that.sources.length === 0) return;
-  if (that.sources[dispIndex()].audioFinished) {
-    that.next(true);
+  if (this.sources.length === 0) return;
+  if (this.sources[dispIndex()].audioFinished) {
+    this.next(true);
   } else {
-    that.sources[dispIndex()].play();
+    this.sources[dispIndex()].play();
   }
-  runCallback(that.onplay);
+  runCallback(this.onplay);
 };
 
 this.playpause = (e) => {
-  if (isPlayButton)
-    that.play(e);
+  if (this.isPlayButton)
+    this.play(e);
   else
-    that.pause(e);
+    this.pause(e);
 }
 
 this.cue = (e) => {
-  if (!isPlayButton) {
-    that.prev(e);
-  } else if (that.sources[dispIndex()].getPosition() > 0) {
-    that.prev(e);
-    that.play(e);
+  if (!this.isPlayButton) {
+    this.prev(e);
+  } else if (this.sources[dispIndex()].getPosition() > 0) {
+    this.prev(e);
+    this.play(e);
   } else {
-    that.play(e);
+    this.play(e);
   }
 }
 
 this.pause = (e) => {
-  if (that.sources.length === 0) return;
-  that.sources[dispIndex()].stop();
-  runCallback(that.onpause);
+  if (this.sources.length === 0) return;
+  this.sources[dispIndex()].stop();
+  runCallback(this.onpause);
 };
 
 this.stop = (e) => {
-  if (that.sources.length === 0) return;
+  if (this.sources.length === 0) return;
   resetPosition();
-  that.sources[dispIndex()].stop(true);
-  runCallback(that.onstop);
+  this.sources[dispIndex()].stop(true);
+  runCallback(this.onstop);
 };
 
 
 // (PUBLIC) QUERIES AND CALLBACKS
 
-this.isPlaying = () => that.sources[dispIndex()].inPlayState();
+this.isPlaying = () => this.sources[dispIndex()].inPlayState();
 
 // INIT AND UI
 
 const resetPosition = (forceScrub) => {
-  if (!forceScrub && that.sources[dispIndex()].getPosition() === 0) return; // nothing else to do
-  that.scrub(0);
-  $("#transportbar" + that.id).val(0);
+  if (!forceScrub && this.sources[dispIndex()].getPosition() === 0) return; // nothing else to do
+  this.scrub(0);
+  $("#transportbar" + this.id).val(0);
 };
 
 const enableButton = (buttonId, bEnable) => {
   if (bEnable) {
-    $("#" + buttonId + that.id).removeClass('disabled');
-    $("#" + buttonId + that.id).addClass('enabled');
+    $("#" + buttonId + this.id).removeClass('disabled');
+    $("#" + buttonId + this.id).addClass('enabled');
   } else {
-    $("#" + buttonId + that.id).removeClass('enabled');
-    $("#" + buttonId + that.id).addClass('disabled');
+    $("#" + buttonId + this.id).removeClass('enabled');
+    $("#" + buttonId + this.id).addClass('disabled');
   }
 };
 
@@ -1240,18 +1237,18 @@ const enableShuffleButton = (mode, bEnable) => {
   const oldButtonClass = isShuffle ? "g5unshuffle" : "g5shuffle";
   const newButtonClass = isShuffle ? "g5shuffle" : "g5unshuffle";
 
-  $("#" + "shuffle" + that.id).removeClass(oldButtonClass);
-  $("#" + "shuffle" + that.id).addClass(newButtonClass);
+  $("#" + "shuffle" + this.id).removeClass(oldButtonClass);
+  $("#" + "shuffle" + this.id).addClass(newButtonClass);
 
   enableButton('shuffle', bEnable);
 };
 
 // Must have at least 3 tracks in order for shuffle button to work
 // If so, permanently turn on the shuffle toggle
-const canShuffle = () => that.trk.current.length > 2;
+const canShuffle = () => this.trk.current.length > 2;
 
 const updateDisplay = () => {
-  const { id, trk, loop} = that;
+  const { id, trk, loop} = this;
   if (numTracks() === 0) {
     $("#trackIndex" + id).html(0);
     $("#tracks" + id).html(0);
@@ -1263,48 +1260,48 @@ const updateDisplay = () => {
     $("#trackIndex" + id).html(trk.trackNumber);
     $("#tracks" + id).html(trk.current.length);
     $("#totalPosition" + id).html(getTotalPositionText());
-    enableButton('prev', loop || index() > 0 || that.sources[index()].getPosition() > 0);
+    enableButton('prev', loop || index() > 0 || this.sources[index()].getPosition() > 0);
     enableButton('next', loop || index() < numTracks() - 1);
 
-    if (that.sources[dispIndex()].inPlayState()) {
+    if (this.sources[dispIndex()].inPlayState()) {
       enableButton('play', false);
-      isPlayButton = false;
+      this.isPlayButton = false;
     } else {
       enableButton('play', true);
-      isPlayButton = true;
+      this.isPlayButton = true;
 
-      if (that.sources[dispIndex()].getState() === Gapless5State.Error) {
-        runCallback(that.onerror);
+      if (this.sources[dispIndex()].getState() === Gapless5State.Error) {
+        runCallback(this.onerror);
       }
     }
 
-    enableShuffleButton(that.trk.isShuffled() ? 'unshuffle' : 'shuffle', canShuffle());
-    that.sources[index()].uiDirty = false;
+    enableShuffleButton(this.trk.isShuffled() ? 'unshuffle' : 'shuffle', canShuffle());
+    this.sources[index()].uiDirty = false;
   }
 };
 
 const Tick = () => {
   if (numTracks() > 0) {
-    that.sources[dispIndex()].tick();
+    this.sources[dispIndex()].tick();
 
-    if (that.sources[dispIndex()].uiDirty) {
+    if (this.sources[dispIndex()].uiDirty) {
       updateDisplay();
     }
-    if (that.sources[dispIndex()].inPlayState()) {
-      let soundPos = that.sources[dispIndex()].getPosition();
-      if (isScrubbing) {
+    if (this.sources[dispIndex()].inPlayState()) {
+      let soundPos = this.sources[dispIndex()].getPosition();
+      if (this.isScrubbing) {
         // playing track, update bar position
-        soundPos = scrubPosition;
+        soundPos = this.scrubPosition;
       }
-      $("#transportbar" + that.id).val(getUIPos());
-      $("#currentPosition" + that.id).html(getFormattedTime(soundPos));
+      $("#transportbar" + this.id).val(getUIPos());
+      $("#currentPosition" + this.id).html(getFormattedTime(soundPos));
     }
   }
   window.setTimeout(function () { Tick(); }, tickMS);
 };
 
 const createGUI = (playerHandle) => {
-  const { id } = that;
+  const { id } = this;
   const playerWrapper = (player_html) => `
     <div class="g5position">
       <span id="currentPosition${id}">00:00.00</span> |
@@ -1345,8 +1342,8 @@ const createGUI = (playerHandle) => {
 
 const Init = (guiId, options) => {
   const guiElement = guiId ? $("#" + guiId) : [];
-  const { id } = that;
-  gapless5Players[id] = that;
+  const { id } = this;
+  gapless5Players[id] = this;
 
   if (guiElement.length > 0) {
     const playerHandle = `gapless5Players[${id}]`;
@@ -1382,7 +1379,7 @@ const Init = (guiId, options) => {
       $( ".g5inside" ).css("width", playSize);
       $( "#shuffle" + id).remove();
     }
-    scrubWidth = $("#transportbar" + id).width();
+    this.scrubWidth = $("#transportbar" + id).width();
   }
 
   if (typeof Audio === "undefined") {
@@ -1393,15 +1390,15 @@ const Init = (guiId, options) => {
   // set up starting track number
   if ('startingTrack' in options) {
     if (typeof options.startingTrack === 'number') {
-      that.startingTrack = options.startingTrack;
+      this.startingTrack = options.startingTrack;
     } else if ((typeof options.startingTrack === 'string') && (options.startingTrack === "random")) {
-      that.startingTrack = "random";
+      this.startingTrack = "random";
     }
   }
 
   // set up key mappings
   if ('mapKeys' in options) {
-    that.mapKeys(options['mapKeys']);
+    this.mapKeys(options['mapKeys']);
   }
   
   // set up whether shuffle is enabled when the player loads (default is false)
@@ -1426,24 +1423,24 @@ const Init = (guiId, options) => {
         }
       } else if (typeof options.tracks[0] === 'object') {
         items = options.tracks;
-        startingTrack = that.startingTrack || 0;
+        startingTrack = this.startingTrack || 0;
       }
     } else if (typeof options.tracks === 'string') {
       items[0] = { file: options.tracks };
     }
-    that.trk = new Gapless5FileList(items, startingTrack, shuffleOnInit);
-    setupTracks(that);
+    this.trk = new Gapless5FileList(items, startingTrack, shuffleOnInit);
+    setupTracks(this);
   } else {
-    that.trk = new Gapless5FileList([], -1, shuffleOnInit);
+    this.trk = new Gapless5FileList([], -1, shuffleOnInit);
   }
 
-  initialized = true;
+  this.initialized = true;
   updateDisplay();
 
   // autostart if desired
   const playOnLoad = ('playOnLoad' in options) && options.playOnLoad;
-  if (playOnLoad && (that.trk.current.length > 0)) {
-    that.sources[index()].play();
+  if (playOnLoad && (this.trk.current.length > 0)) {
+    this.sources[index()].play();
   }
   Tick();
 };
