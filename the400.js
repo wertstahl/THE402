@@ -14,6 +14,7 @@ __todo: die
 
 */
 
+const RESHUFFLE_AFTER_ALL_LOOPS = true;
 const LOOPS = [
   "379A_130_FOOSBARR",
   "380D_110_SLWDRP",
@@ -272,6 +273,10 @@ $(document).ready( function() {
         next = loop.nextAll().first().attr("id");
         if (next===undefined || !next) {
           next = $("#loop-list tr").first().attr("id");
+          if (RESHUFFLE_AFTER_ALL_LOOPS && gapless.isShuffled()) {
+            // re-shuffle at end of playlist
+            shuffle_tracks();
+          }
         }
         play_loop(next, false);
         break;
@@ -354,6 +359,28 @@ $(document).ready( function() {
     }
   }
 
+  function shuffle_tracks() {
+    gapless.toggleShuffle(true);
+    gapless.gotoTrack(0); // this triggers the queued shuffle
+  
+    // get array of new indices
+    $elements = $("#loop-list tr");
+    const shuffled_elements = {};
+    const count = $elements.length;
+    for (let i = 0; i < count; i++) {
+      const id = $elements.eq(i).attr("id");
+      const blob = $("#"+id).attr("loop-blob");
+      const new_index = gapless.findTrack(blob);
+      shuffled_elements[new_index] = $elements.eq(i);
+    }
+    // apply new order to elements
+    const $parent = $elements.parent();
+    $elements.detach();
+    for (i = 0; i < count; i++) {
+      $parent.append( shuffled_elements[i] );
+    }
+  }
+
   // arm all buttons which belong into looper-transport
   function arm_looper_transport() {
 
@@ -369,37 +396,12 @@ $(document).ready( function() {
     });
 
     $("#looper-transport button[target=shuffle-loops]").off().on("click", function() {
-
       // TODO: get current play state and location and resume play after shuffle
       // const isPlaying = gapless.isPlaying();
       looper.pause();
       setTimeout(reset_current_loop_progress, 100);
       
-      gapless.toggleShuffle();
-      gapless.gotoTrack(0); // this forces the shuffle
-      if (!gapless.isShuffled()) {
-          // to re-shuffle, you have to un-shuffle first
-          gapless.toggleShuffle();
-          gapless.gotoTrack(0);
-      }
-    
-      // get array of new indices
-      $elements = $("#loop-list tr");
-      const shuffled_elements = {};
-      const count = $elements.length;
-      for (let i = 0; i < count; i++) {
-        const id = $elements.eq(i).attr("id");
-        const blob = $("#"+id).attr("loop-blob");
-        const new_index = gapless.findTrack(blob);
-        shuffled_elements[new_index] = $elements.eq(i);
-      }
-      // apply new order to elements
-      const $parent = $elements.parent();
-      $elements.detach();
-      for (i = 0; i < count; i++) {
-        $parent.append( shuffled_elements[i] );
-      }
-
+      shuffle_tracks();
     });
 
     // arm repeat-loop-mode button

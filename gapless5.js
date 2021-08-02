@@ -514,9 +514,13 @@ const Gapless5FileList = function(inPlayList, inStartingTrack, inShuffle) {
   // Toggle shuffle mode or not, and prepare for rebasing the playlist
   // upon changing to the next available song. NOTE that each function here
   // changes flags, so the logic must exclude any logic if a revert occurs.
-  this.toggleShuffle = function() {
-    if ( remakeList ) 
+  this.toggleShuffle = function(forceReshuffle = false) {
+    if (forceReshuffle) {
+      return enableShuffle();
+    }
+    if ( remakeList ) {
       return revertShuffle();  
+    }
 
     return shuffleMode ? disableShuffle() : enableShuffle();
   }
@@ -701,7 +705,6 @@ this.loadingTrack = -1;    // What file to consume
 let inCallback = false;
 const that = this;
 let isPlayButton = true;
-let isShuffleActive = false;
 const keyMappings = {};
 
 // Callbacks
@@ -1048,10 +1051,11 @@ this.isShuffled = function() {
   return that.trk.isShuffled();
 };
 
-this.toggleShuffle = function() {
-  if (!isShuffleActive) return;
 
-  that.trk.toggleShuffle();
+this.toggleShuffle = function(forceReshuffle = false) {
+  if (!canShuffle()) return;
+
+  that.trk.toggleShuffle(forceReshuffle);
 
   if (initialized) {
     updateDisplay();
@@ -1262,6 +1266,12 @@ const enableShuffleButton = function (mode, bEnable) {
   enableButton('shuffle', bEnable);
 };
 
+const canShuffle = function () {
+    // Must have at least 3 tracks in order for shuffle button to work
+    // If so, permanently turn on the shuffle toggle
+    return (that.trk.current.length > 2);
+};
+
 const updateDisplay = function () {
   const { id, trk, loop} = that;
   if (numTracks() === 0) {
@@ -1290,12 +1300,7 @@ const updateDisplay = function () {
       }
     }
 
-    // Must have at least 3 tracks in order for shuffle button to work
-    // If so, permanently turn on the shuffle toggle
-    if (that.trk.current.length > 2) {
-      isShuffleActive = true;
-    }
-    enableShuffleButton(that.trk.isShuffled() ? 'unshuffle' : 'shuffle', isShuffleActive);
+    enableShuffleButton(that.trk.isShuffled() ? 'unshuffle' : 'shuffle', canShuffle());
     that.sources[index()].uiDirty = false;
   }
 };
