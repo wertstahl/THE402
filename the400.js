@@ -85,7 +85,7 @@ $(document).ready( function() {
     const bufferLength = analyser.fftSize;
     const dataArray = new Uint8Array(bufferLength);
 
-    const draw = () => {
+    const draw = function () {
       canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
       drawVisual = requestAnimationFrame(draw);
 
@@ -135,7 +135,7 @@ $(document).ready( function() {
    };
 
   // arm add-loop button
-  $("button[target=add-loop]").off().on("click", () => {
+  $("button[target=add-loop]").off().on("click", function () {
 
     // trigger file-input to open file-dialog
     $("input[type=file]").trigger("click");
@@ -144,7 +144,7 @@ $(document).ready( function() {
     fileinput = $("#file-input");
 
     // when finished selecting file/s via file-dialog
-    fileinput.off().on("change", (e) => {
+    fileinput.off().on("change", function (e) {
       e.preventDefault();
 
       // iterate over files, push each one to looplist
@@ -194,8 +194,8 @@ $(document).ready( function() {
     gapless.addTrack(blob);
 
     // arm remove-loop button
-    $("#"+id+" button[target=remove-loop]").off().on("click", () => {
-      $(this).parent().parent().fadeOut("fast", () => { 
+    $("#"+id+" button[target=remove-loop]").off().on("click", function () {
+      $(this).parent().parent().fadeOut("fast", function () { 
         const id = $(this).attr("id");
         const blob = $("#"+id).attr("loop-blob");
         gapless.removeTrack(blob);
@@ -214,7 +214,7 @@ $(document).ready( function() {
 
   // handle ui play button state
   function arm_play_from_looplist(id) {
-    $("#"+id+" button[target=play-loop]").off().on("click", () => {
+    $("#"+id+" button[target=play-loop]").off().on("click", function () {
       play_loop($(this).parent().parent().attr("id"), true);
     });
   }
@@ -222,13 +222,13 @@ $(document).ready( function() {
 
   function arm_looper_events() {
     // set metadata
-    looper.addEventListener('loadedmetadata', (e) => {
+    looper.addEventListener('loadedmetadata', function(e) {
       loop = $("tr[loop-blob='"+looper.src+"']");
       loop.find(".length").text(String(Math.floor(looper.duration))+"s");
     });
 
     // provide progress bar
-    looper.addEventListener("timeupdate", () => {
+    looper.addEventListener("timeupdate", function () {
       const currentTime = looper.currentTime;
       const duration = looper.duration;
       el = $("#current-loop-time");
@@ -244,7 +244,7 @@ $(document).ready( function() {
     });
 
     // remove playing attribute when loop ended
-    gapless.onfinishedtrack = () => {
+    gapless.onfinishedtrack = function () {
       loop = $("tr[loop-blob='"+looper.src+"']");
       reset_current_loop_progress();
       continuity(loop);
@@ -385,7 +385,7 @@ $(document).ready( function() {
   function arm_looper_transport() {
 
     // clear/remove all loops
-    $("#looper-transport button[target=clear-loops]").off().on("click", () => {
+    $("#looper-transport button[target=clear-loops]").off().on("click", function () {
       $("#loop-list tr").remove();
       looper.pause();
       gapless.removeAllTracks();
@@ -395,7 +395,7 @@ $(document).ready( function() {
       }, 10);
     });
 
-    $("#looper-transport button[target=shuffle-loops]").off().on("click", () => {
+    $("#looper-transport button[target=shuffle-loops]").off().on("click", function () {
       // TODO: get current play state and location and resume play after shuffle
       // const isPlaying = gapless.isPlaying();
       looper.pause();
@@ -405,7 +405,7 @@ $(document).ready( function() {
     });
 
     // arm repeat-loop-mode button
-    $("button[target=repeat-loop-mode]").on("click", () => {
+    $("button[target=repeat-loop-mode]").on("click", function () {
        const next_mode = get_next_mode($(this).attr("mode"));
        switch (next_mode) {
         case "none":
@@ -430,14 +430,14 @@ $(document).ready( function() {
     });
 
     // stop playing loops, reset to play first next
-    $("#looper-transport button[target=stop-playing-loops]").off().on("click", () => {
+    $("#looper-transport button[target=stop-playing-loops]").off().on("click", function () {
       looper.pause();
       gapless.stop();
       setTimeout(reset_current_loop_progress, 100);
     });
 
     // play all loops or play current one
-    $("#looper-transport button[target=play-all-loops]").off().on("click", () => {
+    $("#looper-transport button[target=play-all-loops]").off().on("click", function () {
       gapless.gotoTrack(0);
       gapless.play();
       if ($("#loop-list tr[last=true]").length === 0) {
