@@ -257,7 +257,7 @@ function Gapless5Source(parentPlayer, inContext, inOutputNode) {
       const onLoadWebAudio = (data) => {
         if (data) {
           context.decodeAudioData(data,
-            function(incomingBuffer) {
+            (incomingBuffer) => {
               onLoadedWebAudio(incomingBuffer);
             }
           );
@@ -307,7 +307,7 @@ function Gapless5Source(parentPlayer, inContext, inOutputNode) {
     $.ajax({
       url: inAudioPath,
       type: "HEAD",
-    }).fail(function() { 
+    }).fail(() => { 
       cancelRequest(true);
     });
   }
@@ -614,7 +614,7 @@ const Gapless5FileList = function(inPlayList, inStartingTrack, inShuffle) {
   // Get an array of songfile paths from this object, appropriate for 
   // including in a Player object.
   this.files = () => {
-    return this.current.map(function (song) { return song.file });
+    return this.current.map((song) => { return song.file });
   }
 
   if (this.original.length > 0) {
@@ -1033,10 +1033,22 @@ this.removeAllTracks = (flushPlaylist = true) => {
 
 this.isShuffled = () => this.trk.isShuffled();
 
-this.toggleShuffle = (forceReshuffle = false) => {
+// shuffles, re-shuffling if previously shuffled
+this.shuffle = () => {
   if (!canShuffle()) return;
 
-  this.trk.toggleShuffle(forceReshuffle);
+  this.trk.toggleShuffle(true);
+
+  if (this.initialized) {
+    updateDisplay();
+  }
+};
+
+// toggles between shuffled and unshuffled
+this.toggleShuffle = () => {
+  if (!canShuffle()) return;
+
+  this.trk.toggleShuffle();
 
   if (this.initialized) {
     updateDisplay();
@@ -1297,7 +1309,7 @@ const Tick = () => {
       $("#currentPosition" + this.id).html(getFormattedTime(soundPos));
     }
   }
-  window.setTimeout(function () { Tick(); }, tickMS);
+  window.setTimeout(() => { Tick(); }, tickMS);
 };
 
 const createGUI = (playerHandle) => {

@@ -360,7 +360,7 @@ $(document).ready( function() {
   }
 
   function shuffle_tracks() {
-    gapless.toggleShuffle(true);
+    gapless.shuffle();
     gapless.gotoTrack(0); // this triggers the queued shuffle
   
     // get array of new indices
