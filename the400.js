@@ -15,27 +15,12 @@ __todo: die
 */
 
 const RESHUFFLE_AFTER_ALL_LOOPS = true;
-const LOOPS = [
-  "379A_130_FOOSBARR",
-  "380D_110_SLWDRP",
-  "381A_105_DIGITHAL",
-  "382D_107_FLUTI",
-  "383A_123_DRGNSLAY",
-  "384D_098_KLAPPER",
-  "385A_193_CAPHEART",
-  "386D_100_D34DCHIM",
-  "387A_130_GHETBACK",
-  "388D_140_HIRSCH",
-  "389A_130_GOTSHALK",
-  "390D_096_OGLOCAVE",
-  "391A_210_EMILIONG",
-  "392D_175_DACROWDS",
-  "393A_143_LUKSUS",
-  "394D_140_SLITE",
-];
-const LOOP_FORMAT = {
-  ext: "wav",
-  type: "audio/x-wav",
+const LOOPS_REPOSITORY = "https://the400.wertstahl.de/low"
+const EXT_TO_TYPE = {
+  'wav': 'audio/x-wav',
+  'mp3': 'audio/mpeg',
+  'm4a': 'audio/mp4',
+  'flac': 'audio/flac',
 };
 
 $(document).ready( function() {
@@ -48,15 +33,22 @@ $(document).ready( function() {
   // Fetches from 'file://...' are not supported
   // To run locally, call 'python -m http.server 8000' and visit http://localhost:8000
   if (window.location.protocol !== 'file:') {
-    for (let i=0; i<LOOPS.length; i++) {
-      const fileName = `${LOOPS[i]}.${LOOP_FORMAT.ext}`;
-      const loopPath = `loops/${fileName}`;
-      fetch(loopPath).then(response => response.blob())
-      .then(blob => {
-        const file = new File([blob], fileName, {type:LOOP_FORMAT.type});
-        add_file_to_looplist(file);
-      }).catch(err => console.error(err));
-    }
+    fetch(`${LOOPS_REPOSITORY}/list.txt`)
+      .then(response => response.text())
+      .then(text => {
+      const loops = text.trim().split('\n');
+      for (let i=0; i<loops.length; i++) {
+        const fileName = loops[i];
+        const loopPath = `${LOOPS_REPOSITORY}/${fileName}`;
+        const ext = fileName.split('.')[1].toLowerCase();
+        const mediaType = EXT_TO_TYPE[ext];
+        fetch(loopPath).then(response => response.blob())
+        .then(blob => {
+          const file = new File([blob], fileName, {type:mediaType});
+          add_file_to_looplist(file);
+        }).catch(err => console.error(err));
+      }
+    });
   }
   // create audio element from audio element. 1 naise sache.
   const looper = document.querySelector('audio');
