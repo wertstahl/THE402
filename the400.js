@@ -115,17 +115,6 @@ $(document).ready( function() {
     draw();
   }
 
-  const get_next_mode = (mode) => {
-    switch(mode) {
-      case "none":
-        return "all";
-      case "all":
-        return "one";
-      default:
-        return "none";
-    }
-   };
-
   // arm add-loop button
   $("button[target=add-loop]").off().on("click", function () {
 
@@ -255,35 +244,22 @@ $(document).ready( function() {
   // which loop is playing next
   function continuity(loop) {
     if (!loop) loop = $("#loop-list tr[last=true]");
-    mode = $("button[target=repeat-loop-mode]").attr("mode");
+    const holdMode = $("button[target=hold-mode]").attr("hold") === "true";
     
-    switch(mode) {
-
-      // play all loops, try to find next,
-      // if undefined, play first
-      case "all":
-        next = loop.nextAll().first().attr("id");
-        if (next===undefined || !next) {
-          next = $("#loop-list tr").first().attr("id");
-          if (RESHUFFLE_AFTER_ALL_LOOPS && gapless.isShuffled()) {
-            // re-shuffle at end of playlist
-            shuffle_tracks();
-          }
+    if (holdMode) {
+      next = loop.attr("id");
+    } else {
+      next = loop.nextAll().first().attr("id");
+      if (next===undefined || !next) {
+        next = $("#loop-list tr").first().attr("id");
+        if (RESHUFFLE_AFTER_ALL_LOOPS && gapless.isShuffled()) {
+          // re-shuffle at end of playlist
+          shuffle_tracks();
         }
-        play_loop(next, false);
-        break;
-
-      // play same again
-      case "one":
-        next = loop.attr("id");
-        play_loop(next, false);
-        break;
-
-      // play nothing
-      case "none":
-        return;
+      }
     }
-  }
+    play_loop(next, false);
+  };
 
   function play_loop(id, playAudio) {
     loop = $("#"+id);
@@ -396,28 +372,19 @@ $(document).ready( function() {
       shuffle_tracks();
     });
 
-    // arm repeat-loop-mode button
-    $("button[target=repeat-loop-mode]").on("click", function () {
-       const next_mode = get_next_mode($(this).attr("mode"));
-       switch (next_mode) {
-        case "none":
-          gapless.loop = false;
-          gapless.singleMode = true;
-          $(this).find("i").text("repeat");
-          $(this).attr("mode", "none");
-          break;
-        case "all":
-          gapless.loop = true;
-          gapless.singleMode = false;
-          $(this).find("i").text("repeat");
-          $(this).attr("mode", "all")
-        break;
-        case "one":
-          gapless.loop = true;
-          gapless.singleMode = true;
-          $(this).find("i").text("repeat_one");
-          $(this).attr("mode", "one");
-        break;
+    // arm hold-mode button
+    $("button[target=hold-mode]").on("click", function () {
+       const holdNext = $(this).attr("hold") !== "true";
+       if (holdNext) {
+        gapless.loop = true;
+        gapless.singleMode = true;
+        $(this).find("i").text("repeat_one");
+        $(this).attr("hold", "true");
+      } else {
+        gapless.loop = true;
+        gapless.singleMode = false;
+        $(this).find("i").text("repeat");
+        $(this).attr("hold", "false");
       }
     });
 
