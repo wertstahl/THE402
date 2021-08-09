@@ -692,7 +692,6 @@ this.loadQueue = [];    // List of files to consume
 this.loadingTrack = -1;    // What file to consume
 
 // Callback and Execution logic
-this.inCallback = false;
 this.isPlayButton = true;
 this.keyMappings = {};
 
@@ -788,11 +787,7 @@ const getTotalPositionText = () => {
 };
 
 const runCallback = (cb) => {
-  if (cb) {
-    this.inCallback = true;
-    cb();
-    this.inCallback = false;
-  }
+  if (cb) cb();
 };
 
 // after shuffle mode toggle and track change, re-grab the tracklist
@@ -1061,7 +1056,6 @@ this.toggleShuffle = () => {
 this.shuffleToggle = this.toggleShuffle;
 
 this.gotoTrack = (pointOrPath, bForcePlay) => {
-  if (this.inCallback) return;
   const newIndex = (typeof pointOrPath === 'string') ?
     this.findTrack(pointOrPath) :
     pointOrPath;

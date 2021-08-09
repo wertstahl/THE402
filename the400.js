@@ -27,8 +27,8 @@ $(document).ready( function() {
   const audioContext = new AudioContext();
   const analyser = audioContext.createAnalyser();
   const gapless = new Gapless5('', {
-    loop: false,
-    singleMode: true,
+    loop: true,
+    singleMode: false,
   });
   // Fetches from 'file://...' are not supported
   // To run locally, call 'python -m http.server 8000' and visit http://localhost:8000
@@ -45,7 +45,7 @@ $(document).ready( function() {
         fetch(loopPath).then(response => response.blob())
         .then(blob => {
           const file = new File([blob], fileName, {type:mediaType});
-          add_file_to_looplist(file);
+          add_file_to_looplist(file, loopPath);
         }).catch(err => console.error(err));
       }
     });
@@ -115,26 +115,6 @@ $(document).ready( function() {
     draw();
   }
 
-  // arm add-loop button
-  $("button[target=add-loop]").off().on("click", function () {
-
-    // trigger file-input to open file-dialog
-    $("input[type=file]").trigger("click");
-
-    // define file-input-element
-    fileinput = $("#file-input");
-
-    // when finished selecting file/s via file-dialog
-    fileinput.off().on("change", function (e) {
-      e.preventDefault();
-
-      // iterate over files, push each one to looplist
-      for (let i=0; i < fileinput[0].files.length; i++) {
-        add_file_to_looplist(fileinput[0].files[i]);
-      }
-    });
-  });
-
   // provide transport button events
   arm_looper_transport();
 
@@ -142,7 +122,7 @@ $(document).ready( function() {
   arm_looper_events();
 
   // add files to looplist
-  function add_file_to_looplist(file) {
+  function add_file_to_looplist(file, audio_path) {
 
     // first user interaction used to resume audio
     // https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
@@ -171,15 +151,15 @@ $(document).ready( function() {
     // put file object into loops attribute
     const blob = URL.createObjectURL(file);
     $("#"+id).attr("loop-blob", blob);
-
-    gapless.addTrack(blob);
+    $("#"+id).attr("loop-path", audio_path);
+    gapless.addTrack(audio_path);
 
     // arm remove-loop button
     $("#"+id+" button[target=remove-loop]").off().on("click", function () {
       $(this).parent().parent().fadeOut("fast", function () { 
         const id = $(this).attr("id");
-        const blob = $("#"+id).attr("loop-blob");
-        gapless.removeTrack(blob);
+        const audio_path = $("#"+id).attr("loop-path");
+        gapless.removeTrack(audio_path);
 
         $(this).remove();
         loop_counter_callback();
@@ -251,11 +231,11 @@ $(document).ready( function() {
     } else {
       next = loop.nextAll().first().attr("id");
       if (next===undefined || !next) {
-        next = $("#loop-list tr").first().attr("id");
         if (RESHUFFLE_AFTER_ALL_LOOPS && gapless.isShuffled()) {
           // re-shuffle at end of playlist
-          shuffle_tracks();
+          shuffle_tracks(true);
         }
+        next = $("#loop-list tr").first().attr("id");
       }
     }
     play_loop(next, false);
@@ -280,7 +260,8 @@ $(document).ready( function() {
       looper.load();
       looper.play();
       if (playAudio) {
-        gapless.gotoTrack(blob);
+        const audio_path = $("#"+id).attr("loop-path");
+        gapless.gotoTrack(audio_path);
         gapless.play();
       }
       $("#loop-list tr").removeAttr("last");
@@ -327,7 +308,7 @@ $(document).ready( function() {
     }
   }
 
-  function shuffle_tracks() {
+  function shuffle_tracks(retrigger) {
     gapless.shuffle(false);
     gapless.gotoTrack(0); // this triggers the queued shuffle
   
@@ -337,8 +318,8 @@ $(document).ready( function() {
     const count = $elements.length;
     for (let i = 0; i < count; i++) {
       const id = $elements.eq(i).attr("id");
-      const blob = $("#"+id).attr("loop-blob");
-      const new_index = gapless.findTrack(blob);
+      const audio_path = $("#"+id).attr("loop-path");
+      const new_index = gapless.findTrack(audio_path);
       shuffled_elements[new_index] = $elements.eq(i);
     }
     // apply new order to elements
@@ -347,6 +328,10 @@ $(document).ready( function() {
     for (i = 0; i < count; i++) {
       $parent.append( shuffled_elements[i] );
     }
+
+    if (!retrigger) {
+      gapless.stop();
+    };
   }
 
   // arm all buttons which belong into looper-transport
