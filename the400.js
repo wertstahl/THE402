@@ -184,7 +184,7 @@ $(document).ready( function() {
   function arm_looper_events() {
     // set metadata
     looper.addEventListener('loadedmetadata', function(e) {
-      loop = $("tr[loop-blob='"+looper.src+"']");
+      const loop = $("tr[loop-blob='"+looper.src+"']");
       loop.find(".length").text(String(Math.floor(looper.duration))+"s");
     });
 
@@ -206,7 +206,7 @@ $(document).ready( function() {
 
     // remove playing attribute when loop ended
     gapless.onfinishedtrack = function () {
-      loop = $("tr[loop-blob='"+looper.src+"']");
+      const loop = $("tr[loop-blob='"+looper.src+"']");
       reset_current_loop_progress();
       continuity(loop);
     };
@@ -242,7 +242,7 @@ $(document).ready( function() {
   };
 
   function play_loop(id, playAudio) {
-    loop = $("#"+id);
+    const loop = $("#"+id);
     
     looper.pause();
     $("#loop-list button[target=play-loop] i").text("play_arrow");
