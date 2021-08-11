@@ -390,9 +390,9 @@ $(document).ready(() => {
 
     // skip back (prev)
     $("#looper-transport button[target=prev-loop]").off().on("click", () => {
+      gapless.prev();
       looper.load();
       looper.play();
-      gapless.prev();
     });
 
     // skip forward (next)
