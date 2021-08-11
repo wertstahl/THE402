@@ -173,7 +173,7 @@ $(document).ready(() => {
   // handle ui play button state
   function arm_play_from_looplist(id) {
     $(`#${id} button[target=play-loop]`).off().on("click", function() {
-      play_loop($(this).parent().parent().attr("id"), true);
+      play_loop($(this).parent().parent().attr("id"));
     });
   }
 
@@ -216,6 +216,7 @@ $(document).ready(() => {
   function reset_current_loop_progress() {
     $("#loop-list tr[last=true]").removeAttr("last").removeAttr("playing");
     $("#loop-list button[target=play-loop] i").text("play_arrow");
+    $("#looper-transport button[target=play-all-loops]").find("i").text("play_arrow");
     $("#current-loop-name").text("No loop playing...");
     $("#current-loop-time").text("").removeClass("ending");
     $("#loop-visualizer").fadeOut();
@@ -244,10 +245,11 @@ $(document).ready(() => {
     play_loop(next, false);
   }
 
-  function play_loop(id, playAudio) {
+  function play_loop(id, playAudio = true) {
     const loop = $(`#${id}`);
 
     looper.pause();
+    $("#looper-transport button[target=play-all-loops]").find("i").text("play_arrow");
     $("#loop-list button[target=play-loop] i").text("play_arrow");
     $("#loop-list tr").not(`#${id}`).removeAttr("playing");
 
@@ -270,6 +272,7 @@ $(document).ready(() => {
       $("#loop-list tr").removeAttr("last");
       loop.attr("last", true); // the last loop played
       loop.attr("playing", true); // the current loop playing
+      $("#looper-transport button[target=play-all-loops]").find("i").text("pause");
       loop.find("button[target=play-loop] i").text("pause");
       $("#current-loop-name").text($(loop).find(".name").text());
     } else if (loop.attr("playing") === "paused") {
@@ -278,6 +281,7 @@ $(document).ready(() => {
         gapless.play();
       }
       loop.attr("playing", true);
+      $("#looper-transport button[target=play-all-loops]").find("i").text("pause");
       loop.find("button[target=play-loop] i").text("pause");
       $("#loop-visualizer").fadeIn();
     } else {
@@ -286,6 +290,7 @@ $(document).ready(() => {
       if (playAudio) {
         gapless.pause();
       }
+      $("#looper-transport button[target=play-all-loops]").find("i").text("play_arrow");
       loop.find("button[target=play-loop] i").text("play_arrow");
       $("#loop-visualizer").fadeOut();
     }
@@ -375,13 +380,25 @@ $(document).ready(() => {
 
     // play all loops or play current one
     $("#looper-transport button[target=play-all-loops]").off().on("click", () => {
-      gapless.gotoTrack(0);
-      gapless.play();
       if ($("#loop-list tr[last=true]").length === 0) {
-        play_loop($("#loop-list tr:first").attr("id"), true);
+        play_loop($("#loop-list tr:first").attr("id"));
       } else {
-        looper.play();
+        const loop = $(`tr[loop-blob='${looper.src}']`);
+        play_loop(loop.attr("id"));
       }
+    });
+
+    // skip back (prev)
+    $("#looper-transport button[target=prev-loop]").off().on("click", () => {
+      looper.load();
+      looper.play();
+      gapless.prev();
+    });
+
+    // skip forward (next)
+    $("#looper-transport button[target=next-loop]").off().on("click", () => {
+      const loop = $(`tr[loop-blob='${looper.src}']`);
+      play_loop(loop.nextAll().first().attr("id"));
     });
   }
 
