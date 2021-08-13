@@ -164,29 +164,6 @@ h1.title {
   position: relative;
   width: 100%;
 }
-button[target=add-loop] {
-  position: absolute;
-  right: 0;
-  top: 2.73em;
-  background: #fff2;
-  border: none;
-  outline: none;
-  color: #000d;
-  border: 0;
-  border-radius: 2px;
-  min-width: 53px;
-  min-height: 50px;
-  transition: all 0.125s linear;
-}
-button[target=add-loop]:hover {
-  border-radius: 0;
-  transition: all 0.125s linear;
-  border-radius: 100%;
-}
-button[target=add-loop] i {
-  line-height: 50px;
-  color: #fffa;
-}
 
 #loops-container {
   position: relative;
@@ -230,9 +207,6 @@ button[target=add-loop] i {
 #loops-container .options button i {
 color: #000a;
 }
-#loops-container button[target=skip-loop].active i {
-  color: red;
-}
 #loops-counter { margin-top: 2em; }
 #loops-counter:before { content: "LOOPS: "; }
 
@@ -263,6 +237,10 @@ color: #000a;
 #looper-transport button.active i {
   transition: all 0.2s linear;
   animation: pulse 2.5s infinite;
+}
+#looper-transport button.disabled i {
+  color: #888;
+  cursor: default;
 }
 
 button[target=repeat-loop-mode][mode=none] {
