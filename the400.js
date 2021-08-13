@@ -159,6 +159,12 @@ $(document).ready(() => {
 
     // arm remove-loop button
     $(`#${id} button[target=remove-loop]`).off().on("click", function() {
+      // stop if playing
+      if ($(`#${id}`).attr("playing") === "true") {
+        looper.pause();
+        gapless.stop();
+        setTimeout(reset_current_loop_progress, 100);
+      }
       $(this).parent().parent().fadeOut("fast", function() {
         gapless.removeTrack(audio_path);
         $(this).remove();
