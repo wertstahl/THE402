@@ -160,11 +160,18 @@ $(document).ready(() => {
 
     // arm remove-loop button
     $(`#${id} button[target=remove-loop]`).off().on("click", function() {
-      // stop if playing
       if ($(`#${id}`).attr("playing") === "true") {
-        looper.pause();
-        gapless.stop();
-        setTimeout(reset_current_loop_progress, 100);
+        const loop = $(`tr[loop-blob='${looper.src}']`);
+        if (loop.nextAll().length === 0) {
+          // no next track, reshuffle and restart
+          gapless.stop();
+          shuffle_tracks();
+          next = $("#loop-list tr").first().attr("id");
+          play_loop(next, false);
+        } else {
+          // skip to next track if playing
+          play_loop(loop.nextAll().first().attr("id"));
+        }
       }
       $(this).parent().parent().fadeOut("fast", function() {
         gapless.removeTrack(audio_path);
