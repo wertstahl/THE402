@@ -15,7 +15,6 @@ __todo: die
 */
 
 $(document).ready(() => {
-  const RESHUFFLE_AFTER_ALL_LOOPS = true;
   const LOOPS_REPOSITORY = "https://the400.wertstahl.de/low";
   const EXT_TO_TYPE = {
     wav: 'audio/x-wav',
@@ -245,12 +244,10 @@ $(document).ready(() => {
     let next = loop.attr("id");
     if (!holdMode) {
       next = loop.nextAll().first().attr("id");
-      if (next === undefined || !next) {
-        if (RESHUFFLE_AFTER_ALL_LOOPS && gapless.isShuffled()) {
-          // re-shuffle at end of playlist
-          gapless.stop();
-          shuffle_tracks();
-        }
+      if (next === undefined) {
+        // re-shuffle at end of playlist
+        gapless.stop();
+        shuffle_tracks();
         next = $("#loop-list tr").first().attr("id");
       }
     }
@@ -326,9 +323,12 @@ $(document).ready(() => {
     };
 
     if ($("#loop-list tr[last=true]").length > 0) {
+      // don't allow shuffle if a track is playing or paused
+      looperTransportButton("shuffle-loops").addClass("disabled");
+
       const loop = $(`tr[loop-blob='${looper.src}']`);
       if (loop.attr("playing") === "paused") {
-        // paused -> no prev/next
+        // paused
         disablePrevNext();
       } else {
         // disable prev/next based on if playing first or last track
@@ -336,8 +336,9 @@ $(document).ready(() => {
         setClass(loop.nextAll().length === 0, looperTransportButton("next-loop"), "disabled");
       }
     } else {
-      // nothing is playing -> no prev/next
+      // nothing is playing
       disablePrevNext();
+      looperTransportButton("shuffle-loops").removeClass("disabled");
 
       // alternatively, instead set buttons based on top track
       // this won't make sense unless we have a concept of "current track" while stopped
@@ -396,14 +397,16 @@ $(document).ready(() => {
       }, 10);
     });
 
-    looperTransportButton("shuffle-loops").off().on("click", () => {
-      // TODO: get current play state and location and resume play after shuffle
-      // const isPlaying = gapless.isPlaying();
-      looper.pause();
-      setTimeout(reset_current_loop_progress, 100);
+    looperTransportButton("shuffle-loops").off().on("click", function() {
+      if (!$(this).hasClass("disabled")) {
+        // TODO: get current play state and location and resume play after shuffle
+        // const isPlaying = gapless.isPlaying();
+        looper.pause();
+        setTimeout(reset_current_loop_progress, 100);
 
-      shuffle_tracks();
-      gapless.stop();
+        shuffle_tracks();
+        gapless.stop();
+      }
     });
 
     // arm hold-mode button
