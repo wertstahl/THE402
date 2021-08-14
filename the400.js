@@ -139,16 +139,18 @@ $(document).ready(() => {
     }
 
     // draw loop into list
-    $("#loop-list").append(`\
-      <tr id='${id}'>\
-        <td class='name'>${file.name}</td>\
-        <td class='length'></td>\
-        <td class='size' data=${file.size}>${format_file_size(file.size)}</td>\
-        <td class='type'>${file.type ? file.type : "<x style='color: orange'>unknown</x>"}</td>\
-        <td class='options'>\
-              <button target='play-loop'><i class='material-icons'>play_arrow</i></button>\
-              <button target='remove-loop'><i class='material-icons'>clear</i></button>\
-        </td>\
+    // const [nr, bpm, name, _ext] = file.name.split(/[_\.]/);
+    const name = file.name.split('.')[0];
+    $("#loop-list").append(`
+      <tr id='${id}'>
+        <td class='options'><button target='play-loop'><i class='material-icons'>play_arrow</i></button></td>
+        <td class='name'><button target='play-loop'>${name}</button></td>
+        <td class='length'></td>
+        <td class='size' data=${file.size}>${format_file_size(file.size)}</td>
+        <td class='type'>${file.type ? file.type : "<x style='color: orange'>unknown</x>"}</td>
+        <td class='options'>
+          <button target='remove-loop'><i class='material-icons'>clear</i></button>
+        </td>
       </tr>`);
 
     // put file object into loops attribute

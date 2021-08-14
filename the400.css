@@ -204,8 +204,13 @@ h1.title {
 #loops-container .options {
   text-align: right;
 }
-#loops-container .options button i {
-color: #000a;
+#loops-container button {
+  color: #000a;
+  font-weight: 600;
+  font-family: "Roboto";
+  font-size: 1em;
+  padding-left: 0;
+  margin-left: 0;
 }
 #loops-counter { margin-top: 2em; }
 #loops-counter:before { content: "LOOPS: "; }
