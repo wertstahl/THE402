@@ -323,10 +323,7 @@ $(document).ready(() => {
       looperTransportButton("next-loop").addClass("disabled");
     };
 
-    if ($("button[target=hold-mode]").attr("hold") === "true") {
-      // holding on one track -> no prev/next
-      disablePrevNext();
-    } else if ($("#loop-list tr[last=true]").length > 0) {
+    if ($("#loop-list tr[last=true]").length > 0) {
       const loop = $(`tr[loop-blob='${looper.src}']`);
       if (loop.attr("playing") === "paused") {
         // paused -> no prev/next
