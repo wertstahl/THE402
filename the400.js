@@ -15,7 +15,9 @@ __todo: die
 */
 
 $(document).ready(() => {
-  const LOOPS_REPOSITORY = "https://the400.wertstahl.de/low";
+  // options are low, med, high
+  const quality = new URLSearchParams(window.location.search).get('quality') || 'low';
+  const LOOPS_REPOSITORY = `https://the400.wertstahl.de/${quality}`;
   const EXT_TO_TYPE = {
     wav: 'audio/x-wav',
     mp3: 'audio/mpeg',
@@ -35,7 +37,8 @@ $(document).ready(() => {
   // Fetches from 'file://...' are not supported
   // To run locally, call 'python -m http.server 8000' and visit http://localhost:8000
   if (window.location.protocol !== 'file:') {
-    fetch(`${LOOPS_REPOSITORY}/list.txt`)
+    const listPath = `${LOOPS_REPOSITORY}/list.txt`;
+    fetch(listPath)
       .then((response) => response.text())
       .then((text) => {
         const loops = text.trim().split('\n');
@@ -50,7 +53,8 @@ $(document).ready(() => {
               add_file_to_looplist(file, loopPath);
             }).catch((err) => console.error(err));
         }
-      });
+      })
+      .catch(() => alert(`Failed to fetch list from ${listPath}`));
   }
   // create audio element from audio element. 1 naise sache.
   const looper = document.querySelector('audio');
