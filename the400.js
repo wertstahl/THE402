@@ -34,6 +34,16 @@ $(document).ready(() => {
     loop: true,
     singleMode: false,
   });
+  const loop_state = { active: false };
+  const loop_param = new URLSearchParams(window.location.search).get('loopRange');
+  if (loop_param) {
+    loop_state.active = true;
+    const [loop_min, loop_max] = loop_param.split(',');
+    loop_state.min = parseInt(loop_min);
+    loop_state.max = parseInt(loop_max);
+    console.log(`Setting loop range to {${loop_state.min}, ${loop_state.max}}`);
+  }
+
   // Fetches from 'file://...' are not supported
   // To run locally, call 'python -m http.server 8000' and visit http://localhost:8000
   if (window.location.protocol !== 'file:') {
@@ -42,8 +52,9 @@ $(document).ready(() => {
       .then((response) => response.text())
       .then((text) => {
         const loops = text.trim().split('\n');
-        for (let i = 0; i < loops.length; i++) {
-          const fileName = loops[i];
+        const shuffledLoops = loops.map(a => ({ sort: Math.random(), value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
+        for (let i = 0; i < shuffledLoops.length; i++) {
+          const fileName = shuffledLoops[i];
           const loopPath = `${LOOPS_REPOSITORY}/${fileName}`;
           const ext = fileName.split('.')[1].toLowerCase();
           const mediaType = EXT_TO_TYPE[ext];
@@ -245,15 +256,31 @@ $(document).ready(() => {
     update_transport_buttons();
   }
 
+  const get_hold_mode = () => $("button[target=hold-mode]").attr("hold") === "true";
+  const get_loop_hold = () => loop_state.active && (loop_state.current < loop_state.last - 1);
+
+  function reset_loop_state() {
+    if (loop_state.active) {
+      loop_state.last = loop_state.min + Math.floor(Math.random() * (loop_state.max - loop_state.min));
+      loop_state.current = 0;
+      gapless.singleMode = get_hold_mode() || get_loop_hold();
+    } else {
+      gapless.singleMode = get_hold_mode();
+    }
+  }
+
   // which loop is playing next
   function continuity(loop) {
     if (!loop) {
       loop = $("#loop-list tr[last=true]");
     }
-    const holdMode = $("button[target=hold-mode]").attr("hold") === "true";
+    const holdMode = get_hold_mode();
 
     let next = loop.attr("id");
-    if (!holdMode) {
+    if (get_loop_hold()) {
+      loop_state.current += 1;
+      gapless.singleMode = holdMode || get_loop_hold();
+    } else if (!holdMode) {
       next = loop.nextAll().first().attr("id");
       if (next === undefined) {
         // re-shuffle at end of playlist
@@ -261,6 +288,7 @@ $(document).ready(() => {
         shuffle_tracks();
         next = $("#loop-list tr").first().attr("id");
       }
+      reset_loop_state();
     }
     play_loop(next, false);
   }
@@ -287,6 +315,7 @@ $(document).ready(() => {
       looper.load();
       looper.play();
       if (playAudio) {
+        reset_loop_state();
         const audio_path = $(`#${id}`).attr("loop-path");
         gapless.gotoTrack(audio_path);
         gapless.play();
@@ -374,6 +403,7 @@ $(document).ready(() => {
   }
 
   function shuffle_tracks() {
+    reset_loop_state();
     gapless.shuffle(false);
     gapless.gotoTrack(0); // this triggers the queued shuffle
 
@@ -424,16 +454,13 @@ $(document).ready(() => {
     $("button[target=hold-mode]").on("click", function() {
       const holdNext = $(this).attr("hold") !== "true";
       if (holdNext) {
-        gapless.loop = true;
-        gapless.singleMode = true;
         $(this).find("i").text("repeat_one");
         $(this).attr("hold", "true");
       } else {
-        gapless.loop = true;
-        gapless.singleMode = false;
         $(this).find("i").text("repeat");
         $(this).attr("hold", "false");
       }
+      reset_loop_state();
       update_transport_buttons();
     });
 
