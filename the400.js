@@ -464,6 +464,21 @@ $(document).ready(() => {
       update_transport_buttons();
     });
 
+    // arm presets-mode button
+    $("button[target=presets-mode]").on("click", function() {
+      const preset = parseInt($(this).attr("preset"));
+      const next = preset === 3 ? 0 : preset + 1;
+      const icons = [
+        "looks_one",
+        "looks_two",
+        "looks_3",
+        "looks_4",
+      ];
+      $(this).find("i").text(icons[next]);
+      $(this).attr("preset", next);
+      // TODO: do something interesting with preset and next 
+    });
+
     // stop playing loops, reset to play first next
     looperTransportButton("stop-playing-loops").off().on("click", () => {
       looper.pause();
