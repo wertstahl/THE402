@@ -243,7 +243,7 @@ h1.title {
   transition: all 0.2s linear;
   animation: pulse 2.5s infinite;
 }
-#looper-transport button.disabled i {
+button.disabled i {
   color: #888;
   cursor: default;
 }

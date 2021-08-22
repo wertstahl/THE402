@@ -175,24 +175,26 @@ $(document).ready(() => {
 
     // arm remove-loop button
     $(`#${id} button[target=remove-loop]`).off().on("click", function() {
-      if ($(`#${id}`).attr("playing") === "true") {
-        const loop = $(`tr[loop-blob='${looper.src}']`);
-        if (loop.nextAll().length === 0) {
-          // no next track, reshuffle and restart
-          gapless.stop();
-          shuffle_tracks();
-          next = $("#loop-list tr").first().attr("id");
-          play_loop(next, false);
-        } else {
-          // skip to next track if playing
-          play_loop(loop.nextAll().first().attr("id"));
+      if (!$(this).hasClass("disabled")) {
+        if ($(`#${id}`).attr("playing") === "true") {
+          const loop = $(`tr[loop-blob='${looper.src}']`);
+          if (loop.nextAll().length === 0) {
+            // no next track, reshuffle and restart
+            gapless.stop();
+            shuffle_tracks();
+            next = $("#loop-list tr").first().attr("id");
+            play_loop(next, false);
+          } else {
+            // skip to next track if playing
+            play_loop(loop.nextAll().first().attr("id"));
+          }
         }
+        $(this).parent().parent().fadeOut("fast", function() {
+          gapless.removeTrack(audio_path);
+          $(this).remove();
+          loop_counter_callback();
+        });
       }
-      $(this).parent().parent().fadeOut("fast", function() {
-        gapless.removeTrack(audio_path);
-        $(this).remove();
-        loop_counter_callback();
-      });
     });
 
     // arm button with click event
@@ -246,6 +248,7 @@ $(document).ready(() => {
   }
 
   function reset_current_loop_progress() {
+    $(`button[target=remove-loop]`).removeClass("disabled");
     $("#loop-list tr[last=true]").removeAttr("last").removeAttr("playing");
     $("#loop-list button[target=play-loop] i").text("play_arrow");
     playAllButton().find("i").text("play_arrow");
@@ -299,52 +302,52 @@ $(document).ready(() => {
     }
     const loop = $(`#${id}`);
     looper.pause();
-    playAllButton().find("i").text("play_arrow");
-    $("#loop-list button[target=play-loop] i").text("play_arrow");
-    $("#loop-list tr").not(`#${id}`).removeAttr("playing");
 
     // when nix is, dann make was. strict after lehrbook
     if (audioContext.state === 'suspended') {
       audioContext.resume();
     }
-    const blob = $(`#${id}`).attr("loop-blob");
-    // loop playing?
+    let paused = false;
     if (loop.attr("playing") === undefined) {
-      $("#loop-visualizer").fadeIn();
-      looper.src = blob;
+      // switching to a new track
+      $("#loop-list button[target=play-loop] i").text("play_arrow");
+      $("#loop-list tr").not(`#${id}`).removeAttr("playing");
+      $(`button[target=remove-loop]`).not(`#${id}`).removeClass("disabled");
+      looper.src = loop.attr("loop-blob");
       looper.load();
       looper.play();
       if (playAudio) {
         reset_loop_state();
-        const audio_path = $(`#${id}`).attr("loop-path");
-        gapless.gotoTrack(audio_path);
+        gapless.gotoTrack(loop.attr("loop-path"));
         gapless.play();
       }
       $("#loop-list tr").removeAttr("last");
       loop.attr("last", true); // the last loop played
-      loop.attr("playing", true); // the current loop playing
-      playAllButton().find("i").text("pause");
-      loop.find("button[target=play-loop] i").text("pause");
       $("#current-loop-name").text($(loop).find(".name").text());
     } else if (loop.attr("playing") === "paused") {
+      // unpausing
       looper.play();
       if (playAudio) {
         gapless.play();
       }
-      loop.attr("playing", true);
-      playAllButton().find("i").text("pause");
-      loop.find("button[target=play-loop] i").text("pause");
-      $("#loop-visualizer").fadeIn();
     } else {
-      loop.attr("playing", "paused");
+      // pausing
+      paused = true;
       looper.pause();
       if (playAudio) {
         gapless.pause();
       }
-      playAllButton().find("i").text("play_arrow");
-      loop.find("button[target=play-loop] i").text("play_arrow");
-      $("#loop-visualizer").fadeOut();
     }
+
+    if (paused) {
+      $("#loop-visualizer").fadeOut();
+    } else {
+      $("#loop-visualizer").fadeIn();
+    }
+    loop.attr("playing", paused ? "paused" : true);
+    playAllButton().find("i").text(paused ? "play_arrow" : "pause");
+    loop.find("button[target=play-loop] i").text(paused ? "play_arrow" : "pause");
+    $(`#${id} button[target=remove-loop]`).addClass("disabled");
     update_transport_buttons();
   }
 
@@ -365,6 +368,7 @@ $(document).ready(() => {
     if ($("#loop-list tr[last=true]").length > 0) {
       // don't allow shuffle if a track is playing or paused
       looperTransportButton("shuffle-loops").addClass("disabled");
+      looperTransportButton("clear-loops").addClass("disabled");
 
       const loop = $(`tr[loop-blob='${looper.src}']`);
       if (loop.attr("playing") === "paused") {
@@ -379,6 +383,7 @@ $(document).ready(() => {
       // nothing is playing
       disablePrevNext();
       looperTransportButton("shuffle-loops").removeClass("disabled");
+      looperTransportButton("clear-loops").removeClass("disabled");
 
       // alternatively, instead set buttons based on top track
       // this won't make sense unless we have a concept of "current track" while stopped
@@ -428,14 +433,16 @@ $(document).ready(() => {
   // arm all buttons which belong into looper-transport
   function arm_looper_transport() {
     // clear/remove all loops
-    looperTransportButton("clear-loops").off().on("click", () => {
-      $("#loop-list tr").remove();
-      looper.pause();
-      gapless.removeAllTracks();
-      setTimeout(() => {
-        reset_current_loop_progress();
-        loop_counter_callback();
-      }, 10);
+    looperTransportButton("clear-loops").off().on("click", function() {
+      if (!$(this).hasClass("disabled")) {
+        $("#loop-list tr").remove();
+        looper.pause();
+        gapless.removeAllTracks();
+        setTimeout(() => {
+          reset_current_loop_progress();
+          loop_counter_callback();
+        }, 10);
+      }
     });
 
     looperTransportButton("shuffle-loops").off().on("click", function() {
@@ -480,14 +487,14 @@ $(document).ready(() => {
     });
 
     // stop playing loops, reset to play first next
-    looperTransportButton("stop-playing-loops").off().on("click", () => {
+    looperTransportButton("stop-playing-loops").off().on("click", function() {
       looper.pause();
       gapless.stop();
       setTimeout(reset_current_loop_progress, 100);
     });
 
     // play all loops or play current one
-    playAllButton().off().on("click", () => {
+    playAllButton().off().on("click", function() {
       if ($("#loop-list tr[last=true]").length === 0) {
         play_loop($("#loop-list tr:first").attr("id"));
       } else {
