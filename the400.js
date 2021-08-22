@@ -16,7 +16,8 @@ __todo: die
 
 $(document).ready(() => {
   // options are low, med, high
-  const quality = new URLSearchParams(window.location.search).get('quality') || 'low';
+  const queryParams = new URLSearchParams(window.location.search);
+  const quality = queryParams.get('quality') || 'low';
   const LOOPS_REPOSITORY = `https://the400.wertstahl.de/${quality}`;
   const EXT_TO_TYPE = {
     wav: 'audio/x-wav',
@@ -24,6 +25,7 @@ $(document).ready(() => {
     m4a: 'audio/mp4',
     flac: 'audio/flac',
   };
+  const maxLoops = parseInt(queryParams.get('maxLoops') || -1);
 
   const looperTransportButton = (target) => $(`#looper-transport button[target=${target}]`);
   const playAllButton = () => looperTransportButton("play-all-loops");
@@ -35,7 +37,7 @@ $(document).ready(() => {
     singleMode: false,
   });
   const loop_state = { active: false };
-  const loop_param = new URLSearchParams(window.location.search).get('loopRange');
+  const loop_param = queryParams.get('loopRange');
   if (loop_param) {
     loop_state.active = true;
     const [loop_min, loop_max] = loop_param.split(',');
@@ -52,8 +54,9 @@ $(document).ready(() => {
       .then((response) => response.text())
       .then((text) => {
         const loops = text.trim().split('\n');
+        const numLoops = maxLoops >= 0 ? maxLoops : loops.length;
         const shuffledLoops = loops.map(a => ({ sort: Math.random(), value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
-        for (let i = 0; i < shuffledLoops.length; i++) {
+        for (let i = 0; i < numLoops; i++) {
           const fileName = shuffledLoops[i];
           const loopPath = `${LOOPS_REPOSITORY}/${fileName}`;
           const ext = fileName.split('.')[1].toLowerCase();
