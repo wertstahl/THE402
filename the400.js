@@ -33,7 +33,7 @@ $(document).ready(() => {
   const audioContext = new AudioContext();
   const analyser = audioContext.createAnalyser();
   const gapless = new Gapless5('', {
-    loop: true,
+    loop: false, // we reshuffle at the end of the playlist instead
     singleMode: false,
   });
   const loop_state = { active: false };
@@ -273,6 +273,7 @@ $(document).ready(() => {
     } else {
       gapless.singleMode = get_hold_mode();
     }
+    gapless.loop = gapless.singleMode;
   }
 
   // which loop is playing next
@@ -281,11 +282,11 @@ $(document).ready(() => {
       loop = $("#loop-list tr[last=true]");
     }
     const holdMode = get_hold_mode();
-
     let next = loop.attr("id");
     if (get_loop_hold()) {
       loop_state.current += 1;
       gapless.singleMode = holdMode || get_loop_hold();
+      gapless.loop = gapless.singleMode;
     } else if (!holdMode) {
       next = loop.nextAll().first().attr("id");
       if (next === undefined) {
