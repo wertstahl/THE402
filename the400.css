@@ -194,6 +194,9 @@ h1.title {
 #loop-list tr[playing=true] {
   background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(0,0,0,0.1) 100%);
 }
+#loop-list tr[playing=paused] {
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(0,0,0,0.1) 100%);
+}
 #loop-list tr[skip=true] {
   opacity: 0.4;
 }

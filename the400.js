@@ -373,6 +373,7 @@ $(document).ready(() => {
       // don't allow shuffle if a track is playing or paused
       looperTransportButton("shuffle-loops").addClass("disabled");
       looperTransportButton("clear-loops").addClass("disabled");
+      looperTransportButton("stop-playing-loops").removeClass("disabled");
 
       const loop = $(`tr[loop-blob='${looper.src}']`);
       if (loop.attr("playing") === "paused") {
@@ -388,6 +389,7 @@ $(document).ready(() => {
       disablePrevNext();
       looperTransportButton("shuffle-loops").removeClass("disabled");
       looperTransportButton("clear-loops").removeClass("disabled");
+      looperTransportButton("stop-playing-loops").addClass("disabled");
 
       // alternatively, instead set buttons based on top track
       // this won't make sense unless we have a concept of "current track" while stopped
@@ -490,11 +492,18 @@ $(document).ready(() => {
       // TODO: do something interesting with preset and next 
     });
 
-    // stop playing loops, reset to play first next
+    // stop and reset to start of current loop
     looperTransportButton("stop-playing-loops").off().on("click", function() {
-      looper.pause();
-      gapless.stop();
-      setTimeout(reset_current_loop_progress, 100);
+      if (!$(this).hasClass("disabled")) {
+        const loop = $(`tr[loop-blob='${looper.src}']`);
+        if (loop.attr("playing") !== "paused") {
+          play_loop(loop.attr("id"));
+        }
+        gapless.stop();
+        looper.load();
+        $("#current-loop-progress").stop(true, true).animate({ width:'0%' }, 500, 'linear');
+        update_transport_buttons();
+      }
     });
 
     // play all loops or play current one
