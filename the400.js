@@ -250,8 +250,20 @@ $(document).ready(() => {
     };
   }
 
+  function enableButton(target, enable) {
+    if (enable) {
+      target.removeClass("disabled");
+    } else {
+      target.addClass("disabled");
+    }
+  };
+  
+  function enableTransportButton(target, enable) {
+    enableButton(looperTransportButton(target), enable);
+  };
+
   function reset_current_loop_progress() {
-    $(`button[target=remove-loop]`).removeClass("disabled");
+    enableButton($(`button[target=remove-loop]`), true);
     $("#loop-list tr[last=true]").removeAttr("last").removeAttr("playing");
     $("#loop-list button[target=play-loop] i").text("play_arrow");
     playAllButton().find("i").text("play_arrow");
@@ -316,7 +328,7 @@ $(document).ready(() => {
       // switching to a new track
       $("#loop-list button[target=play-loop] i").text("play_arrow");
       $("#loop-list tr").not(`#${id}`).removeAttr("playing");
-      $(`button[target=remove-loop]`).not(`#${id}`).removeClass("disabled");
+      enableButton($(`button[target=remove-loop]`).not(`#${id}`), true);
       looper.src = loop.attr("loop-blob");
       looper.load();
       looper.play();
@@ -351,50 +363,30 @@ $(document).ready(() => {
     loop.attr("playing", paused ? "paused" : true);
     playAllButton().find("i").text(paused ? "play_arrow" : "pause");
     loop.find("button[target=play-loop] i").text(paused ? "play_arrow" : "pause");
-    $(`#${id} button[target=remove-loop]`).addClass("disabled");
+    enableButton($(`#${id} button[target=remove-loop]`), false);
     update_transport_buttons();
   }
 
+
   function update_transport_buttons() {
-    const setClass = (predicate, target, className) => {
-      if (predicate) {
-        $(target).addClass(className);
-      } else {
-        $(target).removeClass(className);
-      }
-    };
-
-    const disablePrevNext = () => {
-      looperTransportButton("prev-loop").addClass("disabled");
-      looperTransportButton("next-loop").addClass("disabled");
-    };
-
-    if ($("#loop-list tr[last=true]").length > 0) {
+    if ($("#loop-list tr[last=true]").length > 0 && (!looper.paused || looper.currentTime > 0)) {
       // don't allow shuffle if a track is playing or paused
-      looperTransportButton("shuffle-loops").addClass("disabled");
-      looperTransportButton("clear-loops").addClass("disabled");
-      looperTransportButton("stop-playing-loops").removeClass("disabled");
+      enableTransportButton("shuffle-loops", false);
+      enableTransportButton("clear-loops", false);
+      enableTransportButton("stop-playing-loops", true);
 
+      // disable prev/next based on if playing first or last track
       const loop = $(`tr[loop-blob='${looper.src}']`);
-      if (loop.attr("playing") === "paused") {
-        // paused
-        disablePrevNext();
-      } else {
-        // disable prev/next based on if playing first or last track
-        setClass(loop.prevAll().length === 0, looperTransportButton("prev-loop"), "disabled");
-        setClass(loop.nextAll().length === 0, looperTransportButton("next-loop"), "disabled");
-      }
+      const isPaused = loop.attr("playing") === "paused";
+      enableTransportButton("prev-loop", !isPaused && loop.prevAll().length > 0);
+      enableTransportButton("next-loop", !isPaused && loop.nextAll().length > 0);
     } else {
       // nothing is playing
-      disablePrevNext();
-      looperTransportButton("shuffle-loops").removeClass("disabled");
-      looperTransportButton("clear-loops").removeClass("disabled");
-      looperTransportButton("stop-playing-loops").addClass("disabled");
-
-      // alternatively, instead set buttons based on top track
-      // this won't make sense unless we have a concept of "current track" while stopped
-      //setClass(true, looperTransportButton("prev-loop"), "disabled");
-      //setClass($("#loop-list tr").length <= 1, looperTransportButton("next-loop"), "disabled");
+      enableTransportButton("prev-loop", false);
+      enableTransportButton("next-loop", false);
+      enableTransportButton("shuffle-loops", true);
+      enableTransportButton("clear-loops", true);
+      enableTransportButton("stop-playing-loops", false);
     }
   }
 
