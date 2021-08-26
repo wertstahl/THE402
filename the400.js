@@ -35,7 +35,18 @@ $(document).ready(() => {
   const gapless = new Gapless5('', {
     loop: false, // we reshuffle at the end of the playlist instead
     singleMode: false,
+    useHTML5Audio: false, // save memory
   });
+  gapless.onload = (audio_path) => {
+    const file_name = audio_path.replace(/^.*[\\\/]/, '');
+    const ext = file_name.split('.')[1].toLowerCase();
+    const mediaType = EXT_TO_TYPE[ext];
+    fetch(audio_path).then((response) => response.blob())
+      .then((blob) => {
+        const file = new File([ blob ], file_name, { type:mediaType });
+        add_file_to_looplist(file, audio_path);
+      }).catch((err) => console.error(err));
+  };
   const loop_state = { active: false };
   const loop_param = queryParams.get('loopRange');
   if (loop_param) {
@@ -49,26 +60,19 @@ $(document).ready(() => {
   // Fetches from 'file://...' are not supported
   // To run locally, call 'python -m http.server 8000' and visit http://localhost:8000
   if (window.location.protocol !== 'file:') {
-    const listPath = `${LOOPS_REPOSITORY}/list.txt`;
-    fetch(listPath)
+    const list_path = `${LOOPS_REPOSITORY}/list.txt`;
+    fetch(list_path)
       .then((response) => response.text())
       .then((text) => {
         const loops = text.trim().split('\n');
-        const numLoops = maxLoops >= 0 ? maxLoops : loops.length;
-        const shuffledLoops = loops.map(a => ({ sort: Math.random(), value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
-        for (let i = 0; i < numLoops; i++) {
-          const fileName = shuffledLoops[i];
-          const loopPath = `${LOOPS_REPOSITORY}/${fileName}`;
-          const ext = fileName.split('.')[1].toLowerCase();
-          const mediaType = EXT_TO_TYPE[ext];
-          fetch(loopPath).then((response) => response.blob())
-            .then((blob) => {
-              const file = new File([ blob ], fileName, { type:mediaType });
-              add_file_to_looplist(file, loopPath);
-            }).catch((err) => console.error(err));
+        const num_loops = maxLoops >= 0 ? maxLoops : loops.length;
+        const shuffled_loops = loops.map(a => ({ sort: Math.random(), value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
+        for (let i = 0; i < num_loops; i++) {
+          const audio_path = `${LOOPS_REPOSITORY}/${shuffled_loops[i]}`;
+          gapless.addTrack(audio_path);
         }
       })
-      .catch(() => alert(`Failed to fetch list from ${listPath}`));
+      .catch(() => alert(`Failed to fetch list from ${list_path}`));
   }
   // create audio element from audio element. 1 naise sache.
   const looper = document.querySelector('audio');
@@ -174,7 +178,6 @@ $(document).ready(() => {
     const blob = URL.createObjectURL(file);
     $(`#${id}`).attr("loop-blob", blob);
     $(`#${id}`).attr("loop-path", audio_path);
-    gapless.addTrack(audio_path);
 
     // arm remove-loop button
     $(`#${id} button[target=remove-loop]`).off().on("click", function() {

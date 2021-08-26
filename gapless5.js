@@ -98,7 +98,7 @@ function Gapless5Source(parentPlayer, inContext, inOutputNode) {
     this.cancelRequest(true);
   };
 
-  const onLoadedWebAudio = (inBuffer) => {
+  const onLoadedWebAudio = (inBuffer, audioPath) => {
     if (!request) {
       return;
     }
@@ -122,6 +122,8 @@ function Gapless5Source(parentPlayer, inContext, inOutputNode) {
     if (state === Gapless5State.Loading) {
       state = Gapless5State.Stop;
     }
+
+    parent.onload(audioPath);
     // once we have WebAudio data loaded, we don't need the HTML5 audio stream anymore
     audio = null;
     this.uiDirty = true;
@@ -274,7 +276,7 @@ function Gapless5Source(parentPlayer, inContext, inOutputNode) {
         if (data) {
           context.decodeAudioData(data,
             (incomingBuffer) => {
-              onLoadedWebAudio(incomingBuffer);
+              onLoadedWebAudio(incomingBuffer, inAudioPath);
             }
           );
         }
@@ -677,8 +679,8 @@ function Gapless5FileList(inPlayList, inStartingTrack, inShuffle) {
 }
 
 // parameters are optional.
-//   id: id of existing HTML element where UI should be rendered
-//   options:
+//   elementId: id of existing HTML element where UI should be rendered
+//   initOptions:
 //     tracks: path of file (or array of music file paths)
 //     playOnLoad (default = false): play immediately
 //     useWebAudio (default = true)
@@ -686,6 +688,8 @@ function Gapless5FileList(inPlayList, inStartingTrack, inShuffle) {
 //     startingTrack (number or "random", default = 0)
 //     shuffle (true or false): start the jukebox in shuffle mode
 //     shuffleButton (default = true): whether shuffle button appears or not in UI
+//     loop (default = false): whether to return to first track after end of playlist
+//     singleMode (default = false): whether to treat single track as playlist
 function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-unused-vars
 // MEMBERS AND CONSTANTS
 
@@ -738,27 +742,28 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
   this.keyMappings = {};
 
   // Callbacks
-  this.onprev = null;
-  this.onplay = null;
-  this.onpause = null;
-  this.onstop = null;
-  this.onnext = null;
-  this.onshuffle = null;
+  this.onprev = () => {};
+  this.onplay = () => {};
+  this.onpause = () => {};
+  this.onstop = () => {};
+  this.onnext = () => {};
+  this.onshuffle = () => {};
 
-  this.onerror = null;
-  this.onfinishedtrack = null;
-  this.onfinishedall = null;
+  this.onerror = () => {};
+  this.onload = () => {};
+  this.onfinishedtrack = () => {};
+  this.onfinishedall = () => {};
 
 
   // INTERNAL HELPERS
   const getUIPos = () => {
-    const { isScrubbing, scrubPosition, sources } = this;
-    const position = isScrubbing ? scrubPosition : sources[dispIndex()].getPosition();
-    return (position / sources[dispIndex()].getLength()) * scrubSize;
+    const { isScrubbing, scrubPosition } = this;
+    const position = isScrubbing ? scrubPosition : this.currentSource().getPosition();
+    return (position / this.currentSource().getLength()) * scrubSize;
   };
 
   const getSoundPos = (uiPosition) => {
-    return ((uiPosition / scrubSize) * this.sources[dispIndex()].getLength());
+    return ((uiPosition / scrubSize) * this.currentSource().getLength());
   };
 
   const numTracks = () => {
@@ -822,7 +827,7 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
     if (this.sources.length === 0) {
       return text;
     }
-    const source = this.sources[dispIndex()];
+    const source = this.currentSource();
     const srcLength = source.getLength();
     if (numTracks() === 0) {
       text = getFormattedTime(0);
@@ -832,12 +837,6 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
       text = getFormattedTime(srcLength);
     }
     return text;
-  };
-
-  const runCallback = (cb) => {
-    if (cb) {
-      cb();
-    }
   };
 
   // after shuffle mode toggle and track change, re-grab the tracklist
@@ -902,7 +901,7 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
   this.setGain = (uiPos) => {
     const normalized = uiPos / scrubSize;
     gainNode.gain.value = normalized;
-    this.sources[dispIndex()].setGain(normalized);
+    this.currentSource().setGain(normalized);
   };
 
   this.scrub = (uiPos, updateTransport = false) => {
@@ -915,7 +914,7 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
       }
     }
     if (!this.isScrubbing) {
-      this.sources[dispIndex()].setPosition(this.scrubPosition, true);
+      this.currentSource().setPosition(this.scrubPosition, true);
     }
   };
 
@@ -931,17 +930,17 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
   this.onEndedCallback = () => {
   // we've finished playing the track
     resetPosition();
-    this.sources[dispIndex()].stop(true);
+    this.currentSource().stop(true);
     if (this.loop || index() < numTracks() - 1) {
       if (this.singleMode) {
         this.prev(true);
       } else {
         this.next(true);
       }
-      runCallback(this.onfinishedtrack);
+      this.onfinishedtrack();
     } else {
-      runCallback(this.onfinishedtrack);
-      runCallback(this.onfinishedall);
+      this.onfinishedtrack();
+      this.onfinishedall();
     }
   };
 
@@ -951,10 +950,10 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
 
   this.onFinishedScrubbing = () => {
     this.isScrubbing = false;
-    if (this.sources[dispIndex()].inPlayState() && this.scrubPosition >= this.sources[dispIndex()].getLength()) {
+    if (this.currentSource().inPlayState() && this.scrubPosition >= this.currentSource().getLength()) {
       this.next(true);
     } else {
-      this.sources[dispIndex()].setPosition(this.scrubPosition, true);
+      this.currentSource().setPosition(this.scrubPosition, true);
     }
   };
 
@@ -1130,6 +1129,8 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
   // backwards-compatibility with previous function name
   this.shuffleToggle = this.toggleShuffle;
 
+  this.currentSource = () => this.sources[dispIndex()];
+
   this.gotoTrack = (pointOrPath, bForcePlay) => {
     const newIndex = (typeof pointOrPath === 'string') ?
       this.findTrack(pointOrPath) :
@@ -1207,7 +1208,7 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
       return;
     }
     this.gotoTrack(track);
-    runCallback(this.onprev);
+    this.onprev();
   };
 
   this.prev = (e) => {
@@ -1235,7 +1236,7 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
     }
     this.gotoTrack(track, e === true);
     if (wantsCallback) {
-      runCallback(this.onprev);
+      this.onprev();
     }
   };
 
@@ -1252,19 +1253,19 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
       return;
     }
     this.gotoTrack(track, e === true);
-    runCallback(this.onnext);
+    this.onnext();
   };
 
   this.play = () => {
     if (this.sources.length === 0) {
       return;
     }
-    if (this.sources[dispIndex()].audioFinished) {
+    if (this.currentSource().audioFinished) {
       this.next(true);
     } else {
-      this.sources[dispIndex()].play();
+      this.currentSource().play();
     }
-    runCallback(this.onplay);
+    this.onplay();
   };
 
   this.playpause = (e) => {
@@ -1278,7 +1279,7 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
   this.cue = (e) => {
     if (!this.isPlayButton) {
       this.prev(e);
-    } else if (this.sources[dispIndex()].getPosition() > 0) {
+    } else if (this.currentSource().getPosition() > 0) {
       this.prev(e);
       this.play(e);
     } else {
@@ -1290,8 +1291,8 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
     if (this.sources.length === 0) {
       return;
     }
-    this.sources[dispIndex()].stop();
-    runCallback(this.onpause);
+    this.currentSource().stop();
+    this.onpause();
   };
 
   this.stop = () => {
@@ -1299,21 +1300,21 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
       return;
     }
     resetPosition();
-    this.sources[dispIndex()].stop(true);
-    runCallback(this.onstop);
+    this.currentSource().stop(true);
+    this.onstop();
   };
 
 
   // (PUBLIC) QUERIES AND CALLBACKS
 
   this.isPlaying = () => {
-    return this.sources[dispIndex()].inPlayState();
+    return this.currentSource().inPlayState();
   };
 
   // INIT AND UI
 
   const resetPosition = (forceScrub) => {
-    if (forceScrub || this.sources[dispIndex()].getPosition() > 0) {
+    if (forceScrub || this.currentSource().getPosition() > 0) {
       this.scrub(0, true);
     }
   };
@@ -1361,15 +1362,15 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
       enableButton('prev', loop || index() > 0 || this.sources[index()].getPosition() > 0);
       enableButton('next', loop || index() < numTracks() - 1);
 
-      if (this.sources[dispIndex()].inPlayState()) {
+      if (this.currentSource().inPlayState()) {
         enableButton('play', false);
         this.isPlayButton = false;
       } else {
         enableButton('play', true);
         this.isPlayButton = true;
 
-        if (this.sources[dispIndex()].state === Gapless5State.Error) {
-          runCallback(this.onerror);
+        if (this.currentSource().state === Gapless5State.Error) {
+          this.onerror();
         }
       }
 
@@ -1380,13 +1381,13 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
 
   const tick = () => {
     if (numTracks() > 0) {
-      this.sources[dispIndex()].tick();
+      this.currentSource().tick();
 
-      if (this.sources[dispIndex()].uiDirty) {
+      if (this.currentSource().uiDirty) {
         updateDisplay();
       }
-      if (this.sources[dispIndex()].inPlayState()) {
-        let soundPos = this.sources[dispIndex()].getPosition();
+      if (this.currentSource().inPlayState()) {
+        let soundPos = this.currentSource().getPosition();
         if (this.isScrubbing) {
         // playing track, update bar position
           soundPos = this.scrubPosition;
@@ -1552,3 +1553,20 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
 
   init(elementId, initOptions);
 }
+
+// simple UMD plumbing based on https://gist.github.com/kamleshchandnani/07c63f3d728672d91f97b69bbf700eed
+(function umd(global, factory) {
+  if (typeof define === 'function' && define.amd) {
+    define([ 'exports' ], factory);
+  } else if (typeof exports !== 'undefined') {
+    factory(exports);
+  } else {
+    const mod = {
+      exports: {}
+    };
+    factory(mod.exports);
+    global.Gapless5 = mod.exports.Gapless5;
+  }
+}(this, (exports) => {
+  exports.Gapless5 = Gapless5;
+}));
