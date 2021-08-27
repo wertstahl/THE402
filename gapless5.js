@@ -2,7 +2,7 @@
  *
  * Gapless 5: Gapless JavaScript/CSS audio player for HTML5
  *
- * Version 0.8.1
+ * Version 0.8.2
  * Copyright 2014 Rego Sen
  *
 */
@@ -690,6 +690,7 @@ function Gapless5FileList(inPlayList, inStartingTrack, inShuffle) {
 //     shuffleButton (default = true): whether shuffle button appears or not in UI
 //     loop (default = false): whether to return to first track after end of playlist
 //     singleMode (default = false): whether to treat single track as playlist
+//     exclusive (default = false): whether to stop other gapless players when this is playing
 function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-unused-vars
 // MEMBERS AND CONSTANTS
 
@@ -710,6 +711,7 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
 
   this.loop = ('loop' in initOptions) && (initOptions.loop);
   this.singleMode = ('singleMode' in initOptions) && (initOptions.singleMode);
+  this.exclusive = ('exclusive' in initOptions) && (initOptions.exclusive);
 
   this.useWebAudio = ('useWebAudio' in initOptions) ? initOptions.useWebAudio : true;
   this.useHTML5Audio = ('useHTML5Audio' in initOptions) ? initOptions.useHTML5Audio : true;
@@ -1129,7 +1131,9 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
   // backwards-compatibility with previous function name
   this.shuffleToggle = this.toggleShuffle;
 
-  this.currentSource = () => this.sources[dispIndex()];
+  this.currentSource = () => {
+    return this.sources[dispIndex()];
+  };
 
   this.gotoTrack = (pointOrPath, bForcePlay) => {
     const newIndex = (typeof pointOrPath === 'string') ?
@@ -1264,6 +1268,14 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
       this.next(true);
     } else {
       this.currentSource().play();
+    }
+    if (this.exclusive) {
+      const { id } = this;
+      for (const otherId in gapless5Players) {
+        if (otherId !== id.toString()) {
+          gapless5Players[otherId].stop();
+        }
+      }
     }
     this.onplay();
   };
