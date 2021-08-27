@@ -144,6 +144,9 @@ $(document).ready(() => {
   // provide looper events
   arm_looper_events();
 
+  function get_loop() { return $(`tr[loop-blob='${looper.src}']`); }
+  function last_loop() { return $("#loop-list tr[last=true]"); }
+
   // add files to looplist
   function add_file_to_looplist(file, audio_path) {
     // first user interaction used to resume audio
@@ -183,13 +186,12 @@ $(document).ready(() => {
     $(`#${id} button[target=remove-loop]`).off().on("click", function() {
       if (!$(this).hasClass("disabled")) {
         if ($(`#${id}`).attr("playing") === "true") {
-          const loop = $(`tr[loop-blob='${looper.src}']`);
+          const loop = get_loop();
           if (loop.nextAll().length === 0) {
             // no next track, reshuffle and restart
             gapless.stop();
             shuffle_tracks();
-            next = $("#loop-list tr").first().attr("id");
-            play_loop(next, false);
+            play_loop($("#loop-list tr").first().attr("id"), false);
           } else {
             // skip to next track if playing
             play_loop(loop.nextAll().first().attr("id"));
@@ -220,8 +222,7 @@ $(document).ready(() => {
   function arm_looper_events() {
     // set metadata
     looper.addEventListener('loadedmetadata', () => {
-      const loop = $(`tr[loop-blob='${looper.src}']`);
-      loop.find(".length").text(`${String(Math.floor(looper.duration))}s`);
+      get_loop().find(".length").text(`${String(Math.floor(looper.duration))}s`);
     });
 
     // provide progress bar
@@ -247,9 +248,8 @@ $(document).ready(() => {
 
     // remove playing attribute when loop ended
     gapless.onfinishedtrack = function() {
-      const loop = $(`tr[loop-blob='${looper.src}']`);
       reset_current_loop_progress();
-      continuity(loop);
+      continuity(get_loop());
     };
   }
 
@@ -266,8 +266,8 @@ $(document).ready(() => {
   };
 
   function reset_current_loop_progress() {
-    enableButton($(`button[target=remove-loop]`), true);
-    $("#loop-list tr[last=true]").removeAttr("last").removeAttr("playing");
+    enableButton($("button[target=remove-loop]"), true);
+    last_loop().removeAttr("last").removeAttr("playing");
     $("#loop-list button[target=play-loop] i").text("play_arrow");
     playAllButton().find("i").text("play_arrow");
     $("#current-loop-name").text("No loop playing...");
@@ -294,15 +294,15 @@ $(document).ready(() => {
   // which loop is playing next
   function continuity(loop) {
     if (!loop) {
-      loop = $("#loop-list tr[last=true]");
+      loop = last_loop();
     }
-    const holdMode = get_hold_mode();
+    const hold_mode = get_hold_mode();
     let next = loop.attr("id");
     if (get_loop_hold()) {
       loop_state.current += 1;
-      gapless.singleMode = holdMode || get_loop_hold();
+      gapless.singleMode = hold_mode || get_loop_hold();
       gapless.loop = gapless.singleMode;
-    } else if (!holdMode) {
+    } else if (!hold_mode) {
       next = loop.nextAll().first().attr("id");
       if (next === undefined) {
         // re-shuffle at end of playlist
@@ -331,7 +331,7 @@ $(document).ready(() => {
       // switching to a new track
       $("#loop-list button[target=play-loop] i").text("play_arrow");
       $("#loop-list tr").not(`#${id}`).removeAttr("playing");
-      enableButton($(`button[target=remove-loop]`).not(`#${id}`), true);
+      enableButton($("button[target=remove-loop]").not(`#${id}`), true);
       looper.src = loop.attr("loop-blob");
       looper.load();
       looper.play();
@@ -372,14 +372,14 @@ $(document).ready(() => {
 
 
   function update_transport_buttons() {
-    if ($("#loop-list tr[last=true]").length > 0 && (!looper.paused || looper.currentTime > 0)) {
+    if (last_loop().length > 0 && (!looper.paused || looper.currentTime > 0)) {
       // don't allow shuffle if a track is playing or paused
       enableTransportButton("shuffle-loops", false);
       enableTransportButton("clear-loops", false);
       enableTransportButton("stop-playing-loops", true);
 
       // disable prev/next based on if playing first or last track
-      const loop = $(`tr[loop-blob='${looper.src}']`);
+      const loop = get_loop();
       const isPaused = loop.attr("playing") === "paused";
       enableTransportButton("prev-loop", !isPaused && loop.prevAll().length > 0);
       enableTransportButton("next-loop", !isPaused && loop.nextAll().length > 0);
@@ -448,8 +448,6 @@ $(document).ready(() => {
 
     looperTransportButton("shuffle-loops").off().on("click", function() {
       if (!$(this).hasClass("disabled")) {
-        // TODO: get current play state and location and resume play after shuffle
-        // const isPlaying = gapless.isPlaying();
         looper.pause();
         setTimeout(reset_current_loop_progress, 100);
 
@@ -490,7 +488,7 @@ $(document).ready(() => {
     // stop and reset to start of current loop
     looperTransportButton("stop-playing-loops").off().on("click", function() {
       if (!$(this).hasClass("disabled")) {
-        const loop = $(`tr[loop-blob='${looper.src}']`);
+        const loop = get_loop();
         if (loop.attr("playing") !== "paused") {
           play_loop(loop.attr("id"));
         }
@@ -503,27 +501,24 @@ $(document).ready(() => {
 
     // play all loops or play current one
     playAllButton().off().on("click", function() {
-      if ($("#loop-list tr[last=true]").length === 0) {
+      if (last_loop().length === 0) {
         play_loop($("#loop-list tr:first").attr("id"));
       } else {
-        const loop = $(`tr[loop-blob='${looper.src}']`);
-        play_loop(loop.attr("id"));
+        play_loop(get_loop().attr("id"));
       }
     });
 
     // skip back (prev)
     looperTransportButton("prev-loop").off().on("click", function() {
       if (!$(this).hasClass("disabled")) {
-        const loop = $(`tr[loop-blob='${looper.src}']`);
-        play_loop(loop.prevAll().first().attr("id"));
+        play_loop(get_loop().prevAll().first().attr("id"));
       }
     });
 
     // skip forward (next)
     looperTransportButton("next-loop").off().on("click", function() {
       if (!$(this).hasClass("disabled")) {
-        const loop = $(`tr[loop-blob='${looper.src}']`);
-        play_loop(loop.nextAll().first().attr("id"));
+        play_loop(get_loop().nextAll().first().attr("id"));
       }
     });
   }
