@@ -38,6 +38,10 @@ $(document).ready(() => {
     useHTML5Audio: false, // save memory
   });
   gapless.onload = (audio_path) => {
+    if ($(`tr[loop-path="${audio_path}"]`).length > 0) {
+      return;
+    }
+    
     const file_name = audio_path.replace(/^.*[\\\/]/, '');
     const ext = file_name.split('.')[1].toLowerCase();
     const mediaType = EXT_TO_TYPE[ext];
