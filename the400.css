@@ -215,7 +215,7 @@ h1.title {
   padding-left: 0;
   margin-left: 0;
 }
-#loops-counter { margin-top: 2em; }
+#loops-counter { margin-bottom: 1em; }
 #loops-counter:before { content: "LOOPS: "; }
 
 #looper-transport {
