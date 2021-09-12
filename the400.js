@@ -36,6 +36,8 @@ $(document).ready(() => {
     loop: false, // we reshuffle at the end of the playlist instead
     singleMode: false,
     useHTML5Audio: false, // save memory
+    shuffle: true,
+    logLevel: LogLevel.Debug,
   });
   gapless.onload = (audio_path) => {
     if ($(`tr[loop-path="${audio_path}"]`).length > 0) {
@@ -70,14 +72,14 @@ $(document).ready(() => {
       .then((text) => {
         const loops = text.trim().split('\n');
         const num_loops = maxLoops >= 0 ? maxLoops : loops.length;
-        const shuffled_loops = loops.map(a => ({ sort: Math.random(), value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
         for (let i = 0; i < num_loops; i++) {
-          const audio_path = `${LOOPS_REPOSITORY}/${shuffled_loops[i]}`;
+          const audio_path = `${LOOPS_REPOSITORY}/${loops[i]}`;
           gapless.addTrack(audio_path);
         }
       })
       .catch(() => alert(`Failed to fetch list from ${list_path}`));
   }
+  
   // create audio element from audio element. 1 naise sache.
   const looper = document.querySelector('audio');
   // init track object for audio context as media element source
@@ -194,7 +196,7 @@ $(document).ready(() => {
           if (loop.nextAll().length === 0) {
             // no next track, reshuffle and restart
             gapless.stop();
-            shuffle_tracks();
+            shuffle_tracks(true);
             play_loop($("#loop-list tr").first().attr("id"), false);
           } else {
             // skip to next track if playing
@@ -311,7 +313,7 @@ $(document).ready(() => {
       if (next === undefined) {
         // re-shuffle at end of playlist
         gapless.stop();
-        shuffle_tracks();
+        shuffle_tracks(true);
         next = $("#loop-list tr").first().attr("id");
       }
       reset_loop_state();
@@ -412,10 +414,10 @@ $(document).ready(() => {
     update_transport_buttons();
   }
 
-  function shuffle_tracks() {
+  function shuffle_tracks(forcePlay = false) {
     reset_loop_state();
     gapless.shuffle(false);
-    gapless.gotoTrack(0); // this triggers the queued shuffle
+    gapless.gotoTrack(0, forcePlay); // this triggers the queued shuffle
 
     // get array of new indices
     const elements = $("#loop-list tr");
