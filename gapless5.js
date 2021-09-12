@@ -439,6 +439,18 @@ function Gapless5FileList(inShuffle) {
       // make sure our current shuffled index matches what is playing
       [ indices[lastIndex], indices[nextIndex] ] = [ indices[nextIndex], indices[lastIndex] ];
     }
+
+    // if shuffle happens to be identical to original list (more likely with fewer tracks),
+    // swap another two tracks
+    if (JSON.stringify(indices) === JSON.stringify(Array.from(Array(this.sources.length).keys()))) {
+      const subIndices = indices.filter((index) => { return index !== lastIndex; });
+      const subIndex1 = Math.floor(Math.random() * (subIndices.length));
+      const subIndex2 = (subIndex1 + 1) % subIndices.length;
+      const index1 = indices[subIndices[subIndex1]];
+      const index2 = indices[subIndices[subIndex2]];
+      [ indices[index1], indices[index2] ] = [ indices[index2], indices[index1] ];
+    }
+
     this.shuffledIndices = indices;
     this.shuffleMode = true;
     return nextIndex;
@@ -821,7 +833,7 @@ function Gapless5(elementId = '', initOptions = {}) { // eslint-disable-line no-
   };
 
   this.getTracks = () => {
-    return this.playlist.getTracks()
+    return this.playlist.getTracks();
   };
 
   this.findTrack = (path) => {
