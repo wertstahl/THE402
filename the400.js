@@ -32,12 +32,12 @@ $(document).ready(() => {
 
   const audioContext = new AudioContext();
   const analyser = audioContext.createAnalyser();
-  const gapless = new Gapless5('', {
+  const gapless = new Gapless5({
     loop: false, // we reshuffle at the end of the playlist instead
     singleMode: false,
     useHTML5Audio: false, // save memory
     shuffle: true,
-    logLevel: LogLevel.Debug,
+    logLevel: LogLevel.Info, // LogLevel.Debug,
   });
   gapless.onload = (audio_path) => {
     if ($(`tr[loop-path="${audio_path}"]`).length > 0) {
