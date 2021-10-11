@@ -154,15 +154,11 @@ $(document).ready(() => {
       // draw the line segments
       canvasCtx.clearRect(0, -canvas.height/2, canvas.width, canvas.height);
       const width = canvas.width / normalizedData.length;
+      const height = canvas.height / 2;
       for (let i = 0; i < normalizedData.length; i++) {
         const x = width * i;
-        let height = normalizedData[i] * canvas.height;
-        if (height < 0) {
-          height = 0;
-        } else if (height > canvas.height / 2) {
-          height = height - canvas.height / 2;
-        }
-        drawLineSegment(canvasCtx, x, height, width, (i + 1) % 2);
+        const y = height * normalizedData[i];
+        drawLineSegment(canvasCtx, x, y, width, (i + 1) % 2);
       }
     };
     draw();
