@@ -101,7 +101,7 @@ $(document).ready(() => {
   analyser.fftSize = SAMPLES_IN_WINDOW;
 
   // define analyser canvas
-  function visualize () {
+  function visualize() {
     const canvas = document.querySelector('#loop-visualizer');
     const canvasCtx = canvas.getContext("2d");
 
@@ -141,8 +141,9 @@ $(document).ready(() => {
   
     const draw = function() {
       requestAnimationFrame(draw);
-      canvas.width = $('#loop-visualizer').width();
-      canvas.height = $('#loop-visualizer').height();
+      const canvasState = $('#loop-visualizer');
+      canvas.width = canvasState.width();
+      canvas.height = canvasState.height();
       canvasCtx.translate(0, canvas.height / 2); // Set Y = 0 to be in the middle of the canvas
       canvasCtx.scale(1, 0.75); // give it some vertical padding
   
@@ -157,9 +158,9 @@ $(document).ready(() => {
         const x = width * i;
         let height = normalizedData[i] * canvas.height;
         if (height < 0) {
-            height = 0;
+          height = 0;
         } else if (height > canvas.height / 2) {
-            height = height - canvas.height / 2;
+          height = height - canvas.height / 2;
         }
         drawLineSegment(canvasCtx, x, height, width, (i + 1) % 2);
       }
@@ -179,10 +180,6 @@ $(document).ready(() => {
 
   // add files to looplist
   function add_file_to_looplist(file, audio_path) {
-    // first user interaction used to resume audio
-    // https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
-    audioContext.resume();
-
     // generate random GUID
     // don't hash the file name, because user might upload multiple files with same name
     const id = generate_uuidv4();
