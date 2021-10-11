@@ -15,6 +15,9 @@ __todo: die
 */
 
 $(document).ready(() => {
+  const WAVES_IN_WINDOW = 200; // number of peak+vally square waves in canvas
+  const SAMPLES_IN_WINDOW = 2048; // number of samples represented in canvas
+  
   // options are low, med, high
   const queryParams = new URLSearchParams(window.location.search);
   const quality = queryParams.get('quality') || 'low';
@@ -92,57 +95,78 @@ $(document).ready(() => {
   gainNode.connect(audioContext.destination);
   analyser.connect(gainNode);
 
-  analyser.minDecibels = -90;
-  analyser.maxDecibels = -10;
-  analyser.smoothingTimeConstant = 0.85;
+  //analyser.minDecibels = -90;
+  //analyser.maxDecibels = -10;
+  //analyser.smoothingTimeConstant = 0.85;
+  analyser.fftSize = SAMPLES_IN_WINDOW;
 
   // define analyser canvas
-  const canvas = document.querySelector('#loop-visualizer');
-  const canvasCtx = canvas.getContext("2d");
+  function visualize () {
+    const canvas = document.querySelector('#loop-visualizer');
+    const canvasCtx = canvas.getContext("2d");
 
-  visualize();
-
-  function visualize() {
-    analyser.fftSize = 2048;
     const bufferLength = analyser.fftSize;
-    const dataArray = new Uint8Array(bufferLength);
+    const arrayBuffer = new Uint8Array(bufferLength);
 
-    const draw = function() {
-      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-      requestAnimationFrame(draw);
-
-      analyser.getByteTimeDomainData(dataArray);
-
-      canvasCtx.fillStyle = 'rgba(0,0,0,0)';
-      canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-
-      canvasCtx.lineWidth = 2;
-      canvasCtx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-
-      canvasCtx.beginPath();
-
-      const sliceWidth = Number(canvas.width) / bufferLength;
-      let x = 0;
-
-      for(let i = 0; i < bufferLength; i++) {
-        const v = dataArray[i] / 128.0;
-        const y = v * canvas.height / 2;
-
-        if(i === 0) {
-          canvasCtx.moveTo(x, y);
-        } else {
-          canvasCtx.lineTo(x, y);
+    const filterData = rawData => {
+      const blockSize = Math.floor(rawData.length / WAVES_IN_WINDOW); // the number of samples in each subdivision
+      const filteredData = [];
+      for (let i = 0; i < WAVES_IN_WINDOW; i++) {
+        let blockStart = blockSize * i; // the location of the first sample in the block
+        let sum = 0;
+        for (let j = 0; j < blockSize; j++) {
+          sum = sum + Math.abs(rawData[blockStart + j]) // find the sum of all the samples in the block
         }
-
-        x = x + sliceWidth;
+        filteredData.push(sum / blockSize); // divide the sum by the block size to get the average
       }
-
-      canvasCtx.lineTo(canvas.width, canvas.height / 2);
-      canvasCtx.stroke();
+      return filteredData;
+    }
+  
+    const normalizeData = filteredData => {
+      const multiplier = Math.pow(Math.max(...filteredData), -1);
+      return filteredData.map(n => n * multiplier);
+    }    
+    
+    const drawLineSegment = (ctx, x, y, width, isEven) => {
+      ctx.lineWidth = 1; // how thick the line is
+      ctx.strokeStyle = "#000"; // what color our line is
+      ctx.beginPath();
+      y = isEven ? y : -y;
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, y);
+      ctx.arc(x + width / 2, y, width / 2, Math.PI, 0, isEven);
+      ctx.lineTo(x + width, 0);
+      ctx.stroke();
     };
-
+  
+    const draw = function() {
+      requestAnimationFrame(draw);
+      canvas.width = $('#loop-visualizer').width();
+      canvas.height = $('#loop-visualizer').height();
+      canvasCtx.translate(0, canvas.height / 2); // Set Y = 0 to be in the middle of the canvas
+      canvasCtx.scale(1, 0.75); // give it some vertical padding
+  
+      analyser.getByteTimeDomainData(arrayBuffer);
+      const filteredData = filterData(arrayBuffer);
+      const normalizedData = normalizeData(filteredData);
+      
+      // draw the line segments
+      canvasCtx.clearRect(0, -canvas.height/2, canvas.width, canvas.height);
+      const width = canvas.width / normalizedData.length;
+      for (let i = 0; i < normalizedData.length; i++) {
+        const x = width * i;
+        let height = normalizedData[i] * canvas.height;
+        if (height < 0) {
+            height = 0;
+        } else if (height > canvas.height / 2) {
+            height = height - canvas.height / 2;
+        }
+        drawLineSegment(canvasCtx, x, height, width, (i + 1) % 2);
+      }
+    };
     draw();
   }
+  visualize();
 
   // provide transport button events
   arm_looper_transport();
@@ -278,7 +302,7 @@ $(document).ready(() => {
     playAllButton().find("i").text("play_arrow");
     $("#current-loop-name").text("No loop playing...");
     $("#current-loop-time").text("").removeClass("ending");
-    $("#loop-visualizer").fadeOut();
+    $("#loop-visualizer").fadeOut(200);
     $("#current-loop-progress").stop(true, true).animate({ width:'0%' }, 500, 'linear');
     update_transport_buttons();
   }
@@ -365,9 +389,9 @@ $(document).ready(() => {
     }
 
     if (paused) {
-      $("#loop-visualizer").fadeOut();
+      $("#loop-visualizer").fadeOut(200);
     } else {
-      $("#loop-visualizer").fadeIn();
+      $("#loop-visualizer").fadeIn(200);
     }
     loop.attr("playing", paused ? "paused" : true);
     playAllButton().find("i").text(paused ? "play_arrow" : "pause");
@@ -403,13 +427,11 @@ $(document).ready(() => {
   function loop_counter_callback() {
     $("#loops-counter").text($("#loop-list tr").length);
     if($("#loop-list tr").length > 0) {
-      $("#introduction").hide();
       $("#loops-container").fadeIn();
       $("#looper-transport").fadeIn();
     } else {
       $("#loops-container").hide();
       $("#looper-transport").hide();
-      $("#introduction").fadeIn();
     }
     update_transport_buttons();
   }

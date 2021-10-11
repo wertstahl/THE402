@@ -1,14 +1,14 @@
 /*
-
-_|_|_|_|    _|_|    _|_|_|    _|          _|_|      _|_|    _|_|_|    
-_|        _|    _|  _|    _|  _|        _|    _|  _|    _|  _|    _|  
-_|_|_|    _|_|_|_|  _|_|_|    _|        _|    _|  _|    _|  _|_|_|    
-_|        _|    _|  _|        _|        _|    _|  _|    _|  _|        
-_|        _|    _|  _|        _|_|_|_|    _|_|      _|_|    _|
+ _   _             ___  ____  ____
+| | | |           /   |/ _  \/  _ \
+| |_| |__   ___  / /| | |/' || |/' |
+| __| '_ \ / _ \/ /_| |  /| ||  /| |
+| |_| | | |  __/\___  | |_/ /\ |_/ /
+ \__|_| |_|\___|    |_/\___/  \___/
 
 __type: css
-__version: 0.1
-__author: gandalf
+__version: 0.2
+__authors: gandalf, LeDentist, Rego Sen
 __propose: universal powers
 __todo: die
 
@@ -94,8 +94,20 @@ __todo: die
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+header {
+  display: block;
+  position: fixed;
+  top: 0px;
+  width: calc(100% - 4em);
+  margin-right: 2em;
+  float: left;
+  clear: both;
+  z-index: 1000;
+  background: #555;
+}
+
 body {
-  margin: 1em;
+  margin: 200px 1em 1em 1em;
   padding: 1em;
   font-family: "Roboto", "Helvetica", "sans-serif";
   background: #000a;
@@ -103,13 +115,7 @@ body {
   height: 100%;
   width: calc(100% - 4em);
 }
-header {
-  display: block;
-  position: relative;
-  width: 100%;
-  float: left;
-  clear: both;
-}
+
 button {
   background: transparent;
   border: 0;
@@ -288,14 +294,11 @@ x#current-loop-time.ending {
 
 #loop-visualizer {
   position: absolute;
-  top: 20px;
-  height: 81px;
-  width: 158px;
+  height: 100%;
+  width: 100%;
   background: transparent;
-  z-index: 1;
-  left: 4px;
+  z-index: -1;
 }
-
 
 .no-select {
   -webkit-touch-callout: none; /* iOS Safari */
