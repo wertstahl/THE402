@@ -39,7 +39,7 @@ $(document).ready(() => {
     loop: false, // we reshuffle at the end of the playlist instead
     singleMode: false,
     useHTML5Audio: false, // save memory
-    shuffle: true,
+    shuffle: false, // start un-shuffled so that we can load new audio in a consistent order
     logLevel: LogLevel.Info, // LogLevel.Debug,
   });
   gapless.onload = (audio_path) => {
@@ -73,7 +73,8 @@ $(document).ready(() => {
     fetch(list_path)
       .then((response) => response.text())
       .then((text) => {
-        const loops = text.trim().split('\n');
+        const ordered_loops = text.trim().split('\n');
+        const loops = ordered_loops.map(a => ({ sort: Math.random(), value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
         const num_loops = maxLoops >= 0 ? maxLoops : loops.length;
         for (let i = 0; i < num_loops; i++) {
           const audio_path = `${LOOPS_REPOSITORY}/${loops[i]}`;
