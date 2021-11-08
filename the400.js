@@ -42,7 +42,7 @@ $(document).ready(() => {
     shuffle: false, // start un-shuffled so that we can load new audio in a consistent order
     logLevel: LogLevel.Info, // LogLevel.Debug,
   });
-  gapless.onload = (audio_path) => {
+  const addTrackUI = (audio_path) => {
     if ($(`tr[loop-path="${audio_path}"]`).length > 0) {
       return;
     }
@@ -56,6 +56,16 @@ $(document).ready(() => {
         add_file_to_looplist(file, audio_path);
       }).catch((err) => console.error(err));
   };
+  /*
+  // TODO: skip doesn't always get restored here
+  // May be a moot point if we don't want to jump between tracks anyway
+  gapless.onload = (audio_path) => {
+    const index = gapless.findTrack(audio_path);
+    if (index >= 0) {
+      $(`#loop-list > tr:nth-child(${index})`).attr('skip', 'false');
+    }
+  };
+  */
   const loop_state = { active: false };
   const loop_param = queryParams.get('loopRange');
   if (loop_param) {
@@ -79,6 +89,7 @@ $(document).ready(() => {
         for (let i = 0; i < num_loops; i++) {
           const audio_path = `${LOOPS_REPOSITORY}/${loops[i]}`;
           gapless.addTrack(audio_path);
+          addTrackUI(audio_path);
         }
       })
       .catch(() => alert(`Failed to fetch list from ${list_path}`));
@@ -190,7 +201,7 @@ $(document).ready(() => {
     // const [nr, bpm, name, _ext] = file.name.split(/[_\.]/);
     const name = file.name.split('.')[0];
     $("#loop-list").append(`
-      <tr id='${id}'>
+      <tr id='${id}' skip='false'>
         <td class='options'><button target='play-loop'><i class='material-icons'>play_arrow</i></button></td>
         <td class='name'><button target='play-loop'>${name}</button></td>
         <td class='length'></td>
