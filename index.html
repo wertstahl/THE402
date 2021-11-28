@@ -17,19 +17,17 @@
 
     <!-- what is it, what can it do for me? -->
     <header>
-      <h1 class="title">the400 <x id="current-loop-time"></x></h1>
+      <h1 class="title no-select">the400 <x id="current-loop-time"></x></h1>
 
       <!-- looper audio-transport-elements, current-loop-progress -->
-      <div id="looper-transport" class="hide">
+      <div id="looper-transport">
         <canvas id="loop-visualizer" class="hide"></canvas>
-        <h2 id="current-loop-name">No loop playing...</h2>
-        <button target="clear-loops"><i class="material-icons">clear</i></button>
+        <h2 id="current-loop-name" class="no-select">No loop playing...</h2>
+        <button target="download"><i class="material-icons">file_download</i></button>
         <button target="shuffle-loops"><i class="material-icons">shuffle</i></button>
         <button target="hold-mode" hold="false"><i class="material-icons">repeat</i></button>
-        <button target="presets-mode" preset=0><i class="material-icons">looks_one</i></button>
-        <button target="stop-playing-loops"><i class="material-icons">stop</i></button>
         <button target="next-loop"><i class="material-icons">skip_next</i></button>
-        <button target="play-all-loops"><i class="material-icons">play_arrow</i></button>
+        <button target="play-pause"><i class="material-icons">play_arrow</i></button>
         <button target="prev-loop"><i class="material-icons">skip_previous</i></button>
         <div id="current-loop-progress"></div>
       </div>
@@ -42,32 +40,12 @@
     <!-- all in here is loops -->
     <div id="loops">
 
-
       <!-- file-dialog-trigger, file-input-element -->
       <div id="loop-selector" class="hide">
         <form enctype="multipart/form-data" novalidate="" autocomplete="off" class="loop-selector-form">
           <input type="file" name="data" id="file-input" class="hide" accept="audio/*" multiple="">
         </form>
       </div>
-
-      <!-- loop-list and loop-counter -->
-      <div id="loops-container" class="hide">
-        <div id="loops-counter"><b>0</b></div>
-        <table>
-          <thead>
-            <tr>
-              <th class="options"></th>
-              <th class="name">name</th>
-              <th class="length">length</th>
-              <th class="size">size</th>
-              <th class="type">type</th>
-              <th class="options"></th>
-            </tr>
-          </thead>
-          <tbody id="loop-list"></tbody>
-        </table>
-      </div>
-    </div>
 
   
 </body></html>

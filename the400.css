@@ -143,86 +143,11 @@ h1.title {
   z-index: 999;
 }
 
-#introduction p {
-  width: 50%;
-}
-#introduction h3 {
-  width: 100%;
-  padding-bottom: 0.25em;
-  font-weight: 100;
-  letter-spacing: 1.5px;
-}
-#introduction h3:first-child {
-  border-bottom: 1px solid #fff4;
-}
-#introduction h4 {
-  font-weight: 100;
-  margin: 2.5em 0 0 0;
-  padding: 0;
-  text-transform: uppercase;
-}
-#introduction h4 + p {
-  padding-top: 0;
-  margin-top: 0;
-}
 #loops {
   display: block;
   position: relative;
   width: 100%;
 }
-
-#loops-container {
-  position: relative;
-  float: left;
-  width: calc(100% - 2em);
-  padding: 1em;
-  border-radius: 2px;
-  background: #fffa;
-  color: #000a;
-}
-#loops-container table {
-  width: 100%;
-  padding: 0;
-  margin: 0;
-}
-#loops-container table th {
-  text-transform: uppercase;
-}
-#loops-container table th,
-#loops-container table td {
-  text-align: left;
-  padding: 10px;
-  margin: 0;
-}
-#loop-list td {
-  border-bottom: 1px solid #0002;
-}
-#loop-list tr[playing=true] {
-  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(0,0,0,0.1) 100%);
-}
-#loop-list tr[playing=paused] {
-  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(0,0,0,0.1) 100%);
-}
-#loop-list tr[skip=true] {
-  opacity: 0.4;
-}
-#loops-container th:first-child,
-#loops-container td:first-child {
-  padding-left: 0;
-}
-#loops-container .options {
-  text-align: right;
-}
-#loops-container button {
-  color: #000a;
-  font-weight: 600;
-  font-family: "Roboto";
-  font-size: 1em;
-  padding-left: 0;
-  margin-left: 0;
-}
-#loops-counter { margin-bottom: 1em; }
-#loops-counter:before { content: "LOOPS: "; }
 
 #looper-transport {
   position: relative;
@@ -252,9 +177,13 @@ h1.title {
   transition: all 0.2s linear;
   animation: pulse 2.5s infinite;
 }
-button.disabled i {
+button i {
   color: #888;
   cursor: default;
+}
+button.enabled i {
+  color: #FFF;
+  cursor: pointer;
 }
 
 button[target=repeat-loop-mode][mode=none] {
