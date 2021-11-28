@@ -103,10 +103,6 @@ $(document).ready(() => {
   gainNode.gain.value = 0;
   gainNode.connect(audioContext.destination);
   analyser.connect(gainNode);
-
-  //analyser.minDecibels = -90;
-  //analyser.maxDecibels = -10;
-  //analyser.smoothingTimeConstant = 0.85;
   analyser.fftSize = SAMPLES_IN_WINDOW;
 
   // define analyser canvas
