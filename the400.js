@@ -70,15 +70,6 @@ $(document).ready(() => {
   gapless.onunload = (audio_path) => {
     delete loadedAudio[audio_path];
   };
-  const loop_state = { active: false };
-  const loop_param = queryParams.get('loopRange');
-  if (loop_param) {
-    loop_state.active = true;
-    const [loop_min, loop_max] = loop_param.split(',');
-    loop_state.min = parseInt(loop_min);
-    loop_state.max = parseInt(loop_max);
-    console.log(`Setting loop range to {${loop_state.min}, ${loop_state.max}}`);
-  }
 
   function build_loops() {
     // Fetches from 'file://...' are not supported
@@ -245,16 +236,9 @@ $(document).ready(() => {
   }
 
   const get_hold_mode = () => $("button[target=hold-mode]").attr("hold") === "true";
-  const get_loop_hold = () => loop_state.active && (loop_state.current < loop_state.last - 1);
 
   function reset_loop_state() {
-    if (loop_state.active) {
-      loop_state.last = loop_state.min + Math.floor(Math.random() * (loop_state.max - loop_state.min));
-      loop_state.current = 0;
-      gapless.singleMode = get_hold_mode() || get_loop_hold();
-    } else {
-      gapless.singleMode = get_hold_mode();
-    }
+    gapless.singleMode = get_hold_mode();
     gapless.loop = gapless.singleMode;
   }
 
@@ -263,13 +247,8 @@ $(document).ready(() => {
     if (!audio_path) {
       audio_path = get_loop();
     }
-    const hold_mode = get_hold_mode();
     let next_path = audio_path;
-    if (get_loop_hold()) {
-      loop_state.current += 1;
-      gapless.singleMode = hold_mode || get_loop_hold();
-      gapless.loop = gapless.singleMode;
-    } else if (!hold_mode) {
+    if (!get_hold_mode()) {
       next_path = gapless.getTracks()[gapless.findTrack(audio_path) + 1];
       if (next_path === undefined) {
         // re-shuffle at end of playlist
