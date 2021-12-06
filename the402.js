@@ -21,7 +21,7 @@ $(document).ready(() => {
   // options are low, med, high
   const queryParams = new URLSearchParams(window.location.search);
   const quality = queryParams.get('quality') || 'low';
-  const LOOPS_REPOSITORY = `https://the400.wertstahl.de/${quality}`;
+  const LOOPS_REPOSITORY = `https://the402.wertstahl.de/${quality}`;
   const EXT_TO_TYPE = {
     wav: 'audio/x-wav',
     mp3: 'audio/mpeg',
