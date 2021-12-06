@@ -15,8 +15,8 @@ __todo: die
 */
 
 $(document).ready(() => {
-  const WAVES_IN_WINDOW = 200; // number of peak+vally square waves in canvas
-  const SAMPLES_IN_WINDOW = 2048; // number of samples represented in canvas
+  const WAVES_IN_WINDOW = 100; // number of peak+vally square waves in canvas
+  const SAMPLES_IN_WINDOW = 1024; // number of samples represented in canvas
   
   // options are low, med, high
   const queryParams = new URLSearchParams(window.location.search);
@@ -32,7 +32,7 @@ $(document).ready(() => {
   const loadLimit = parseInt(queryParams.get('loadLimit') || 5);
   const toFilename = (path) => path.replace(/^.*[\\\/]/, '');
 
-  const looperTransportButton = (target) => $(`#looper-transport button[target=${target}]`);
+  const looperTransportButton = (target) => $(`.looper-transport button[target=${target}]`);
 
   let playOnLoad = false;
   const audioContext = new AudioContext();
@@ -185,20 +185,6 @@ $(document).ready(() => {
     looper.addEventListener("timeupdate", () => {
       const currentTime = looper.currentTime;
       const duration = looper.duration;
-      const el = $("#current-loop-time");
-      // calculate negative duration
-      const clt = String(Math.floor(currentTime - duration));
-      // visualize ending by adding pulse animation to current-loop-time
-      if (clt > -4 && !el.hasClass("ending")) {
-        el.addClass("ending");
-      } else {
-        el.removeClass("ending");
-      }
-      // update current-loop-time text
-      if (clt !== "NaN") {
-        $("#current-loop-time").text(`${clt}s`);
-      }
-      // moving progress bar
       $("#current-loop-progress").stop(true, true).animate({ width:`${(currentTime + 0.25) / duration * 100}%` }, 200, 'linear');
     });
 
@@ -224,8 +210,8 @@ $(document).ready(() => {
   function reset_current_loop_progress() {
     enableButton($("button[target=remove-loop]"), true);
     looperTransportButton("play-pause").find("i").text("play_arrow");
-    $("#current-loop-name").text("No loop playing...");
-    $("#current-loop-time").text("").removeClass("ending");
+    $("#current-loop-name").text("");
+    $("#current-loop-tempo").text("");
     $("#loop-visualizer").fadeOut(200);
     $("#current-loop-progress").stop(true, true).animate({ width:'0%' }, 500, 'linear');
     update_transport_buttons();
@@ -310,8 +296,9 @@ $(document).ready(() => {
     enableTransportButton("download", canPlay);
 
     if (audio_path) {
-      const loop_name = toFilename(audio_path).split('.')[0];
-      $("#current-loop-name").text(loop_name);
+      const [id, tempo, _name] = toFilename(audio_path).split('.')[0].split('_');
+      $("#current-loop-name").text(id);
+      $("#current-loop-tempo").text(`${tempo} BPM`);
     }
 
     if (gapless.getIndex() >= 0) {

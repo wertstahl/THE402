@@ -17,35 +17,29 @@
 
     <!-- what is it, what can it do for me? -->
     <header>
-      <h1 class="title no-select">the400 <x id="current-loop-time"></x></h1>
-
-      <!-- looper audio-transport-elements, current-loop-progress -->
-      <div id="looper-transport">
-        <canvas id="loop-visualizer" class="hide"></canvas>
-        <h2 id="current-loop-name" class="no-select">No loop playing...</h2>
-        <button target="download"><i class="material-icons">file_download</i></button>
-        <button target="shuffle-loops"><i class="material-icons">shuffle</i></button>
-        <button target="hold-mode" hold="false"><i class="material-icons">repeat</i></button>
-        <button target="next-loop"><i class="material-icons">skip_next</i></button>
-        <button target="play-pause"><i class="material-icons">play_arrow</i></button>
-        <button target="prev-loop"><i class="material-icons">skip_previous</i></button>
-        <div id="current-loop-progress"></div>
+      <div id="player-block">
+        <!-- looper audio-transport-elements, current-loop-progress -->
+        <div class="looper-row">
+          <canvas id="loop-visualizer" class="hide"></canvas>
+          <span id="current-loop-name" class="no-select"></span>
+          <span id="current-loop-tempo" class="no-select"></span>
+          <div id="current-loop-progress"></div>
+        </div>
+        <div class="looper-row looper-transport">
+          <button target="prev-loop"><i class="material-icons">skip_previous</i></button>
+          <button target="play-pause"><i class="material-icons">play_arrow</i></button>
+          <button target="next-loop"><i class="material-icons">skip_next</i></button>
+        </div>
+        <div class="looper-row looper-transport">
+          <button target="hold-mode" hold="false"><i class="material-icons">repeat</i></button>
+          <button target="shuffle-loops"><i class="material-icons">shuffle</i></button>
+          <button target="download"><i class="material-icons">file_download</i></button>
       </div>
+    </div>
 
     </header>
 
     <!-- the future loop-player -->
     <audio id="looper" class="hide" preload=""></audio>
-
-    <!-- all in here is loops -->
-    <div id="loops">
-
-      <!-- file-dialog-trigger, file-input-element -->
-      <div id="loop-selector" class="hide">
-        <form enctype="multipart/form-data" novalidate="" autocomplete="off" class="loop-selector-form">
-          <input type="file" name="data" id="file-input" class="hide" accept="audio/*" multiple="">
-        </form>
-      </div>
-
   
 </body></html>

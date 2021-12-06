@@ -95,7 +95,9 @@ __todo: die
 }
 
 header {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   position: fixed;
   top: 0px;
   width: calc(100% - 4em);
@@ -103,15 +105,13 @@ header {
   float: left;
   clear: both;
   z-index: 1000;
-  background: #555;
 }
 
 body {
   margin: 200px 1em 1em 1em;
   padding: 1em;
   font-family: "Roboto", "Helvetica", "sans-serif";
-  background: #000a;
-  color: #fffa;
+  background: #ddd;
   height: 100%;
   width: calc(100% - 4em);
 }
@@ -120,7 +120,6 @@ button {
   background: transparent;
   border: 0;
   outline: 0 !important;
-  color: #fffa;
   cursor: pointer;
 }
 
@@ -135,54 +134,49 @@ button:hover {
   display: none;
 }
 
-h1.title {
-  letter-spacing: 3px;
-  font-weight: 100;
-  font-size: 3em;
-  text-shadow:  0px 0px 10px #ffffff88;
-  z-index: 999;
+#player-block {
+  margin: 2em;
+  padding: 1em 0 2em 0;
+  border-radius: 10px;
+  background: #fff;
+  z-index: -2;
 }
 
-#loops {
-  display: block;
+.looper-row {
   position: relative;
-  width: 100%;
-}
-
-#looper-transport {
-  position: relative;
-  float: left;
   clear: both;
-  width: 100%;
-  margin-bottom: 1em;
-  background: #fff2;
+  width: 400px;
+  height: 6em;
+  background: transparent;
   border-radius: 2px;
-  height: auto;
-}
-#looper-transport {
   overflow: hidden;
 }
-#looper-transport button {
-  float: right;
+
+.looper-transport {
+  display: flex;
+  justify-content: space-around;
+}
+
+.looper-transport button {
   margin: 1.55em 1em 1em 0px;
   transition: all 0.2s linear;
 }
-#looper-transport button i {
-  font-size: 2em;
+.looper-transport button i {
+  font-size: 6em;
   background: transparent;
   border-radius: 2px;
   transition: all 0.2s linear;
 }
-#looper-transport button.active i {
+.looper-transport button.active i {
   transition: all 0.2s linear;
   animation: pulse 2.5s infinite;
 }
 button i {
-  color: #888;
+  color: #aaa;
   cursor: default;
 }
 button.enabled i {
-  color: #FFF;
+  color: #000;
   cursor: pointer;
 }
 
@@ -195,19 +189,30 @@ button[target=repeat-loop-mode][mode=none] {
   50% { color: #f008; }
 }
 
-h2#current-loop-name {
+#current-loop-name {
   display: block;
   width: auto;
-  float: left;
+  color: #000;
+  text-align: center;
   font-weight: 100;
-  margin-left: 1em;
+  font-size: 5em;
+  text-shadow:  0px 0px 10px #ffffff88;
+  z-index: 999;
 }
-x#current-loop-time {
-  margin-left: 0.2em;
+
+#current-loop-tempo {
+  display: block;
+  width: auto;
+  padding-right: 1em;
+  margin-top: -2em;
+  color: #000;
+  text-align: right;
+  font-weight: 100;
+  font-size: 1em;
+  text-shadow:  0px 0px 10px #ffffff88;
+  z-index: 999;
 }
-x#current-loop-time.ending {
-  animation: pulse 0.2s infinite;
-}
+
 #current-loop-progress {
   position: absolute;
   z-index: 999;
