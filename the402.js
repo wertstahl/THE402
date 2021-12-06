@@ -1,17 +1,10 @@
 /*
- _   _             ___  ____  ____
-| | | |           /   |/ _  \/  _ \
-| |_| |__   ___  / /| | |/' || |/' |
-| __| '_ \ / _ \/ /_| |  /| ||  /| |
-| |_| | | |  __/\___  | |_/ /\ |_/ /
- \__|_| |_|\___|    |_/\___/  \___/
-
+THE402 (c) 2008 - 2022 SyS Audio Research
 __type: js
 __version: 0.3
-__authors: gandalf, LeDentist, Rego Sen
-__propose: universal powers
-__todo: die
-
+__author: Rego Sen
+__additional-code: D. Zahn
+__additional-code: S. I. Hartmann
 */
 
 $(document).ready(() => {
@@ -268,7 +261,7 @@ $(document).ready(() => {
   function play_loop(audio_path, playAudio = true) {
     looper.pause();
 
-    // when nix is, dann make was. strict after lehrbook
+    // if idle, do something
     if (audioContext.state === 'suspended') {
       audioContext.resume();
     }
