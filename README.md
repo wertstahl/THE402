@@ -26,11 +26,13 @@ An experience much broader and more individual<br>
 as would be with a classic fixed-tracks-album.<br>
 On- or Offline usage is optional. Usage is free.<br>
 <br>
-Partial/re-use is welcomed, although you must request<br>
-our written permission, prior to publication.<br>
+License?<br>
+<br>
+Partial/re-use is welcomed, although we must insist<br>
+thay you request our written permission, prior to publication.<br>
 No fees, royalty-free. We just need to keep track.<br>
 Contact: info @ battlecommand . org<br>
-(It is just one email, done within minutes.)
+(Just one email, quick reply.)
 <br>
 <br>
 SyS-aR / PSAUX is a BC//AD product (c) 1998,2005 <br>
