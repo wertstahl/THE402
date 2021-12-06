@@ -26,8 +26,9 @@ An experience much broader and more individual<br>
 as would be with a classic fixed-tracks-album.<br>
 <br>
 On-Line or Offline usage is optional.<br>
-Partial/re-use is welcomed, please request<br>
-our written permission. (No fees, royalty-free, just to keep track.)  <br>
+Partial/re-use is welcomed, you must request<br>
+our written permission, prior to publication.<br>
+(No fees, royalty-free / just to keep track.)  <br>
 Contact: info @ battlecommand . org<br>
 <br>
 SySaR / PSAUX is a BC//AD product (c) 1998,2005 <br>
