@@ -25,7 +25,9 @@ the number of repeats is random or user-interacted.<br>
 An experience much broader and more individual<br>
 as would be with a classic fixed-tracks-album.<br>
 <br>
-On-Line or Offline usage is optional. Partial use is<br>
-welcomed, after written permission. <br>
-contact: info@battlecommand.org<br>
+On-Line or Offline usage is optional.<br>
+Partial/re-use is welcomed, please request<br>
+our written permission. (No fees. Just to keep track.)  <br>
+Contact: info @ battlecommand . org<br>
 <br>
+SySaR / PSAUX is a BC//AD product (c) 1998,2005 <br>
