@@ -2,7 +2,7 @@
 Gapless randomized audio loops player in JS.
 
 
-(c)2008-2022 SyS Audio Research - all rights reserverd
+(c)2008-2022 SyS Audio Research - all rights reserverd<br>
 code, gapless player developed by: Rego Sen
 concept and design: Sebastian I. Hartmann
 content: S.I. Hartmann, S. Sippel
