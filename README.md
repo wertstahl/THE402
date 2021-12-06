@@ -24,11 +24,13 @@ All loops are seamlessly fitted and looped on the fly,<br>
 the number of repeats is random or user-interacted.<br>
 An experience much broader and more individual<br>
 as would be with a classic fixed-tracks-album.<br>
+On- or Offline usage is optional. Usage is free.<br>
 <br>
-On-Line or Offline usage is optional.<br>
-Partial/re-use is welcomed, you must request<br>
+Partial/re-use is welcomed, although you must request<br>
 our written permission, prior to publication.<br>
-(No fees, royalty-free / just to keep track.)  <br>
+No fees, royalty-free. We just need to keep track.<br>
 Contact: info @ battlecommand . org<br>
+(It is just one email, done within minutes.)
 <br>
-SySaR / PSAUX is a BC//AD product (c) 1998,2005 <br>
+<br>
+SyS-aR / PSAUX is a BC//AD product (c) 1998,2005 <br>
