@@ -8,29 +8,6 @@ __additional-code: S. I. Hartmann
 */
 
 @font-face {
-  font-family: 'Material Icons';
-  font-style: normal;
-  font-weight: 400;
-  src: url(./icons.woff2) format('woff2');
-}
-
-.material-icons {
-  font-family: 'Material Icons';
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  -webkit-font-feature-settings: 'liga';
-  -webkit-font-smoothing: antialiased;
-}
-
-@font-face {
   font-family: 'Roboto';
   font-style: normal;
   font-weight: 100;
@@ -129,7 +106,7 @@ button:hover {
 
 #player-block {
   margin: 2em;
-  padding: 1em 0 2em 0;
+  padding: 1em 0 0 0;
   border-radius: 10px;
   background: #fff;
   z-index: -2;
@@ -150,31 +127,83 @@ button:hover {
   justify-content: space-around;
 }
 
-.looper-transport button {
-  margin: 1.55em 1em 1em 0px;
-  transition: all 0.2s linear;
-}
-.looper-transport button i {
-  font-size: 6em;
-  background: transparent;
-  border-radius: 2px;
-  transition: all 0.2s linear;
-}
-.looper-transport button.active i {
-  transition: all 0.2s linear;
-  animation: pulse 2.5s infinite;
-}
-button i {
-  color: #aaa;
-  cursor: default;
-}
-button.enabled i {
-  color: #000;
-  cursor: pointer;
+.looper-banner {
+  width: 100%;
+  height: 135px;
+  padding-top: 1em;
+  border-radius: 0 0 10px 10px;
 }
 
-button[target=repeat-loop-mode][mode=none] {
-  opacity: 0.35;
+.looper-banner button {
+  width: 100%;
+  height: 100%;
+  background-color: ##fff;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+.looper-transport button {
+  transition: all 0.2s linear;
+  background-repeat: no-repeat;
+  opacity: 0.4;
+  height: 100%;
+  width: 100%;
+  background-position: center;
+  background-size: contain;
+}
+
+.looper-transport button.enabled {
+  opacity: 1;
+}
+
+button[target=play-pause][mode=play] {
+  background-image: url('./assets-gui/play_continue.png');
+}
+button[target=play-pause][mode=pause] {
+  background-image: url('./assets-gui/play_paused.png');
+}
+button[target=prev-loop] {
+  background-image: url('./assets-gui/skip_back.png');
+}
+button[target=next-loop] {
+  background-image: url('./assets-gui/skip_forth.png');
+}
+button[target=hold-mode][mode="0"] {
+  background-image: url('./assets-gui/loop_disable.png');
+}
+button[target=hold-mode][mode="1"] {
+  background-image: url('./assets-gui/loop_hold.png');
+}
+button[target=hold-mode][mode="2"] {
+  background-image: url('./assets-gui/loop_rnd.png');
+}
+button[target=hold-mode][mode="3"] {
+  background-image: url('./assets-gui/loop_rnd1-6.png');
+}
+button[target=hold-mode][mode="4"] {
+  background-image: url('./assets-gui/loop_rnd2-4.png');
+}
+button[target=hold-mode][mode="5"] {
+  background-image: url('./assets-gui/loop_rnd3-8.png');
+}
+button[target=shuffle-loops] {
+  background-image: url('./assets-gui/reshuffle.png');
+}
+button[target=download] {
+  background-image: url('./assets-gui/dl_wav.png');
+}
+button[target=playlist][mode="402"] {
+  background-image: url('./assets-gui/bottompanel_sel402.png');
+}
+button[target=playlist][mode="201A"] {
+  background-image: url('./assets-gui/bottompanel_sel201A.png');
+}
+button[target=playlist][mode="201D"] {
+  background-image: url('./assets-gui/bottompanel_sel201D.png');
+}
+button[target=playlist][credits="true"] {
+  background-image: url('./assets-gui/bottompanel_credits.png') !important;
 }
 
 @keyframes pulse {
@@ -182,7 +211,7 @@ button[target=repeat-loop-mode][mode=none] {
   50% { color: #f008; }
 }
 
-#current-loop-name {
+#loop-name {
   display: block;
   width: auto;
   color: #000;
@@ -193,7 +222,7 @@ button[target=repeat-loop-mode][mode=none] {
   z-index: 999;
 }
 
-#current-loop-tempo {
+#loop-tempo {
   display: block;
   width: auto;
   padding-right: 1em;
@@ -206,17 +235,44 @@ button[target=repeat-loop-mode][mode=none] {
   z-index: 999;
 }
 
-#current-loop-progress {
+#loop-progress {
   position: absolute;
   z-index: 999;
   width: 0px;
   height: 5px;
-  background: #0ffa;
+  background: #ff2f1b;
   bottom:0;
   left: 0;
   right: 0;
   border-bottom-right-radius: 2px;
   border-bottom-left-radius: 2px;
+}
+
+#loop-sequence {
+  position: absolute;
+  display: flex;
+  gap: 1px;
+  flex-direction: row-reverse;
+  z-index: 999;
+  width: 100%;
+  height: 15px;
+  top: 0;
+  right: 1em;
+}
+
+.loop-sequence-indicator {
+  z-index: 999;
+  width: 15px;
+  height: 100%;
+  background-image: url('./assets-gui/loopdot-outline_56x56.png');
+  background-size: contain;
+}
+
+.loop-sequence-indicator[mode=unplayed] {
+  background-image: url('./assets-gui/loopdot-filled_56x56.png');
+}
+.loop-sequence-indicator[mode=played] {
+  background-image: url('./assets-gui/loopdot-outline_56x56.png');
 }
 
 #loop-visualizer {

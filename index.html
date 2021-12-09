@@ -18,22 +18,26 @@
     <!-- what is it, what can it do for me? -->
     <header>
       <div id="player-block">
-        <!-- looper audio-transport-elements, current-loop-progress -->
+        <!-- looper audio-transport-elements, loop-progress -->
         <div class="looper-row">
           <canvas id="loop-visualizer" class="hide"></canvas>
-          <span id="current-loop-name" class="no-select"></span>
-          <span id="current-loop-tempo" class="no-select"></span>
-          <div id="current-loop-progress"></div>
+          <span id="loop-name" class="no-select"></span>
+          <span id="loop-tempo" class="no-select"></span>
+          <div id="loop-progress"></div>
+          <div id="loop-sequence"></div>
         </div>
         <div class="looper-row looper-transport">
-          <button target="prev-loop"><i class="material-icons">skip_previous</i></button>
-          <button target="play-pause"><i class="material-icons">play_arrow</i></button>
-          <button target="next-loop"><i class="material-icons">skip_next</i></button>
+          <button target="prev-loop"></button>
+          <button target="play-pause" mode="play"></button>
+          <button target="next-loop"></button>
         </div>
         <div class="looper-row looper-transport">
-          <button target="hold-mode" hold="false"><i class="material-icons">repeat</i></button>
-          <button target="shuffle-loops"><i class="material-icons">shuffle</i></button>
-          <button target="download"><i class="material-icons">file_download</i></button>
+          <button target="hold-mode" mode="0"></button>
+          <button target="shuffle-loops"></button>
+          <button target="download"></button>
+      </div>
+      <div class="looper-row looper-banner">
+        <button target="playlist" mode="402"></button>
       </div>
     </div>
 
