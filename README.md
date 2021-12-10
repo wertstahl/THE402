@@ -11,7 +11,8 @@ content: S.I. Hartmann, S. Sippel<br>
 An endless album in random order,<br>
 consisting of 402 parts, playable on all<br>
 devices and platforms, no additional<br>
-software or installation required, free.<br>
+software or installation required, free of charge.<br>
+<br>
 Total playtime: one session lasts somewhere<br>
 between 45 minutes and up to 8 hours until the<br>
 first 'repetition' occurs.<br>
