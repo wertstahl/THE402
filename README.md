@@ -28,7 +28,9 @@ All loops are seamlessly fitted and looped on the fly,<br>
 the number of repeats is random or user-interacted.<br>
 An experience much broader and more individual<br>
 as would be with a classic fixed-tracks-album.<br>
-On- or Offline usage is optional. Usage is free.<br>
+On- or Offline usage is optional. Usage is free of charge.<br>
+Notice: be aware that mobile use might generate some traffic<br>
+on your device. Probably 270MB/h on low quality. <br>
 <br>
 <br>
 <b>License?</b><br>
