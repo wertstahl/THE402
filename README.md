@@ -12,6 +12,9 @@ An endless album in random order,<br>
 consisting of 402 parts, playable on all<br>
 devices and platforms, no additional<br>
 software or installation required, free.<br>
+Total playtime: one session lasts somewhere<br>
+between 45 minutes and up to 8 hours until the<br>
+first 'repetition' occurs.<br>
 <br>
 The parts (loops) have been specially designed by <br>
 two dedicated electronic-industrial music artists <br>
