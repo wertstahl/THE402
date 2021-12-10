@@ -42,3 +42,7 @@ Topic "THE402 loop re-use"<br>
 (c)2008-2022 SyS Audio Research - all rights reserved<br>
 PSAUX is a BC//AD product (c) 1998, 2005, 2022 <br>
 deDokter, E:FOPE Media (c)2003 <br>
+<br>
+<br>
+Queshion: Why is it, there aint no transitions happ'nin? Huh?<br>
+Anshwer: If it was easy to do in JS, it would have been in there.<br>
