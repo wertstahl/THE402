@@ -45,4 +45,4 @@ deDokter, E:FOPE Media (c)2003 <br>
 <br>
 <br>
 Queshion: Why is it, there aint no transitions happ'nin? Huh?<br>
-Anshwer: If it was easy to do in JS, it would have been in there.<br>
+Anshwer: If it was easy to do in JS, it would have been implemented.<br>
