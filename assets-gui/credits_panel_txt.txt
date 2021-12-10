@@ -1,0 +1,11 @@
+An endless album in random order, 
+consisting of 402 parts, playable on all 
+devices and platforms, no additional 
+software or installation required, free.
+
+(c)2008 - 2022 SyS Audio Research - all rights reserved
+code, gapless player developed by: rego sen 
+concept & design: s.i. hartmann
+content: s.i. hartmann, s. sippel
+license: re-use requires written permission by the authors.
+contact email: info @ battlecommand.org
