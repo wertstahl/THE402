@@ -28,11 +28,12 @@ On- or Offline usage is optional. Usage is free.<br>
 <br>
 License?<br>
 <br>
-Partial/re-use is welcomed, although we must insist<br>
-thay you request our written permission, prior to publication.<br>
-No fees, royalty-free. We just need to keep track.<br>
-Contact: info @ battlecommand . org<br>
-(Just one email, quick reply.)
+Partial/re-use is welcomed, under the condition<br>
+that you request our written permission, prior to publication.<br>
+No fees and royalty-free, contact: info @ battlecommand . org<br>
+Topic "THE402 loop re-use"<br>
 <br>
 <br>
-SyS-aR / PSAUX is a BC//AD product (c) 1998,2005 <br>
+SyS-Audio Research<br>
+PSAUX is a BC//AD product (c) 1998, 2005, 2022 <br>
+deDokter, E:FOPE Media (c)2003 <br>
