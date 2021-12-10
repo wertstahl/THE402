@@ -14,7 +14,9 @@ devices and platforms, no additional<br>
 software or installation required, free.<br>
 <br>
 The parts (loops) have been specially designed by <br>
-two enthused electronic-industrial music artists over the span of 12 years.<br>
+two dedicated electronic-industrial music artists <br>
+over the span of 12 years. Code was assembled by <br>
+the creator of the Gapless JS/HTML5 library. <br>
 <br>
 <br>
 <b>Features?</b><br>
