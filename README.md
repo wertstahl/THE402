@@ -34,6 +34,6 @@ No fees and royalty-free, contact: info @ battlecommand . org<br>
 Topic "THE402 loop re-use"<br>
 <br>
 <br>
-SyS-Audio Research<br>
+(c)+(p)SyS-Audio Research 2022<br>
 PSAUX is a BC//AD product (c) 1998, 2005, 2022 <br>
 deDokter, E:FOPE Media (c)2003 <br>
