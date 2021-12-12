@@ -246,31 +246,18 @@ button[target=download] {
 #banner-bottom div, #banner-bottom button {
   font-family: "Futura";
   font-size: .5em;
+  color: #fff;
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
 }
 
-#bottom-logo {
-  background-image: url('./assets-gui/402_logo_bottompanel.png');
-  background-color: #000;
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: 35px;
-}
+/* Credits Panel */
 
 #credits-logo {
   background-image: url('./assets-gui/402_logo_creditpage.png');
   width: 200px;
   height: 55px;
-}
-
-#credits-toggle {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  color: #fff;
 }
 
 .credits-cell {
@@ -279,11 +266,10 @@ button[target=download] {
 }
 
 #credits-text-1 {
-  color: #fefb00;
+  color: #fefb00 !important;
 }
 
 #credits-text-2 {
-  color: #fff;
   padding-left: 10px;
 }
 
@@ -291,10 +277,19 @@ button[target=download] {
   position: absolute;
   bottom: 10px;
   right: 10px;
-  color: #ff2f1b;
+  color: #ff2f1b !important;
 }
 
-/* Bottom Filters */
+/* Filter Selection Panel */
+
+#filters-logo {
+  background-image: url('./assets-gui/402_logo_bottompanel.png');
+  background-color: #000;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 35px;
+}
 
 #filters {
   height: 50px;
@@ -340,3 +335,8 @@ button[target=select3] {
   left: 265px;
 }
 
+#credits-toggle {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
