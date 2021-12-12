@@ -207,6 +207,14 @@ button[target=download] {
   left: 5px;
 }
 
+#filter-selection[mode=select2] {
+  left: 135px;
+}
+
+#filter-selection[mode=select3] {
+  left: 265px;
+}
+
 @keyframes pulse {
   0% ,100% { color: #0004; }
   50% { color: #f008; }

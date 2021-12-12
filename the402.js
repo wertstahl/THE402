@@ -67,6 +67,13 @@ $(document).ready(() => {
   const loop_state = { forever: false, min: 1, max: 1 };
 
   function build_loops() {
+    const FILTER_REGEXES = {
+      'select1': '',
+      'select2': /\d+D_.*/,
+      'select3': /\d+A_.*/,
+    }
+    const filter_regex = FILTER_REGEXES[$('#filter-selection').attr('mode')];
+
     // Fetches from 'file://...' are not supported
     // To run locally, call 'python -m http.server 8000' and visit http://localhost:8000
     if (window.location.protocol !== 'file:') {
@@ -78,8 +85,10 @@ $(document).ready(() => {
           const loops = ordered_loops.map(a => ({ sort: Math.random(), value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
           const num_loops = maxLoops >= 0 ? maxLoops : loops.length;
           for (let i = 0; i < num_loops; i++) {
-            const audio_path = `${LOOPS_REPOSITORY}/${loops[i]}`;
-            gapless.addTrack(audio_path);
+            if (loops[i].match(filter_regex)) {
+              const audio_path = `${LOOPS_REPOSITORY}/${loops[i]}`;
+              gapless.addTrack(audio_path);
+            }
           }
         })
         .catch(() => alert(`Failed to fetch list from ${list_path}`));
@@ -422,6 +431,7 @@ $(document).ready(() => {
       }
     });
 
+    // bottom panel toggling
     $('#credits-toggle').off().on("click", function() {
       $('#banner-filters').hide();
       $('#banner-credits').show();
@@ -430,6 +440,28 @@ $(document).ready(() => {
     $('#close-toggle').off().on("click", function() {
       $('#banner-filters').show();
       $('#banner-credits').hide();
+    });
+
+    // bottom panel filtering
+    $('.filter-button[target="select1"').off().on("click", function() {
+      if ($('#filter-selection').attr('mode') !== 'select1') {
+        $('#filter-selection').attr('mode', 'select1');
+        reset_tracks();
+      }
+    });
+    
+    $('.filter-button[target="select2"').off().on("click", function() {
+      if ($('#filter-selection').attr('mode') !== 'select2') {
+        $('#filter-selection').attr('mode', 'select2');
+        reset_tracks();
+      }
+    });
+
+    $('.filter-button[target="select3"').off().on("click", function() {
+      if ($('#filter-selection').attr('mode') !== 'select3') {
+        $('#filter-selection').attr('mode', 'select3');
+        reset_tracks();
+      }
     });
   }
 });
