@@ -15,10 +15,8 @@
   </head>
   <body>
 
-    <!-- what is it, what can it do for me? -->
     <header>
       <div id="player-block">
-        <!-- looper audio-transport-elements, loop-progress -->
         <div class="looper-row">
           <canvas id="loop-visualizer" class="hide"></canvas>
           <span id="loop-name" class="no-select"></span>
@@ -37,7 +35,9 @@
           <button target="download"></button>
       </div>
 
-      <div class="looper-row banner-bottom">
+      <div id="banner-bottom">
+
+        <!-- credits panel -->
         <div id="banner-credits" class="hide">
           <div>
             <div class="credits-cell">
@@ -64,8 +64,9 @@
         </div>
       </div>
 
+      <!-- filter selection panel -->
       <div id="banner-filters">
-        <div class="filters">
+        <div id="filters">
           <button class="filter-button" target="select1"></button>
           <button class="filter-button" target="select2"></button>
           <button class="filter-button" target="select3"></button>
@@ -75,12 +76,10 @@
         <div id="filter-selection" mode="select1" />
       </div>
 
-
-    </div>
-
+    </div> <!-- banner-bottom -->
     </header>
 
-    <!-- the future loop-player -->
-    <audio id="looper" class="hide" preload=""></audio>
+    <!-- the loop-player -->
+    <audio class="hide" preload=""></audio>
   
 </body></html>

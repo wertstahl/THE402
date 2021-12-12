@@ -21,6 +21,11 @@ $(document).ready(() => {
     m4a: 'audio/mp4',
     flac: 'audio/flac',
   };
+  const PLAYLIST_FILTERS = {
+    'select1': '',
+    'select2': /\d+D_.*/,
+    'select3': /\d+A_.*/,
+  }
   const maxLoops = parseInt(queryParams.get('maxLoops') || -1);
   const loadLimit = parseInt(queryParams.get('loadLimit') || 5);
   const toFilename = (path) => path.replace(/^.*[\\\/]/, '');
@@ -67,12 +72,8 @@ $(document).ready(() => {
   const loop_state = { forever: false, min: 1, max: 1 };
 
   function build_loops() {
-    const FILTER_REGEXES = {
-      'select1': '',
-      'select2': /\d+D_.*/,
-      'select3': /\d+A_.*/,
-    }
-    const filter_regex = FILTER_REGEXES[$('#filter-selection').attr('mode')];
+    const filter_mode = $('#filter-selection').attr('mode');
+    const filter_regex = PLAYLIST_FILTERS[filter_mode];
 
     // Fetches from 'file://...' are not supported
     // To run locally, call 'python -m http.server 8000' and visit http://localhost:8000
@@ -443,25 +444,13 @@ $(document).ready(() => {
     });
 
     // bottom panel filtering
-    $('.filter-button[target="select1"').off().on("click", function() {
-      if ($('#filter-selection').attr('mode') !== 'select1') {
-        $('#filter-selection').attr('mode', 'select1');
-        reset_tracks();
-      }
-    });
-    
-    $('.filter-button[target="select2"').off().on("click", function() {
-      if ($('#filter-selection').attr('mode') !== 'select2') {
-        $('#filter-selection').attr('mode', 'select2');
-        reset_tracks();
-      }
-    });
-
-    $('.filter-button[target="select3"').off().on("click", function() {
-      if ($('#filter-selection').attr('mode') !== 'select3') {
-        $('#filter-selection').attr('mode', 'select3');
-        reset_tracks();
-      }
+    Object.keys(PLAYLIST_FILTERS).forEach((filter_mode) => {
+      $(`.filter-button[target="${filter_mode}"`).off().on("click", function() {
+        if ($('#filter-selection').attr('mode') !== filter_mode) {
+          $('#filter-selection').attr('mode', filter_mode);
+          reset_tracks();
+        }
+      });
     });
   }
 });

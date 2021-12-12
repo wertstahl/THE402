@@ -7,6 +7,8 @@ __additional-code: D. Zahn
 __additional-code: S. I. Hartmann
 */
 
+/* Common Attributes */
+
 @font-face {
   font-family: 'Futura';
   font-style: bold;
@@ -14,60 +16,12 @@ __additional-code: S. I. Hartmann
   src: url(./futures-bold.woff) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+
 @font-face {
   font-family: 'Roboto';
   font-style: normal;
   font-weight: 100;
   src: local('Roboto Thin'), local('Roboto-Thin'), url(./roboto.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 300;
-  src: local('Roboto Light'), local('Roboto-Light'), url(./roboto.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'Roboto';
-  font-style: italic;
-  font-weight: 400;
-  src: local('Roboto Italic'), local('Roboto-Italic'), url(./roboto.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'Roboto';
-  font-style: italic;
-  font-weight: 700;
-  src: local('Roboto Bold Italic'), local('Roboto-BoldItalic'), url(./roboto.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Roboto'), local('Roboto-Regular'), url(./roboto.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 500;
-  src: local('Roboto Medium'), local('Roboto-Medium'), url(./roboto.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 700;
-  src: local('Roboto Bold'), local('Roboto-Bold'), url(./roboto.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 900;
-  src: local('Roboto Black'), local('Roboto-Black'), url(./roboto.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
@@ -81,16 +35,16 @@ header {
   margin-right: 2em;
   float: left;
   clear: both;
-  z-index: 1000;
+  z-index: 2;
 }
 
 body {
-  margin: 200px 1em 1em 1em;
-  padding: 1em;
-  font-family: "Roboto", "Helvetica", "sans-serif";
-  background: #ddd;
   height: 100%;
   width: calc(100% - 4em);
+  padding: 1em;
+  margin: 200px 1em 1em 1em;
+  font-family: "Roboto", "Helvetica", "sans-serif";
+  background: #ddd;
 }
 
 a {
@@ -98,15 +52,14 @@ a {
   text-decoration: inherit;
 }
 
-.logo {
-  font-family: "Futura";
-  color: #fff;
-}
 button {
   background: transparent;
   border: 0;
   outline: 0 !important;
   cursor: pointer;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
 }
 
 button:focus,
@@ -120,7 +73,20 @@ button:hover {
   display: none;
 }
 
+.no-select {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
+
+/* Overall Layout */
+
 #player-block {
+  width: 400px;
   margin: 2em;
   padding: 1em 0 0 0;
   border-radius: 10px;
@@ -129,14 +95,87 @@ button:hover {
 }
 
 .looper-row {
+  width: 100%;
+  height: 6em;
   position: relative;
   clear: both;
-  width: 400px;
-  height: 6em;
   background: transparent;
-  border-radius: 2px;
   overflow: hidden;
 }
+
+/* Now-Playing Section */
+
+#loop-name {
+  display: block;
+  width: auto;
+  color: #000;
+  text-align: center;
+  font-weight: 100;
+  font-size: 5em;
+  z-index: 1;
+}
+
+#loop-tempo {
+  display: block;
+  width: auto;
+  padding-right: 1em;
+  margin-top: -2em;
+  color: #000;
+  text-align: right;
+  font-weight: 100;
+  font-size: 1em;
+  z-index: 1;
+}
+
+#loop-progress {
+  position: absolute;
+  z-index: 999;
+  width: 0px;
+  height: 5px;
+  background: #ff2f1b;
+  bottom:0;
+  left: 0;
+  right: 0;
+}
+
+#loop-visualizer {
+  position: absolute;
+  height: 100%;
+  width: calc(100% + 10px);
+  margin: 0 -5px;
+  background: transparent;
+  z-index: -1;
+}
+
+/* Sequence Dots */
+
+#loop-sequence {
+  position: absolute;
+  display: flex;
+  gap: 1px;
+  flex-direction: row-reverse;
+  z-index: 1;
+  width: 100%;
+  height: 15px;
+  top: 0;
+  right: 1em;
+}
+
+.loop-sequence-indicator {
+  z-index: 1;
+  width: 15px;
+  height: 100%;
+  background-size: contain;
+}
+
+.loop-sequence-indicator[mode=unplayed] {
+  background-image: url('./assets-gui/loopdot-filled_56x56.png');
+}
+.loop-sequence-indicator[mode=played] {
+  background-image: url('./assets-gui/loopdot-outline_56x56.png');
+}
+
+/* Transport Buttons */
 
 .looper-transport {
   display: flex;
@@ -145,12 +184,9 @@ button:hover {
 
 .looper-transport button {
   transition: all 0.2s linear;
-  background-repeat: no-repeat;
   opacity: 0.4;
   height: 100%;
   width: 100%;
-  background-position: center;
-  background-size: contain;
 }
 
 .looper-transport button.enabled {
@@ -194,6 +230,95 @@ button[target=download] {
   background-image: url('./assets-gui/dl_wav.png');
 }
 
+/* Bottom Panels */
+
+#banner-bottom {
+  position: relative;
+  clear: both;
+  overflow: hidden;
+  width: 100%;
+  height: 135px;
+  padding-top: 10px;
+  border-radius: 0 0 10px 10px;
+  background-color: #000;
+}
+
+#banner-bottom div, #banner-bottom button {
+  font-family: "Futura";
+  font-size: .5em;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+#bottom-logo {
+  background-image: url('./assets-gui/402_logo_bottompanel.png');
+  background-color: #000;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 35px;
+}
+
+#credits-logo {
+  background-image: url('./assets-gui/402_logo_creditpage.png');
+  width: 200px;
+  height: 55px;
+}
+
+#credits-toggle {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  color: #fff;
+}
+
+.credits-cell {
+  display: flex;
+  flex-direction: row;
+}
+
+#credits-text-1 {
+  color: #fefb00;
+}
+
+#credits-text-2 {
+  color: #fff;
+  padding-left: 10px;
+}
+
+#close-toggle {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  color: #ff2f1b;
+}
+
+/* Bottom Filters */
+
+#filters {
+  height: 50px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+.filter-button {
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+}
+
+button[target=select1] {
+  background-image: url('./assets-gui/bottm_filter_select1.png');
+}
+button[target=select2] {
+  background-image: url('./assets-gui/bottm_filter_select2.png');
+}
+button[target=select3] {
+  background-image: url('./assets-gui/bottm_filter_select3.png');
+}
+
 #filter-selection {
   background-image: url('./assets-gui/bottom_list_selarrow.png');
   height: 33px;
@@ -215,184 +340,3 @@ button[target=download] {
   left: 265px;
 }
 
-@keyframes pulse {
-  0% ,100% { color: #0004; }
-  50% { color: #f008; }
-}
-
-#loop-name {
-  display: block;
-  width: auto;
-  color: #000;
-  text-align: center;
-  font-weight: 100;
-  font-size: 5em;
-  text-shadow:  0px 0px 10px #ffffff88;
-  z-index: 999;
-}
-
-#loop-tempo {
-  display: block;
-  width: auto;
-  padding-right: 1em;
-  margin-top: -2em;
-  color: #000;
-  text-align: right;
-  font-weight: 100;
-  font-size: 1em;
-  text-shadow:  0px 0px 10px #ffffff88;
-  z-index: 999;
-}
-
-#loop-progress {
-  position: absolute;
-  z-index: 999;
-  width: 0px;
-  height: 5px;
-  background: #ff2f1b;
-  bottom:0;
-  left: 0;
-  right: 0;
-  border-bottom-right-radius: 2px;
-  border-bottom-left-radius: 2px;
-}
-
-#loop-sequence {
-  position: absolute;
-  display: flex;
-  gap: 1px;
-  flex-direction: row-reverse;
-  z-index: 999;
-  width: 100%;
-  height: 15px;
-  top: 0;
-  right: 1em;
-}
-
-.loop-sequence-indicator {
-  z-index: 999;
-  width: 15px;
-  height: 100%;
-  background-image: url('./assets-gui/loopdot-outline_56x56.png');
-  background-size: contain;
-}
-
-.loop-sequence-indicator[mode=unplayed] {
-  background-image: url('./assets-gui/loopdot-filled_56x56.png');
-}
-.loop-sequence-indicator[mode=played] {
-  background-image: url('./assets-gui/loopdot-outline_56x56.png');
-}
-
-#loop-visualizer {
-  position: absolute;
-  height: 100%;
-  width: calc(100% + 10px);
-  margin: 0 -5px;
-  background: transparent;
-  z-index: -1;
-}
-
-
-/* Bottom Banner */
-
-button[target=select1] {
-  background-image: url('./assets-gui/bottm_filter_select1.png');
-}
-button[target=select2] {
-  background-image: url('./assets-gui/bottm_filter_select2.png');
-}
-button[target=select3] {
-  background-image: url('./assets-gui/bottm_filter_select3.png');
-}
-
-.banner-bottom {
-  width: 100%;
-  height: 135px;
-  padding-top: 10px;
-  border-radius: 0 0 10px 10px;
-  background-color: #000;
-}
-
-.filters {
-  height: 50px;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-}
-
-.filter-button {
-  width: 100%;
-  height: 100%;
-  background-color: #000;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-}
-
-#bottom-logo {
-  background-image: url('./assets-gui/402_logo_bottompanel.png');
-  background-color: #000;
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: 35px;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-}
-
-#credits-logo {
-  background-image: url('./assets-gui/402_logo_creditpage.png');
-  width: 200px;
-  height: 55px;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-}
-
-#credits-toggle {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  color: #fff;
-  font-family: "Futura";
-  font-size: .5em;
-}
-
-.credits-cell {
-  display: flex;
-  flex-direction: row;
-}
-
-#credits-text-1 {
-  color: #fefb00;
-  font-family: "Futura";
-  font-size: .5em;
-}
-
-#credits-text-2 {
-  color: #fff;
-  font-family: "Futura";
-  font-size: .5em;
-  padding-left: 10px;
-}
-
-#close-toggle {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  color: #ff2f1b;
-  font-family: "Futura";
-  font-size: .5em;
-}
-
-.no-select {
-  -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-     -khtml-user-select: none; /* Konqueror HTML */
-       -moz-user-select: none; /* Old versions of Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently
-                                  supported by Chrome, Edge, Opera and Firefox */
-}
