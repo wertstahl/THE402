@@ -222,7 +222,7 @@ $(document).ready(() => {
     if (!loop_state.forever) {
       for (i=0; i<loop_state.last; i++) {
         const ball = document.createElement('div');
-        const hasPlayed = i < loop_state.current;
+        const hasPlayed = i >= (loop_state.last - loop_state.current);
         ball.className = 'loop-sequence-indicator';
         ball.setAttribute('mode', hasPlayed ? 'played' : 'unplayed')
         sequenceIndicator.appendChild(ball);
@@ -420,6 +420,16 @@ $(document).ready(() => {
         link.setAttribute("download", toFilename(audio_path));
         link.click();
       }
+    });
+
+    $('#credits-toggle').off().on("click", function() {
+      $('#banner-filters').hide();
+      $('#banner-credits').show();
+    });
+
+    $('#close-toggle').off().on("click", function() {
+      $('#banner-filters').show();
+      $('#banner-credits').hide();
     });
   }
 });

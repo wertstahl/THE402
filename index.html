@@ -36,9 +36,46 @@
           <button target="shuffle-loops"></button>
           <button target="download"></button>
       </div>
-      <div class="looper-row looper-banner">
-        <button target="playlist" mode="402"></button>
+
+      <div class="looper-row banner-bottom">
+        <div id="banner-credits" class="hide">
+          <div>
+            <div class="credits-cell">
+              <div id="credits-logo" />
+            </div>
+            <div class="credits-cell">
+              <div id="credits-text-1">
+                An endless album in random order,<br>
+                consisting of 402 parts, playable on all<br>
+                devices and platforms, no additional<br>
+                software or installation required, free of charge.<br>
+              </div>
+            </div>
+          </div>
+          <div id="credits-text-2">
+            <b>(c)2008-2022 SyS Audio Research - all rights reserved</b><br>
+            code, gapless player, developed by: <a href="https://github.com/regosen" target="_blank">Rego Sen</a><br>
+            concept and design: Sebastian I. Hartmann<br>
+            content: S.I. Hartmann, S. Sippel<br>
+            license: re-use requires written permission by the authors<br>
+            contact email: info @ battlecommand.org<br>
+          </div>
+          <button id="close-toggle">close</button>
+        </div>
       </div>
+
+      <div id="banner-filters">
+        <div class="filters">
+          <button class="filter-button" target="select1"></button>
+          <button class="filter-button" target="select2"></button>
+          <button class="filter-button" target="select3"></button>
+        </div>
+        <div id="bottom-logo" />
+        <button id="credits-toggle">credits</button>
+        <div id="filter-selection" mode="select1" />
+      </div>
+
+
     </div>
 
     </header>
