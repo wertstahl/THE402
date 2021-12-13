@@ -26,16 +26,26 @@ $(document).ready(() => {
     'select2': /\d+D_.*/,
     'select3': /\d+A_.*/,
   }
+  const HOLD_MODES = [
+    [2, 4],
+    [1, 8],
+    [0, 0], // forever hold
+    [1, 1], // no hold (play once)
+  ];
   const maxLoops = parseInt(queryParams.get('maxLoops') || -1);
   const loadLimit = parseInt(queryParams.get('loadLimit') || 5);
   const toFilename = (path) => path.replace(/^.*[\\\/]/, '');
 
   const looperTransportButton = (target) => $(`.looper-transport button[target=${target}]`);
+  const sequenceIndicator = document.querySelector('#loop-sequence');
 
   let playOnLoad = false;
   const audioContext = new AudioContext();
   const loadedAudio = {}; // for visualizer
   const analyser = audioContext.createAnalyser();
+  const loop_state = { forever: false, min: 1, max: 1 };
+  const get_loop_hold = () => loop_state.forever || (loop_state.current < loop_state.last - 1);
+
   const gapless = new Gapless5({
     loop: false, // we handle looping ourselves, so that we can re-shuffle beforehand
     singleMode: false,
@@ -44,7 +54,7 @@ $(document).ready(() => {
     shuffle: false, // we handle (re-)shuffling ourselves
     logLevel: LogLevel.Info, // LogLevel.Debug,
   });
-  update_transport_buttons();
+  set_hold_mode(0);
   
   gapless.onloadstart = (audio_path) => {
     const file_name = toFilename(audio_path);
@@ -68,8 +78,6 @@ $(document).ready(() => {
   gapless.onunload = (audio_path) => {
     delete loadedAudio[audio_path];
   };
-
-  const loop_state = { forever: false, min: 1, max: 1 };
 
   function build_loops() {
     const filter_mode = $('#filter-selection').attr('mode');
@@ -109,8 +117,6 @@ $(document).ready(() => {
   gainNode.connect(audioContext.destination);
   analyser.connect(gainNode);
   analyser.fftSize = SAMPLES_IN_WINDOW;
-
-  const sequenceIndicator = document.querySelector('#loop-sequence');
 
   // define analyser canvas
   function visualize() {
@@ -224,8 +230,6 @@ $(document).ready(() => {
     update_transport_buttons();
     update_sequence_indicator();
   }
-
-  const get_loop_hold = () => loop_state.forever || (loop_state.current < loop_state.last - 1);
   
   function update_sequence_indicator() {
     sequenceIndicator.replaceChildren([]);
@@ -359,6 +363,19 @@ $(document).ready(() => {
     build_loops();
   }
 
+  function set_hold_mode(mode_index) {
+    [hold_min, hold_max] = HOLD_MODES[mode_index];
+    if (hold_min === 0 || hold_max === 0) {
+      loop_state.forever = true;
+    } else {
+      loop_state.forever = false;
+      loop_state.min = hold_min;
+      loop_state.max = hold_max;
+    }
+    reset_loop_state();
+    update_transport_buttons();
+  }
+
   // arm all buttons which belong into looper-transport
   function arm_looper_transport() {
     looperTransportButton("shuffle-loops").off().on("click", function() {
@@ -370,29 +387,10 @@ $(document).ready(() => {
     // arm hold-mode button
     $("button[target=hold-mode]").on("click", function() {
       if ($(this).hasClass("enabled")) {
-        const HOLD_MODES = [
-          [1, 1], // no hold (play once)
-          [0, 0], // forever hold
-          [1, 8],
-          [1, 6],
-          [2, 4],
-          [3, 8],
-        ];
-
         const prevIndex = parseInt($(this).attr("mode"));
         const nextIndex = prevIndex === HOLD_MODES.length - 1 ? 0 : prevIndex + 1;
         $(this).attr("mode", nextIndex);
-
-        [hold_min, hold_max] = HOLD_MODES[nextIndex];
-        if (hold_min === 0 || hold_max === 0) {
-          loop_state.forever = true;
-        } else {
-          loop_state.forever = false;
-          loop_state.min = hold_min;
-          loop_state.max = hold_max;
-        }
-        reset_loop_state();
-        update_transport_buttons();
+        set_hold_mode(nextIndex);
       }
     });
 
