@@ -13,8 +13,7 @@ __additional-code: S. I. Hartmann
   font-family: 'Futura';
   font-style: bold;
   font-weight: 100;
-  src: url(./futures-bold.woff) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  src: url(./futurers-bold.woff) format('woff2');
 }
 
 @font-face {
@@ -22,7 +21,6 @@ __additional-code: S. I. Hartmann
   font-style: normal;
   font-weight: 100;
   src: local('Roboto Thin'), local('Roboto-Thin'), url(./roboto.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 header {
@@ -117,11 +115,11 @@ button:hover {
 
 #loop-tempo {
   display: block;
+  position: absolute;
   width: auto;
-  padding-right: 1em;
-  margin-top: -2em;
+  right: 1em;
+  bottom: 5px;
   color: #000;
-  text-align: right;
   font-weight: 100;
   font-size: 1em;
   z-index: 1;
