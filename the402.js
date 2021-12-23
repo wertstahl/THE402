@@ -225,7 +225,6 @@ $(document).ready(() => {
     looperTransportButton("play-pause").attr("mode", "play");
     $("#loop-name").text("");
     $("#loop-tempo").text("");
-    $("#loop-visualizer").fadeOut(200);
     $("#loop-progress").stop(true, true).animate({ width:'0%' }, 10, 'linear');
     update_transport_buttons();
     update_sequence_indicator();
