@@ -280,6 +280,16 @@ function Gapless5Source(parentPlayer, inAudioPath) {
     }
   };
 
+  this.getDuration = () => {
+    if (source) {
+      return source.buffer.duration;
+    }
+    if (audio) {
+      return audio.duration;
+    }
+    return 0;
+  }
+
   this.load = () => {
     if (state === Gapless5State.Loading) {
       return;
@@ -699,6 +709,7 @@ function Gapless5(options = {}, deprecated = {}) { // eslint-disable-line no-unu
   this.context = window.gapless5AudioContext;
   this.gainNode = (this.context !== undefined) ? this.context.createGain() : null;
   if (this.context && this.gainNode) {
+    this.gainNode.gain.value = options.volume !== undefined ? options.volume : 1.0;
     this.gainNode.connect(this.context.destination);
   }
 
@@ -811,6 +822,18 @@ function Gapless5(options = {}, deprecated = {}) { // eslint-disable-line no-unu
     const normalized = uiPos / scrubSize;
     this.gainNode.gain.value = normalized;
     this.currentSource().setGain(normalized);
+  };
+
+  // normalized between 0 and 1
+  // time is linear and only used for webaudio
+  this.setVolume = (volume, time) => {
+    const { currentTime } = window.gapless5AudioContext;
+    if (time) {
+      this.gainNode.gain.linearRampToValueAtTime(volume, currentTime + time);
+    } else {
+      this.gainNode.gain.setValueAtTime(volume, currentTime);
+    }
+    this.currentSource().setGain(volume);
   };
 
   this.scrub = (uiPos, updateTransport = false) => {
@@ -958,6 +981,7 @@ function Gapless5(options = {}, deprecated = {}) { // eslint-disable-line no-unu
 
   this.setPlaybackRate = (rate) => {
     this.playbackRate = rate;
+    this.playlist.setPlaybackRate(rate);
   };
 
   this.gotoTrack = (pointOrPath, forcePlay, allowOverride = false) => {
