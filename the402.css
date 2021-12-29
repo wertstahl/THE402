@@ -13,7 +13,7 @@ __additional-code: S. I. Hartmann
   font-family: 'Futura';
   font-style: bold;
   font-weight: 100;
-  src: url(./futurers-bold.woff) format('woff2');
+  src: url(./futurers-bold.woff2) format('woff2');
 }
 
 @font-face {
@@ -21,6 +21,11 @@ __additional-code: S. I. Hartmann
   font-style: normal;
   font-weight: 100;
   src: local('Roboto Thin'), local('Roboto-Thin'), url(./roboto.woff2) format('woff2');
+}
+
+html {
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
 }
 
 header {
@@ -108,8 +113,9 @@ button:hover {
   width: auto;
   color: #000;
   text-align: center;
-  font-weight: 100;
-  font-size: 5em;
+  font-family: "Futura";
+  font-weight: 200;
+  font-size: 84px;
   z-index: 1;
 }
 
@@ -118,10 +124,11 @@ button:hover {
   position: absolute;
   width: auto;
   right: 1em;
-  bottom: 5px;
+  bottom: 12px;
   color: #000;
-  font-weight: 100;
-  font-size: 1em;
+  font-family: "Futura";
+  font-weight: 200;
+  font-size: 12px;
   z-index: 1;
 }
 
@@ -237,7 +244,7 @@ button[target=download] {
 
 #banner-bottom div, #banner-bottom button {
   font-family: "Futura";
-  font-size: .5em;
+  font-size: 9px;
   color: #fff;
   background-repeat: no-repeat;
   background-position: center;
@@ -258,11 +265,15 @@ button[target=download] {
 }
 
 #credits-text-1 {
+  padding-top: 4px;
   color: #fefb00 !important;
+  line-height: 125%;
 }
 
 #credits-text-2 {
+  padding-top: 4px;
   padding-left: 10px;
+  line-height: 125%;
 }
 
 #close-toggle {
