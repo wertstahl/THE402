@@ -47,7 +47,7 @@ $(document).ready(() => {
   const get_loop_hold = () => loop_state.forever || (loop_state.current < loop_state.last - 1);
 
   const gapless = new Gapless5({
-    loop: false, // we handle looping ourselves, so that we can re-shuffle beforehand
+    loop: true,
     singleMode: false,
     useHTML5Audio: false, // save memory
     loadLimit,
