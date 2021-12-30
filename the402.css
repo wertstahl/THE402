@@ -16,13 +16,6 @@ __additional-code: S. I. Hartmann
   src: url(./futurers-bold.woff2) format('woff2');
 }
 
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 100;
-  src: local('Roboto Thin'), local('Roboto-Thin'), url(./roboto.woff2) format('woff2');
-}
-
 html {
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
@@ -46,7 +39,7 @@ body {
   width: calc(100% - 4em);
   padding: 1em;
   margin: 200px 1em 1em 1em;
-  font-family: "Roboto", "Helvetica", "sans-serif";
+  font-family: "Futura", "Helvetica", "sans-serif";
   background: #ddd;
 }
 
