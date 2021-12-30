@@ -69,7 +69,7 @@ button:hover {
   display: none;
 }
 
-.no-select {
+span, div, button {
   -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
      -khtml-user-select: none; /* Konqueror HTML */
