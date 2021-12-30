@@ -432,11 +432,11 @@ $(document).ready(() => {
     // bottom panel toggling
     $('#credits-toggle').off().on("click", function() {
       $('#banner-filters').hide();
-      $('#banner-credits').show();
+      $('#banner-credits').css('display', 'flex');
     });
 
     $('#close-toggle').off().on("click", function() {
-      $('#banner-filters').show();
+      $('#banner-filters').css('display', 'block');
       $('#banner-credits').hide();
     });
 
