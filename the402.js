@@ -198,7 +198,7 @@ $(document).ready(() => {
     looper.addEventListener("timeupdate", () => {
       const currentTime = looper.currentTime;
       const duration = looper.duration;
-      $("#loop-progress").stop(true, true).animate({ width:`${(currentTime + 0.25) / duration * 100}%` }, 200, 'linear');
+      $("#loop-progress").stop(true, true).animate({ width:`${100.0 * (currentTime + 0.25) / duration }%` }, 200, 'linear');
     });
 
     // remove playing attribute when loop ended
@@ -289,20 +289,20 @@ $(document).ready(() => {
     let paused = false;
     if (audio_path !== get_loop() || looper.src === '') {
       // switching to a new track
-      looper.src = loadedAudio[audio_path];
-      looper.load();
-      looper.play();
       if (playAudio) {
         reset_loop_state();
         gapless.gotoTrack(audio_path);
         gapless.play();
       }
+      looper.src = loadedAudio[audio_path];
+      looper.load();
+      looper.play();
     } else if (!gapless.isPlaying()) {
       // unpausing
-      looper.play();
       if (playAudio) {
         gapless.play();
       }
+      looper.play();
     } else if (looperTransportButton("play-pause").attr("mode") === "play") {
       // repeating track
       looper.load();
@@ -310,10 +310,10 @@ $(document).ready(() => {
     } else {
       // pausing
       paused = true;
-      looper.pause();
       if (playAudio) {
         gapless.pause();
       }
+      looper.pause();
     }
 
     if (paused) {
