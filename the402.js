@@ -210,9 +210,9 @@ $(document).ready(() => {
 
   function enableButton(target, enable) {
     if (enable) {
-      target.addClass("enabled");
+      target.removeClass("disabled");
     } else {
-      target.removeClass("enabled");
+      target.addClass("disabled");
     }
   };
   
@@ -375,17 +375,21 @@ $(document).ready(() => {
     update_transport_buttons();
   }
 
+  function isEnabled(selector) {
+    return !selector.hasClass("disabled");
+  };
+
   // arm all buttons which belong into looper-transport
   function arm_looper_transport() {
     looperTransportButton("shuffle-loops").off().on("click", function() {
-      if ($(this).hasClass("enabled")) {
+      if (isEnabled($(this))) {
         reset_tracks();
       }
     });
 
     // arm hold-mode button
     $("button[target=hold-mode]").on("click", function() {
-      if ($(this).hasClass("enabled")) {
+      if (isEnabled($(this))) {
         const prevIndex = parseInt($(this).attr("mode"));
         const nextIndex = prevIndex === HOLD_MODES.length - 1 ? 0 : prevIndex + 1;
         $(this).attr("mode", nextIndex);
@@ -395,7 +399,7 @@ $(document).ready(() => {
 
     // play all loops or play current one
     looperTransportButton("play-pause").off().on("click", function() {
-      if ($(this).hasClass("enabled")) {
+      if (isEnabled($(this))) {
         if (gapless.getIndex() === -1) {
           play_loop(gapless.getTracks()[0]);
         } else {
@@ -406,21 +410,21 @@ $(document).ready(() => {
 
     // skip back (prev)
     looperTransportButton("prev-loop").off().on("click", function() {
-      if ($(this).hasClass("enabled")) {
+      if (isEnabled($(this))) {
         play_loop(get_prev());
       }
     });
 
     // skip forward (next)
     looperTransportButton("next-loop").off().on("click", function() {
-      if ($(this).hasClass("enabled")) {
+      if (isEnabled($(this))) {
         play_loop(get_next());
       }
     });
 
     // download file
     looperTransportButton("download").off().on("click", function() {
-      if ($(this).hasClass("enabled")) {
+      if (isEnabled($(this))) {
         const audio_path = get_loop();
         const link = document.createElement("a");
         link.href = loadedAudio[audio_path];

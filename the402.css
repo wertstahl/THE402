@@ -60,7 +60,7 @@ button {
 
 button:focus,
 button:active,
-button:hover {
+button:hover {
   border: 0 !important;
   outline: 0 !important;
 }
@@ -182,13 +182,19 @@ button:hover {
 
 .looper-transport button {
   transition: all 0.2s linear;
-  opacity: 0.4;
+  opacity: 1;
+  cursor: pointer;
   height: 100%;
   width: 100%;
 }
 
-.looper-transport button.enabled {
-  opacity: 1;
+.looper-transport button.disabled {
+  cursor: default;
+  opacity: 0.4 !important;
+}
+
+.looper-transport button:hover {
+  opacity: 0.8;
 }
 
 button[target=play-pause][mode=play] {
