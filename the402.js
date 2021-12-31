@@ -46,6 +46,9 @@ $(document).ready(() => {
   const analyser = audioContext.createAnalyser();
   const loop_state = { forever: false, min: 1, max: 1 };
   const get_loop_hold = () => loop_state.forever || (loop_state.current < loop_state.last - 1);
+  const get_loop = () => gapless.getTracks()[gapless.getIndex()];
+  const get_prev = () => gapless.getTracks()[gapless.getIndex() - 1];
+  const get_next = () => gapless.getTracks()[gapless.getIndex() + 1];
 
   const gapless = new Gapless5({
     loop: true,
@@ -159,7 +162,7 @@ $(document).ready(() => {
       ctx.stroke();
     };
   
-    const draw = function() {
+    const draw = () => {
       requestAnimationFrame(draw);
       const canvasState = $('#loop-visualizer');
       canvas.width = canvasState.width();
@@ -190,10 +193,6 @@ $(document).ready(() => {
 
   // provide looper events
   arm_looper_events();
-
-  function get_loop() { return gapless.getTracks()[gapless.getIndex()]; }
-  function get_prev() { return gapless.getTracks()[gapless.getIndex() - 1]; }
-  function get_next() { return gapless.getTracks()[gapless.getIndex() + 1]; }
   
   function arm_looper_events() {
     // provide progress bar
@@ -207,7 +206,7 @@ $(document).ready(() => {
     });
 
     // remove playing attribute when loop ended
-    gapless.onfinishedtrack = function() {
+    gapless.onfinishedtrack = () => {
       reset_current_loop_progress();
       continuity(get_loop());
     };
@@ -404,18 +403,16 @@ $(document).ready(() => {
       });
     };
 
-    setupButton("shuffle-loops", function() {
-      reset_tracks();
-    });
+    setupButton("shuffle-loops", () => reset_tracks(false));
 
-    setupButton("hold-mode", function(selector) {
+    setupButton("hold-mode", (selector) => {
       const prevIndex = parseInt(selector.attr("mode"));
       const nextIndex = prevIndex === HOLD_MODES.length - 1 ? 0 : prevIndex + 1;
       selector.attr("mode", nextIndex);
       set_hold_mode(nextIndex);
     });
 
-    setupButton("play-pause", function() {
+    setupButton("play-pause", () => {
       if (gapless.getIndex() === -1) {
         play_loop(gapless.getTracks()[0]);
       } else {
@@ -423,15 +420,11 @@ $(document).ready(() => {
       }
     });
 
-    setupButton("prev-loop", function() {
-      play_loop(get_prev());
-    });
+    setupButton("prev-loop", () => play_loop(get_prev()));
 
-    setupButton("next-loop", function() {
-      play_loop(get_next());
-    });
+    setupButton("next-loop", () => play_loop(get_next()));
 
-    setupButton("download", function() {
+    setupButton("download", () => {
       const audio_path = get_loop();
       fetch(loadedAudio[audio_path]).then(r => {
         r.blob().then(audioFile => {
@@ -439,7 +432,7 @@ $(document).ready(() => {
           zip.file("license.txt", LICENSE_MESSAGE);
           zip.file(toFilename(audio_path), audioFile);
           zip.generateAsync({type:"blob"})
-          .then(function(content) {
+          .then(content => {
             download_content(content, 'application/zip', `${toFilename(audio_path)}.zip`);
           });
         })
@@ -447,19 +440,19 @@ $(document).ready(() => {
     });
 
     // bottom panel toggling
-    $('#credits-toggle').off().on("click", function() {
+    $('#credits-toggle').off().on("click", () => {
       $('#banner-filters').hide();
       $('#banner-credits').css('display', 'flex');
     });
 
-    $('#close-toggle').off().on("click", function() {
+    $('#close-toggle').off().on("click", () => {
       $('#banner-filters').css('display', 'block');
       $('#banner-credits').hide();
     });
 
     // bottom panel filtering
     Object.keys(PLAYLIST_FILTERS).forEach((filter_mode) => {
-      $(`.filter-button[target="${filter_mode}"`).off().on("click", function() {
+      $(`.filter-button[target="${filter_mode}"`).off().on("click", () => {
         if ($('#filter-selection').attr('mode') !== filter_mode) {
           $('#filter-selection').attr('mode', filter_mode);
           reset_tracks();
