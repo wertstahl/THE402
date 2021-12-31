@@ -389,8 +389,8 @@ $(document).ready(() => {
       button.animate({ backgroundSize: '75%' }, 0);
       button.off().on("click", function() {
         if (isEnabled($(this))) {
-          $(this).animate({ backgroundSize: '50%' }, 100, 'linear', function() {
-            $(this).animate({ backgroundSize: '75%' }, 100, 'linear'); }
+          $(this).animate({ backgroundSize: '50%' }, 50, 'linear', function() {
+            $(this).animate({ backgroundSize: '75%' }, 50, 'linear'); }
           );
           onClick($(this));
         }
