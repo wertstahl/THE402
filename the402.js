@@ -1,7 +1,7 @@
 /*
 THE402 (c) 2008 - 2022 SyS Audio Research
 __type: js
-__version: 0.3
+__version: 0.4
 __author: Rego Sen
 __additional-code: D. Zahn
 __additional-code: S. I. Hartmann
@@ -407,7 +407,6 @@ $(document).ready(() => {
     setupButton("shuffle-loops", function() {
       reset_tracks();
     });
-
 
     setupButton("hold-mode", function(selector) {
       const prevIndex = parseInt(selector.attr("mode"));
