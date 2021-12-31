@@ -10,7 +10,7 @@ __additional-code: S. I. Hartmann
 $(document).ready(() => {
   const WAVES_IN_WINDOW = 100; // number of peak+vally square waves in canvas
   const SAMPLES_IN_WINDOW = 1024; // number of samples represented in canvas
-  const LICENSE_MESSAGE = "You are welcome to use this loop in a noncomercial fashion, royalty free, after getting written permission by sending an email to info@battlecommand.org";
+  const LICENSE_MESSAGE = "You are welcome to use this loop in a non-commercial fashion, royalty free, after getting written permission by sending an email to info@battlecommand.org";
   
   // options are low, med, high
   const queryParams = new URLSearchParams(window.location.search);
@@ -380,8 +380,13 @@ $(document).ready(() => {
     update_transport_buttons();
   }
 
-  function isEnabled(selector) {
-    return !selector.hasClass("disabled");
+  function download_content(content, type, filename) {
+    const link = document.createElement("a");
+    const file = new File([ content ], filename, { type });
+    const blobURL = URL.createObjectURL(file);
+    link.href = blobURL;
+    link.setAttribute("download", filename);
+    link.click();
   };
 
   // arm all buttons which belong into looper-transport
@@ -390,7 +395,7 @@ $(document).ready(() => {
       const button = looperTransportButton(target);
       button.animate({ backgroundSize: '75%' }, 0);
       button.off().on("click", function() {
-        if (isEnabled($(this))) {
+        if (!$(this).hasClass("disabled")) {
           $(this).animate({ backgroundSize: '50%' }, 50, 'linear', function() {
             $(this).animate({ backgroundSize: '75%' }, 50, 'linear'); }
           );
@@ -431,18 +436,12 @@ $(document).ready(() => {
       const audio_path = get_loop();
       fetch(loadedAudio[audio_path]).then(r => {
         r.blob().then(audioFile => {
-          var zip = new JSZip();
+          const zip = new JSZip();
           zip.file("license.txt", LICENSE_MESSAGE);
           zip.file(toFilename(audio_path), audioFile);
           zip.generateAsync({type:"blob"})
           .then(function(content) {
-            const link = document.createElement("a");
-            const filename = toFilename(audio_path) + ".zip";
-            const file = new File([ content ], filename, { type: 'application/zip' });
-            const blobURL = URL.createObjectURL(file);
-            link.href = blobURL;
-            link.setAttribute("download", filename);
-            link.click();
+            download_content(content, 'application/zip', `${toFilename(audio_path)}.zip`);
           });
         })
       });
