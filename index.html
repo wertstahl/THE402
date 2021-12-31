@@ -12,6 +12,7 @@
     <script src="jquery.js" type="text/javascript"></script>
     <script src="gapless5.js" type="text/javascript"></script>
     <script src="the402.js" type="text/javascript"></script>
+    <script src="jszip.min.js" type="text/javascript"></script>
     <title>the402</title>
   </head>
   <body>
@@ -19,20 +20,20 @@
       <div id="player-block">
         <div class="looper-row">
           <canvas id="loop-visualizer" class="hide"></canvas>
-          <span id="loop-name" class="no-select"></span>
-          <span id="loop-tempo" class="no-select"></span>
+          <span id="loop-name"></span>
+          <span id="loop-tempo"></span>
           <div id="loop-progress"></div>
           <div id="loop-sequence"></div>
         </div>
         <div class="looper-row looper-transport">
-          <button target="prev-loop"></button>
-          <button target="play-pause" mode="play"></button>
-          <button target="next-loop"></button>
+          <button class="disabled" target="prev-loop"></button>
+          <button class="disabled" target="play-pause" mode="play"></button>
+          <button class="disabled" target="next-loop"></button>
         </div>
         <div class="looper-row looper-transport">
-          <button target="hold-mode" mode="0"></button>
-          <button target="shuffle-loops"></button>
-          <button target="download"></button>
+          <button class="disabled" target="hold-mode" mode="0"></button>
+          <button class="disabled" target="shuffle-loops"></button>
+          <button class="disabled" target="download"></button>
       </div>
 
       <div id="banner-bottom">
@@ -80,6 +81,6 @@
     </header>
 
     <!-- the loop-player -->
-    <audio class="hide" loop preload=""></audio>
+    <audio class="hide" preload=""></audio>
   
 </body></html>

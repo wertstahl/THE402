@@ -1,7 +1,7 @@
 /*
 THE402 (c) 2008 - 2022 SyS Audio Research
 __type: js
-__version: 0.3
+__version: 0.4
 __author: Rego Sen
 __additional-code: D. Zahn
 __additional-code: S. I. Hartmann
@@ -9,7 +9,8 @@ __additional-code: S. I. Hartmann
 
 $(document).ready(() => {
   const WAVES_IN_WINDOW = 100; // number of peak+vally square waves in canvas
-  const SAMPLES_IN_WINDOW = 1024; // number of samples represented in canvas  
+  const SAMPLES_IN_WINDOW = 1024; // number of samples represented in canvas
+  const LICENSE_MESSAGE = "You are welcome to use this loop in a non-commercial fashion, royalty free, after getting written permission by sending an email to info@battlecommand.org";
   
   // options are low, med, high
   const queryParams = new URLSearchParams(window.location.search);
@@ -130,6 +131,7 @@ $(document).ready(() => {
     update_transport_buttons();
   });
   gapless.forEach(player => player.onunload = (audio_path) => {
+    URL.revokeObjectURL(loadedAudio[audio_path]);
     delete loadedAudio[audio_path];
   });
 
@@ -250,9 +252,12 @@ $(document).ready(() => {
   function arm_looper_events() {
     // provide progress bar
     looper.addEventListener("timeupdate", () => {
-      const currentTime = looper.currentTime;
-      const duration = looper.duration;
-      $("#loop-progress").stop(true, true).animate({ width:`${(currentTime + 0.25) / duration * 100}%` }, 200, 'linear');
+      const { currentTime, duration } = looper;
+      if (currentTime === 0) {
+        $("#loop-progress").stop(true, true).animate({ width:'0%' }, 10, 'linear');
+      } else {
+        $("#loop-progress").stop(true, true).animate({ width:`${100.0 * (currentTime + 0.4) / duration }%` }, 200, 'linear');
+      }
     });
 
     // remove playing attribute when loop ended
@@ -264,9 +269,9 @@ $(document).ready(() => {
 
   function enableButton(target, enable) {
     if (enable) {
-      target.addClass("enabled");
+      target.removeClass("disabled");
     } else {
-      target.removeClass("enabled");
+      target.addClass("disabled");
     }
   };
   
@@ -346,9 +351,6 @@ $(document).ready(() => {
     let paused = false;
     if (audio_path !== get_loop() || looper.src === '') {
       // switching to a new track
-      looper.src = loadedAudio[audio_path];
-      looper.load();
-      looper.play();
       if (playAudio) {
         reset_loop_state();
         gapless.gotoTrack(audio_path);
@@ -360,10 +362,10 @@ $(document).ready(() => {
       }
     } else if (!gapless.current().isPlaying()) {
       // unpausing
-      looper.play();
       if (playAudio) {
         gapless.forEach((player) => { player.play() });
       }
+      looper.play();
     } else if (looperTransportButton("play-pause").attr("mode") === "play") {
       // repeating track
       looper.load();
@@ -371,10 +373,10 @@ $(document).ready(() => {
     } else {
       // pausing
       paused = true;
-      looper.pause();
       if (playAudio) {
         gapless.forEach((player) => { player.pause() });
       }
+      looper.pause();
     }
 
     if (paused) {
@@ -438,68 +440,80 @@ $(document).ready(() => {
     update_transport_buttons();
   }
 
+  function download_content(content, type, filename) {
+    const link = document.createElement("a");
+    const file = new File([ content ], filename, { type });
+    const blobURL = URL.createObjectURL(file);
+    link.href = blobURL;
+    link.setAttribute("download", filename);
+    link.click();
+  };
+
   // arm all buttons which belong into looper-transport
   function arm_looper_transport() {
-    looperTransportButton("shuffle-loops").off().on("click", function() {
-      if ($(this).hasClass("enabled")) {
-        reset_tracks();
-      }
-    });
-
-    // arm hold-mode button
-    $("button[target=hold-mode]").on("click", function() {
-      if ($(this).hasClass("enabled")) {
-        const prevIndex = parseInt($(this).attr("mode"));
-        const nextIndex = prevIndex === HOLD_MODES.length - 1 ? 0 : prevIndex + 1;
-        $(this).attr("mode", nextIndex);
-        set_hold_mode(nextIndex);
-      }
-    });
-
-    // play all loops or play current one
-    looperTransportButton("play-pause").off().on("click", function() {
-      if ($(this).hasClass("enabled")) {
-        if (gapless.current().getIndex() === -1) {
-          play_loop(gapless.current().getTracks()[0]);
-        } else {
-          play_loop(get_loop());
+    const setupButton = (target, onClick) => {
+      const button = looperTransportButton(target);
+      button.animate({ backgroundSize: '75%' }, 0);
+      button.off().on("click", function() {
+        if (!$(this).hasClass("disabled")) {
+          $(this).animate({ backgroundSize: '50%' }, 50, 'linear', function() {
+            $(this).animate({ backgroundSize: '75%' }, 50, 'linear'); }
+          );
+          onClick($(this));
         }
+      });
+    };
+
+    setupButton("shuffle-loops", function() {
+      reset_tracks();
+    });
+
+    setupButton("hold-mode", function(selector) {
+      const prevIndex = parseInt(selector.attr("mode"));
+      const nextIndex = prevIndex === HOLD_MODES.length - 1 ? 0 : prevIndex + 1;
+      selector.attr("mode", nextIndex);
+      set_hold_mode(nextIndex);
+    });
+
+    setupButton("play-pause", function() {
+      if (gapless.getIndex() === -1) {
+        play_loop(gapless.current().getTracks()[0]);
+      } else {
+        play_loop(get_loop());
       }
     });
 
-    // skip back (prev)
-    looperTransportButton("prev-loop").off().on("click", function() {
-      if ($(this).hasClass("enabled")) {
-        play_loop(get_prev());
-      }
+    setupButton("prev-loop", function() {
+      play_loop(get_prev());
     });
 
-    // skip forward (next)
-    looperTransportButton("next-loop").off().on("click", function() {
-      if ($(this).hasClass("enabled")) {
-        play_loop(get_next());
-      }
+    setupButton("next-loop", function() {
+      play_loop(get_next());
     });
 
-    // download file
-    looperTransportButton("download").off().on("click", function() {
-      if ($(this).hasClass("enabled")) {
-        const audio_path = get_loop();
-        const link = document.createElement("a");
-        link.href = loadedAudio[audio_path];
-        link.setAttribute("download", toFilename(audio_path));
-        link.click();
-      }
+    setupButton("download", function() {
+      const audio_path = get_loop();
+      fetch(loadedAudio[audio_path]).then(r => {
+        r.blob().then(audioFile => {
+          const zip = new JSZip();
+          zip.file("license.txt", LICENSE_MESSAGE);
+          zip.file(toFilename(audio_path), audioFile);
+          zip.generateAsync({type:"blob"})
+          .then(function(content) {
+            download_content(content, 'application/zip', `${toFilename(audio_path)}.zip`);
+          });
+        })
+      });
     });
 
     // bottom panel toggling
     $('#credits-toggle').off().on("click", function() {
       $('#banner-filters').hide();
-      $('#banner-credits').show();
+      $('#banner-credits').css('display', 'flex');
     });
 
     $('#close-toggle').off().on("click", function() {
-      $('#banner-filters').show();
+      $('#banner-filters').css('display', 'block');
       $('#banner-credits').hide();
     });
 

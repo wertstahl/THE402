@@ -191,6 +191,7 @@ function Gapless5Source(parentPlayer, inAudioPath) {
       source.connect(player.gainNode);
       source.buffer = buffer;
       source.playbackRate.value = player.playbackRate;
+      source.loop = player.loop && (player.singleMode || player.totalTracks() === 1);
 
       const restSec = source.buffer.duration - offsetSec;
       if (endedCallback) {
@@ -344,6 +345,7 @@ function Gapless5Source(parentPlayer, inAudioPath) {
         const audioObj = new Audio();
         audioObj.controls = false;
         audioObj.playbackRate = player.playbackRate;
+        audioObj.loop = player.loop && (player.singleMode || player.totalTracks() === 1);
         audioObj.addEventListener('canplaythrough', onLoadedHTML5Audio, false);
         audioObj.addEventListener('ended', onEnded, false);
         audioObj.addEventListener('play', onPlayEvent, false);
@@ -862,16 +864,17 @@ function Gapless5(options = {}, deprecated = {}) { // eslint-disable-line no-unu
   this.onEndedCallback = () => {
     // we've finished playing the track
     const { audioPath } = this.currentSource();
-    this.currentSource().stop(true);
     resetPosition();
     if (this.loop || this.getIndex() < this.totalTracks() - 1) {
-      if (this.singleMode) {
+      if (this.singleMode || this.totalTracks() === 1) {
         this.prev(true);
       } else {
+        this.currentSource().stop(true);
         this.next(true);
       }
       this.onfinishedtrack(audioPath);
     } else {
+      this.currentSource().stop(true);
       this.onfinishedtrack(audioPath);
       this.onfinishedall();
     }
