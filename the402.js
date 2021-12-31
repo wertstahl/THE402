@@ -200,7 +200,7 @@ $(document).ready(() => {
       if (currentTime === 0) {
         $("#loop-progress").stop(true, true).animate({ width:'0%' }, 10, 'linear');
       } else {
-        $("#loop-progress").stop(true, true).animate({ width:`${100.0 * (currentTime + 0.25) / duration }%` }, 200, 'linear');
+        $("#loop-progress").stop(true, true).animate({ width:`${100.0 * (currentTime + 0.4) / duration }%` }, 200, 'linear');
       }
     });
 
