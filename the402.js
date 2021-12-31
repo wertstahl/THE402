@@ -10,6 +10,7 @@ __additional-code: S. I. Hartmann
 $(document).ready(() => {
   const WAVES_IN_WINDOW = 100; // number of peak+vally square waves in canvas
   const SAMPLES_IN_WINDOW = 1024; // number of samples represented in canvas
+  const LICENSE_MESSAGE = "You are welcome to use this loop in a noncomercial fashion, royalty free, after getting written permission by sending an email to info@battlecommand.org";
   
   // options are low, med, high
   const queryParams = new URLSearchParams(window.location.search);
@@ -76,6 +77,7 @@ $(document).ready(() => {
     update_transport_buttons();
   }
   gapless.onunload = (audio_path) => {
+    URL.revokeObjectURL(loadedAudio[audio_path]);
     delete loadedAudio[audio_path];
   };
 
@@ -427,10 +429,23 @@ $(document).ready(() => {
 
     setupButton("download", function() {
       const audio_path = get_loop();
-      const link = document.createElement("a");
-      link.href = loadedAudio[audio_path];
-      link.setAttribute("download", toFilename(audio_path));
-      link.click();
+      fetch(loadedAudio[audio_path]).then(r => {
+        r.blob().then(audioFile => {
+          var zip = new JSZip();
+          zip.file("license.txt", LICENSE_MESSAGE);
+          zip.file(toFilename(audio_path), audioFile);
+          zip.generateAsync({type:"blob"})
+          .then(function(content) {
+            const link = document.createElement("a");
+            const filename = toFilename(audio_path) + ".zip";
+            const file = new File([ content ], filename, { type: 'application/zip' });
+            const blobURL = URL.createObjectURL(file);
+            link.href = blobURL;
+            link.setAttribute("download", filename);
+            link.click();
+          });
+        })
+      });
     });
 
     // bottom panel toggling
