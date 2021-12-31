@@ -384,56 +384,53 @@ $(document).ready(() => {
 
   // arm all buttons which belong into looper-transport
   function arm_looper_transport() {
-    looperTransportButton("shuffle-loops").off().on("click", function() {
-      if (isEnabled($(this))) {
-        reset_tracks();
-      }
-    });
-
-    // arm hold-mode button
-    $("button[target=hold-mode]").on("click", function() {
-      if (isEnabled($(this))) {
-        const prevIndex = parseInt($(this).attr("mode"));
-        const nextIndex = prevIndex === HOLD_MODES.length - 1 ? 0 : prevIndex + 1;
-        $(this).attr("mode", nextIndex);
-        set_hold_mode(nextIndex);
-      }
-    });
-
-    // play all loops or play current one
-    looperTransportButton("play-pause").off().on("click", function() {
-      if (isEnabled($(this))) {
-        if (gapless.getIndex() === -1) {
-          play_loop(gapless.getTracks()[0]);
-        } else {
-          play_loop(get_loop());
+    const setupButton = (target, onClick) => {
+      const button = looperTransportButton(target);
+      button.animate({ backgroundSize: '75%' }, 0);
+      button.off().on("click", function() {
+        if (isEnabled($(this))) {
+          $(this).animate({ backgroundSize: '50%' }, 100, 'linear', function() {
+            $(this).animate({ backgroundSize: '75%' }, 100, 'linear'); }
+          );
+          onClick($(this));
         }
+      });
+    };
+
+    setupButton("shuffle-loops", function() {
+      reset_tracks();
+    });
+
+
+    setupButton("hold-mode", function(selector) {
+      const prevIndex = parseInt(selector.attr("mode"));
+      const nextIndex = prevIndex === HOLD_MODES.length - 1 ? 0 : prevIndex + 1;
+      selector.attr("mode", nextIndex);
+      set_hold_mode(nextIndex);
+    });
+
+    setupButton("play-pause", function() {
+      if (gapless.getIndex() === -1) {
+        play_loop(gapless.getTracks()[0]);
+      } else {
+        play_loop(get_loop());
       }
     });
 
-    // skip back (prev)
-    looperTransportButton("prev-loop").off().on("click", function() {
-      if (isEnabled($(this))) {
-        play_loop(get_prev());
-      }
+    setupButton("prev-loop", function() {
+      play_loop(get_prev());
     });
 
-    // skip forward (next)
-    looperTransportButton("next-loop").off().on("click", function() {
-      if (isEnabled($(this))) {
-        play_loop(get_next());
-      }
+    setupButton("next-loop", function() {
+      play_loop(get_next());
     });
 
-    // download file
-    looperTransportButton("download").off().on("click", function() {
-      if (isEnabled($(this))) {
-        const audio_path = get_loop();
-        const link = document.createElement("a");
-        link.href = loadedAudio[audio_path];
-        link.setAttribute("download", toFilename(audio_path));
-        link.click();
-      }
+    setupButton("download", function() {
+      const audio_path = get_loop();
+      const link = document.createElement("a");
+      link.href = loadedAudio[audio_path];
+      link.setAttribute("download", toFilename(audio_path));
+      link.click();
     });
 
     // bottom panel toggling
