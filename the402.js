@@ -114,6 +114,11 @@ $(document).ready(() => {
     }
   };
   const gapless = new Gapless5Wrapper(loadLimit);
+
+  // CONTEXT UTILITIES
+  const get_loop = (offset = 0) => gapless.current().getTracks()[gapless.current().getIndex() + offset];
+  const get_prev = () => get_loop(-1);
+  const get_next = () => get_loop(1);
   set_hold_mode(0);
   
   gapless.forEach(player => player.onloadstart = (audio_path) => {
@@ -477,7 +482,7 @@ $(document).ready(() => {
     });
 
     setupButton("play-pause", () => {
-      if (gapless.getIndex() === -1) {
+      if (gapless.current().getIndex() === -1) {
         play_loop(gapless.current().getTracks()[0]);
       } else {
         play_loop(get_loop());
