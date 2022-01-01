@@ -8,14 +8,12 @@ __additional-code: S. I. Hartmann
 */
 
 $(document).ready(() => {
+  // CONSTANTS
   const WAVES_IN_WINDOW = 100; // number of peak+vally square waves in canvas
   const SAMPLES_IN_WINDOW = 1024; // number of samples represented in canvas
   const LICENSE_MESSAGE = "You are welcome to use this loop in a non-commercial fashion, royalty free, after getting written permission by sending an email to info@battlecommand.org";
   
-  // options are low, med, high
-  const queryParams = new URLSearchParams(window.location.search);
-  const quality = queryParams.get('quality') || 'low';
-  const LOOPS_REPOSITORY = `https://the402.wertstahl.de/${quality}`;
+  const LOOPS_REPOSITORY = 'https://the402.wertstahl.de';
   const EXT_TO_TYPE = {
     wav: 'audio/x-wav',
     mp3: 'audio/mpeg',
@@ -28,28 +26,34 @@ $(document).ready(() => {
     'select3': /\d+A_.*/,
   }
   const HOLD_MODES = [
-    [2, 4],
-    [1, 8],
-    [0, 0], // forever hold
-    [1, 1], // no hold (play once)
+    [2, 4], // RND: 2-4
+    [1, 8], // RND (1-8)
+    [0, 0], // Hold single loop
+    [1, 1], // No hold (play each loop once)
   ];
+
+  // CONFIG
+  const queryParams = new URLSearchParams(window.location.search); // low, med, high
+  const quality = queryParams.get('quality') || 'low';
   const maxLoops = parseInt(queryParams.get('maxLoops') || -1);
   const loadLimit = parseInt(queryParams.get('loadLimit') || 5);
+
+  // UTILITIES
   const toFilename = (path) => path.replace(/^.*[\\\/]/, '');
-
   const looperTransportButton = (target) => $(`.looper-transport button[target=${target}]`);
-  const sequenceIndicator = document.querySelector('#loop-sequence');
+  const getLoopsPath = (path) => `${LOOPS_REPOSITORY}/${quality}/${path}`;
 
+  // SELECTORS
+  const sequenceIndicator = document.querySelector('#loop-sequence');
+  const looper = document.querySelector('audio');
+
+  // STATE
   let playOnLoad = false;
-  const audioContext = new AudioContext();
-  const loadedAudio = {}; // for visualizer
-  const analyser = audioContext.createAnalyser();
+  const loadedAudio = {}; // for visualizer, downloads, enabling prev/next, etc.
   const loop_state = { forever: false, min: 1, max: 1 };
   const get_loop_hold = () => loop_state.forever || (loop_state.current < loop_state.last - 1);
-  const get_loop = () => gapless.getTracks()[gapless.getIndex()];
-  const get_prev = () => gapless.getTracks()[gapless.getIndex() - 1];
-  const get_next = () => gapless.getTracks()[gapless.getIndex() + 1];
 
+  // CONTEXTS
   const gapless = new Gapless5({
     loop: true,
     singleMode: false,
@@ -58,8 +62,6 @@ $(document).ready(() => {
     shuffle: false, // we handle (re-)shuffling ourselves
     logLevel: LogLevel.Info, // LogLevel.Debug,
   });
-  set_hold_mode(0);
-  
   gapless.onloadstart = (audio_path) => {
     const file_name = toFilename(audio_path);
     const ext = file_name.split('.')[1].toLowerCase();
@@ -83,6 +85,31 @@ $(document).ready(() => {
     URL.revokeObjectURL(loadedAudio[audio_path]);
     delete loadedAudio[audio_path];
   };
+  gapless.onfinishedtrack = () => {
+    reset_current_loop_progress();
+    continuity(get_loop());
+  };
+
+  // Local audio context for visualizer and progress bar
+  const audioContext = new AudioContext();
+  const analyser = function() {
+    const analyserNode = audioContext.createAnalyser();
+    const track = audioContext.createMediaElementSource(looper);
+    track.connect(analyserNode);
+  
+    const gainNode = audioContext.createGain();
+    gainNode.gain.value = 0;
+    gainNode.connect(audioContext.destination);
+    analyserNode.connect(gainNode);
+    analyserNode.fftSize = SAMPLES_IN_WINDOW;
+    return analyserNode;
+  }();
+
+  // CONTEXT UTILITIES
+  const get_loop = (offset = 0) => gapless.getTracks()[gapless.getIndex() + offset];
+  const get_prev = () => get_loop(-1);
+  const get_next = () => get_loop(1);
+  set_hold_mode(0);
 
   function build_loops() {
     const filter_mode = $('#filter-selection').attr('mode');
@@ -91,7 +118,7 @@ $(document).ready(() => {
     // Fetches from 'file://...' are not supported
     // To run locally, call 'python -m http.server 8000' and visit http://localhost:8000
     if (window.location.protocol !== 'file:') {
-      const list_path = `${LOOPS_REPOSITORY}/list.txt`;
+      const list_path = getLoopsPath('list.txt');
       fetch(list_path)
         .then((response) => response.text())
         .then((text) => {
@@ -100,7 +127,7 @@ $(document).ready(() => {
           const num_loops = maxLoops >= 0 ? maxLoops : loops.length;
           for (let i = 0; i < num_loops; i++) {
             if (loops[i].match(filter_regex)) {
-              const audio_path = `${LOOPS_REPOSITORY}/${loops[i]}`;
+              const audio_path = getLoopsPath(loops[i]);
               gapless.addTrack(audio_path);
             }
           }
@@ -110,19 +137,6 @@ $(document).ready(() => {
   }
   build_loops();
   
-  // create audio element from audio element. 1 naise sache.
-  const looper = document.querySelector('audio');
-  // init track object for audio context as media element source
-  const track = audioContext.createMediaElementSource(looper);
-  track.connect(analyser);
-
-  // silence loop
-  const gainNode = audioContext.createGain();
-  gainNode.gain.value = 0;
-  gainNode.connect(audioContext.destination);
-  analyser.connect(gainNode);
-  analyser.fftSize = SAMPLES_IN_WINDOW;
-
   // define analyser canvas
   function visualize() {
     const canvas = document.querySelector('#loop-visualizer');
@@ -204,28 +218,18 @@ $(document).ready(() => {
         $("#loop-progress").stop(true, true).animate({ width:`${100.0 * (currentTime + 0.4) / duration }%` }, 200, 'linear');
       }
     });
-
-    // remove playing attribute when loop ended
-    gapless.onfinishedtrack = () => {
-      reset_current_loop_progress();
-      continuity(get_loop());
-    };
   }
-
-  function enableButton(target, enable) {
-    if (enable) {
-      target.removeClass("disabled");
-    } else {
-      target.addClass("disabled");
-    }
-  };
   
   function enableTransportButton(target, enable) {
-    enableButton(looperTransportButton(target), enable);
+    if (enable) {
+      looperTransportButton(target).removeClass("disabled");
+    } else {
+      looperTransportButton(target).addClass("disabled");
+    }
   };
 
   function reset_current_loop_progress() {
-    enableButton($("button[target=remove-loop]"), true);
+    $("button[target=remove-loop]").removeClass("disabled");
     looperTransportButton("play-pause").attr("mode", "play");
     $("#loop-name").text("");
     $("#loop-tempo").text("");
@@ -333,16 +337,19 @@ $(document).ready(() => {
     const audio_path = get_loop();
     const canPlay = audio_path in loadedAudio;
     enableTransportButton("play-pause", canPlay);
-    enableTransportButton("hold-mode", canPlay);
     enableTransportButton("download", canPlay);
+    enableTransportButton("hold-mode", true); // hold mode can be changed regardless of state
 
     if (audio_path) {
       const [id, tempo, _name] = toFilename(audio_path).split('.')[0].split('_');
       $("#loop-name").text(id);
       $("#loop-tempo").text(`${tempo} BPM`);
     }
-
-    if (gapless.getIndex() >= 0) {
+    if (!canPlay) {
+      enableTransportButton("shuffle-loops", false);
+      enableTransportButton("prev-loop", false);
+      enableTransportButton("next-loop", false);
+    } else if (gapless.getIndex() >= 0) {
       // don't allow shuffle if a track is playing or paused
       enableTransportButton("shuffle-loops", !gapless.isPlaying());
 
@@ -359,6 +366,7 @@ $(document).ready(() => {
     gapless.stop();
     gapless.removeAllTracks();
     for (const audio_path in loadedAudio) {
+      URL.revokeObjectURL(loadedAudio[audio_path]);
       delete loadedAudio[audio_path];
     }
     update_transport_buttons();
