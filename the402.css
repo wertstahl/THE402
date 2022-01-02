@@ -254,7 +254,7 @@ button[target=shuffle-loops] {
   background-image: url('./assets-gui/reshuffle.png');
 }
 button[target=download] {
-  background-image: url('./assets-gui/dl_wav.png');
+  background-image: url('./assets-gui/dl_loop.png');
 }
 
 /* Bottom Panels */
