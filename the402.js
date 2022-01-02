@@ -27,8 +27,8 @@ $(document).ready(() => {
   }
   const HOLD_MODES = [
     [2, 4], // RND: 2-4
-    [1, 8], // RND (1-8)
     [0, 0], // Hold single loop
+    [1, 8], // RND (1-8)
     [1, 1], // No hold (play each loop once)
   ];
 
