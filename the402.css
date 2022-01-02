@@ -79,6 +79,28 @@ span, div, button {
                                   supported by Chrome, Edge, Opera and Firefox */
 }
 
+/* Mobile Overrides */
+
+@media only screen and (max-width: 400px) {
+  div {
+    border-radius: 0 !important;
+  }
+  #player-block, body, header {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: 100% !important;
+  }
+  #loop-name {
+    font-size: 72px !important;
+  }
+
+  #loop-visualizer {
+    margin-top: -5px !important;
+  }
+}
+
 /* Overall Layout */
 
 #player-block {
@@ -128,7 +150,7 @@ span, div, button {
 #loop-progress {
   position: absolute;
   z-index: 999;
-  width: 0px;
+  width: 0;
   height: 5px;
   background: #ff2f1b;
   bottom:0;
