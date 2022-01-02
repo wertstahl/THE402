@@ -94,9 +94,17 @@ span, div, button {
   #loop-name {
     font-size: 72px !important;
   }
-
   #loop-visualizer {
     margin-top: -5px !important;
+  }
+  #filter-selection[mode=select1] {
+    left: calc(12% - 44px) !important;
+  }
+  #filter-selection[mode=select2] {
+    left: calc(50% - 66px) !important;
+  }
+  #filter-selection[mode=select3] {
+    left: calc(88% - 88px) !important;
   }
 }
 
