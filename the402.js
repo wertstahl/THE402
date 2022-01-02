@@ -50,8 +50,8 @@ $(document).ready(() => {
   // STATE
   let playOnLoad = false;
   const loadedAudio = {}; // for visualizer, downloads, enabling prev/next, etc.
-  const loop_state = { forever: false, min: 1, max: 1 };
-  const get_loop_hold = () => loop_state.forever || (loop_state.current < loop_state.last - 1);
+  const loopState = { forever: false, min: 1, max: 1 };
+  const getLoopHold = () => loopState.forever || (loopState.current < loopState.last - 1);
 
   // CONTEXTS
   const gapless = new Gapless5({
@@ -62,32 +62,32 @@ $(document).ready(() => {
     shuffle: false, // we handle (re-)shuffling ourselves
     logLevel: LogLevel.Info, // LogLevel.Debug,
   });
-  gapless.onloadstart = (audio_path) => {
-    const file_name = toFilename(audio_path);
-    const ext = file_name.split('.')[1].toLowerCase();
+  gapless.onloadstart = (audioPath) => {
+    const fileName = toFilename(audioPath);
+    const ext = fileName.split('.')[1].toLowerCase();
     const mediaType = EXT_TO_TYPE[ext];
-    fetch(audio_path).then((response) => response.blob())
+    fetch(audioPath).then((response) => response.blob())
     .then((blob) => {
-      const file = new File([ blob ], file_name, { type: mediaType });
+      const file = new File([ blob ], fileName, { type: mediaType });
       const blobURL = URL.createObjectURL(file);
-      loadedAudio[audio_path] = blobURL;
-      update_transport_buttons();
-      if (playOnLoad && audio_path === gapless.getTracks()[0]) {
+      loadedAudio[audioPath] = blobURL;
+      updateTransportButtons();
+      if (playOnLoad && audioPath === gapless.getTracks()[0]) {
         playOnLoad = false;
-        play_loop(audio_path);
+        playLoop(audioPath);
       }
     }).catch((err) => console.error(err));
   };
   gapless.onload = () => {
-    update_transport_buttons();
+    updateTransportButtons();
   }
-  gapless.onunload = (audio_path) => {
-    URL.revokeObjectURL(loadedAudio[audio_path]);
-    delete loadedAudio[audio_path];
+  gapless.onunload = (audioPath) => {
+    URL.revokeObjectURL(loadedAudio[audioPath]);
+    delete loadedAudio[audioPath];
   };
   gapless.onfinishedtrack = () => {
-    reset_current_loop_progress();
-    continuity(get_loop());
+    resetCurrentLoopProgress();
+    continuity(getLoop());
   };
 
   // Local audio context for visualizer and progress bar
@@ -106,36 +106,36 @@ $(document).ready(() => {
   }();
 
   // CONTEXT UTILITIES
-  const get_loop = (offset = 0) => gapless.getTracks()[gapless.getIndex() + offset];
-  const get_prev = () => get_loop(-1);
-  const get_next = () => get_loop(1);
-  set_hold_mode(0);
+  const getLoop = (offset = 0) => gapless.getTracks()[gapless.getIndex() + offset];
+  const getPrev = () => getLoop(-1);
+  const getNext = () => getLoop(1);
+  setHoldMode(0);
 
-  function build_loops() {
-    const filter_mode = $('#filter-selection').attr('mode');
-    const filter_regex = PLAYLIST_FILTERS[filter_mode];
+  function buildLoops() {
+    const filterMode = $('#filter-selection').attr('mode');
+    const filterRegex = PLAYLIST_FILTERS[filterMode];
 
     // Fetches from 'file://...' are not supported
     // To run locally, call 'python -m http.server 8000' and visit http://localhost:8000
     if (window.location.protocol !== 'file:') {
-      const list_path = getLoopsPath('list.txt');
-      fetch(list_path)
+      const listPath = getLoopsPath('list.txt');
+      fetch(listPath)
         .then((response) => response.text())
         .then((text) => {
-          const ordered_loops = text.trim().split('\n');
-          const loops = ordered_loops.map(a => ({ sort: Math.random(), value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
-          const num_loops = maxLoops >= 0 ? maxLoops : loops.length;
-          for (let i = 0; i < num_loops; i++) {
-            if (loops[i].match(filter_regex)) {
-              const audio_path = getLoopsPath(loops[i]);
-              gapless.addTrack(audio_path);
+          const orderedLoops = text.trim().split('\n');
+          const loops = orderedLoops.map(a => ({ sort: Math.random(), value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
+          const numLoops = maxLoops >= 0 ? maxLoops : loops.length;
+          for (let i = 0; i < numLoops; i++) {
+            if (loops[i].match(filterRegex)) {
+              const audioPath = getLoopsPath(loops[i]);
+              gapless.addTrack(audioPath);
             }
           }
         })
-        .catch(() => alert(`Failed to fetch list from ${list_path}`));
+        .catch(() => alert(`Failed to fetch list from ${listPath}`));
     }
   }
-  build_loops();
+  buildLoops();
   
   // define analyser canvas
   function visualize() {
@@ -203,12 +203,12 @@ $(document).ready(() => {
   visualize();
 
   // provide transport button events
-  arm_looper_transport();
+  armLooperTransport();
 
   // provide looper events
-  arm_looper_events();
+  armLooperEvents();
   
-  function arm_looper_events() {
+  function armLooperEvents() {
     // provide progress bar
     looper.addEventListener("timeupdate", () => {
       const { currentTime, duration } = looper;
@@ -228,22 +228,22 @@ $(document).ready(() => {
     }
   };
 
-  function reset_current_loop_progress() {
+  function resetCurrentLoopProgress() {
     $("button[target=remove-loop]").removeClass("disabled");
     looperTransportButton("play-pause").attr("mode", "play");
     $("#loop-name").text("");
     $("#loop-tempo").text("");
     $("#loop-progress").stop(true, true).animate({ width:'0%' }, 10, 'linear');
-    update_transport_buttons();
-    update_sequence_indicator();
+    updateTransportButtons();
+    updateSequenceIndicator();
   }
   
-  function update_sequence_indicator() {
+  function updateSequenceIndicator() {
     sequenceIndicator.replaceChildren([]);
-    if (!loop_state.forever) {
-      for (i=0; i<loop_state.last; i++) {
+    if (!loopState.forever) {
+      for (i=0; i<loopState.last; i++) {
         const ball = document.createElement('div');
-        const hasPlayed = i >= (loop_state.last - loop_state.current);
+        const hasPlayed = i >= (loopState.last - loopState.current);
         ball.className = 'loop-sequence-indicator';
         ball.setAttribute('mode', hasPlayed ? 'played' : 'unplayed')
         sequenceIndicator.appendChild(ball);
@@ -251,43 +251,43 @@ $(document).ready(() => {
     }
   }
 
-  function reset_loop_state() {
-    if (loop_state.forever) {
+  function resetLoopState() {
+    if (loopState.forever) {
       gapless.singleMode = true;
     } else {
-      loop_state.last = loop_state.min + Math.round(Math.random() * (loop_state.max - loop_state.min));
-      loop_state.current = 0;
-      gapless.singleMode = get_loop_hold();
+      loopState.last = loopState.min + Math.round(Math.random() * (loopState.max - loopState.min));
+      loopState.current = 0;
+      gapless.singleMode = getLoopHold();
     }
     gapless.loop = gapless.singleMode;
-    update_sequence_indicator();
+    updateSequenceIndicator();
   }
-  reset_loop_state();
+  resetLoopState();
 
   // which loop is playing next
-  function continuity(audio_path) {
-    if (!audio_path) {
-      audio_path = get_loop();
+  function continuity(audioPath) {
+    if (!audioPath) {
+      audioPath = getLoop();
     }
-    let next_path = audio_path;
-    if (get_loop_hold()) {
-      loop_state.current += 1;
-      gapless.singleMode = loop_state.forever || get_loop_hold();
+    let nextPath = audioPath;
+    if (getLoopHold()) {
+      loopState.current += 1;
+      gapless.singleMode = loopState.forever || getLoopHold();
       gapless.loop = gapless.singleMode;
-      update_sequence_indicator();
-    } else if (!loop_state.forever) {
-      next_path = gapless.getTracks()[gapless.findTrack(audio_path) + 1];
-      if (next_path === undefined) {
+      updateSequenceIndicator();
+    } else if (!loopState.forever) {
+      nextPath = gapless.getTracks()[gapless.findTrack(audioPath) + 1];
+      if (nextPath === undefined) {
         // re-shuffle at end of playlist
-        reset_tracks(true);
+        resetTracks(true);
         return;
       }
-      reset_loop_state();
+      resetLoopState();
     }
-    play_loop(next_path, false);
+    playLoop(nextPath, false);
   }
 
-  function play_loop(audio_path, playAudio = true) {
+  function playLoop(audioPath, playAudio = true) {
     looper.pause();
 
     // if idle, do something
@@ -295,14 +295,14 @@ $(document).ready(() => {
       audioContext.resume();
     }
     let paused = false;
-    if (audio_path !== get_loop() || looper.src === '') {
+    if (audioPath !== getLoop() || looper.src === '') {
       // switching to a new track
       if (playAudio) {
-        reset_loop_state();
-        gapless.gotoTrack(audio_path);
+        resetLoopState();
+        gapless.gotoTrack(audioPath);
         gapless.play();
       }
-      looper.src = loadedAudio[get_loop()];
+      looper.src = loadedAudio[getLoop()];
       looper.load();
       looper.play();
     } else if (!gapless.isPlaying()) {
@@ -330,18 +330,18 @@ $(document).ready(() => {
       $("#loop-visualizer").fadeIn(200);
     }
     looperTransportButton("play-pause").attr("mode", paused ? "play" : "pause");
-    update_transport_buttons();
+    updateTransportButtons();
   }
 
-  function update_transport_buttons() {
-    const audio_path = get_loop();
-    const canPlay = audio_path in loadedAudio;
+  function updateTransportButtons() {
+    const audioPath = getLoop();
+    const canPlay = audioPath in loadedAudio;
     enableTransportButton("play-pause", canPlay);
     enableTransportButton("download", canPlay);
     enableTransportButton("hold-mode", true); // hold mode can be changed regardless of state
 
-    if (audio_path) {
-      const [id, tempo, _name] = toFilename(audio_path).split('.')[0].split('_');
+    if (audioPath) {
+      const [id, tempo, _name] = toFilename(audioPath).split('.')[0].split('_');
       $("#loop-name").text(id);
       $("#loop-tempo").text(`${tempo} BPM`);
     }
@@ -354,40 +354,40 @@ $(document).ready(() => {
       enableTransportButton("shuffle-loops", !gapless.isPlaying());
 
       // disable prev/next based on if playing first or last track
-      enableTransportButton("prev-loop", gapless.isPlaying() && get_prev() in loadedAudio);
-      enableTransportButton("next-loop", gapless.isPlaying() && get_next() in loadedAudio);
+      enableTransportButton("prev-loop", gapless.isPlaying() && getPrev() in loadedAudio);
+      enableTransportButton("next-loop", gapless.isPlaying() && getNext() in loadedAudio);
     }
   }
 
-  function reset_tracks(forcePlay = false) {
+  function resetTracks(forcePlay = false) {
     looper.pause();
     looper.removeAttribute('src');
-    reset_current_loop_progress();
+    resetCurrentLoopProgress();
     gapless.stop();
     gapless.removeAllTracks();
-    for (const audio_path in loadedAudio) {
-      URL.revokeObjectURL(loadedAudio[audio_path]);
-      delete loadedAudio[audio_path];
+    for (const audioPath in loadedAudio) {
+      URL.revokeObjectURL(loadedAudio[audioPath]);
+      delete loadedAudio[audioPath];
     }
-    update_transport_buttons();
+    updateTransportButtons();
     playOnLoad = forcePlay;
-    build_loops();
+    buildLoops();
   }
 
-  function set_hold_mode(mode_index) {
-    [hold_min, hold_max] = HOLD_MODES[mode_index];
-    if (hold_min === 0 || hold_max === 0) {
-      loop_state.forever = true;
+  function setHoldMode(modeIndex) {
+    [holdMin, holdMax] = HOLD_MODES[modeIndex];
+    if (holdMin === 0 || holdMax === 0) {
+      loopState.forever = true;
     } else {
-      loop_state.forever = false;
-      loop_state.min = hold_min;
-      loop_state.max = hold_max;
+      loopState.forever = false;
+      loopState.min = holdMin;
+      loopState.max = holdMax;
     }
-    reset_loop_state();
-    update_transport_buttons();
+    resetLoopState();
+    updateTransportButtons();
   }
 
-  function download_content(content, type, filename) {
+  function downloadContent(content, type, filename) {
     const link = document.createElement("a");
     const file = new File([ content ], filename, { type });
     const blobURL = URL.createObjectURL(file);
@@ -397,7 +397,7 @@ $(document).ready(() => {
   };
 
   // arm all buttons which belong into looper-transport
-  function arm_looper_transport() {
+  function armLooperTransport() {
     const setupButton = (target, onClick) => {
       const button = looperTransportButton(target);
       button.animate({ backgroundSize: '75%' }, 0);
@@ -411,37 +411,37 @@ $(document).ready(() => {
       });
     };
 
-    setupButton("shuffle-loops", () => reset_tracks(false));
+    setupButton("shuffle-loops", () => resetTracks(false));
 
     setupButton("hold-mode", (selector) => {
       const prevIndex = parseInt(selector.attr("mode"));
       const nextIndex = prevIndex === HOLD_MODES.length - 1 ? 0 : prevIndex + 1;
       selector.attr("mode", nextIndex);
-      set_hold_mode(nextIndex);
+      setHoldMode(nextIndex);
     });
 
     setupButton("play-pause", () => {
       if (gapless.getIndex() === -1) {
-        play_loop(gapless.getTracks()[0]);
+        playLoop(gapless.getTracks()[0]);
       } else {
-        play_loop(get_loop());
+        playLoop(getLoop());
       }
     });
 
-    setupButton("prev-loop", () => play_loop(get_prev()));
+    setupButton("prev-loop", () => playLoop(getPrev()));
 
-    setupButton("next-loop", () => play_loop(get_next()));
+    setupButton("next-loop", () => playLoop(getNext()));
 
     setupButton("download", () => {
-      const audio_path = get_loop();
-      fetch(loadedAudio[audio_path]).then(r => {
+      const audioPath = getLoop();
+      fetch(loadedAudio[audioPath]).then(r => {
         r.blob().then(audioFile => {
           const zip = new JSZip();
           zip.file("license.txt", LICENSE_MESSAGE);
-          zip.file(toFilename(audio_path), audioFile);
+          zip.file(toFilename(audioPath), audioFile);
           zip.generateAsync({type:"blob"})
           .then(content => {
-            download_content(content, 'application/zip', `${toFilename(audio_path)}.zip`);
+            downloadContent(content, 'application/zip', `${toFilename(audioPath)}.zip`);
           });
         })
       });
@@ -459,11 +459,11 @@ $(document).ready(() => {
     });
 
     // bottom panel filtering
-    Object.keys(PLAYLIST_FILTERS).forEach((filter_mode) => {
-      $(`.filter-button[target="${filter_mode}"`).off().on("click", () => {
-        if ($('#filter-selection').attr('mode') !== filter_mode) {
-          $('#filter-selection').attr('mode', filter_mode);
-          reset_tracks();
+    Object.keys(PLAYLIST_FILTERS).forEach((filterMode) => {
+      $(`.filter-button[target="${filterMode}"`).off().on("click", () => {
+        if ($('#filter-selection').attr('mode') !== filterMode) {
+          $('#filter-selection').attr('mode', filterMode);
+          resetTracks();
         }
       });
     });
