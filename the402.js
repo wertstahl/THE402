@@ -23,6 +23,7 @@ $(document).ready(() => {
     'select2': /\d+D_.*/,
     'select3': /\d+A_.*/,
   }
+  
   // hold modes are cycled in the order below
   // keys match "mode" attributes for "hold-mode" button in CSS file
   // value is [min, max] or [constant] number of repeats
@@ -35,12 +36,13 @@ $(document).ready(() => {
   const [ DEFAULT_MODE ] = Object.keys(HOLD_MODES);
 
   // CONFIG
-  const queryParams = new URLSearchParams(window.location.search); // low, med, high
-  const quality = queryParams.get('quality') || 'low';
-  const maxLoops = parseInt(queryParams.get('maxLoops') || -1);
-  const loadLimit = parseInt(queryParams.get('loadLimit') || 5);
+  const queryParams = new URLSearchParams(window.location.search);
+  // automated query params (e.g. from shared link)
   const startMode = queryParams.get('mode') || DEFAULT_MODE;
   const startLoop = queryParams.get('id');
+  // manual query params
+  const loadLimit = parseInt(queryParams.get('loadLimit') || 5);
+  const quality = queryParams.get('quality') || 'low';  // low, med, high
 
   // UTILITIES
   const toFilename = (path) => path.replace(/^.*[\\\/]/, '');
@@ -129,8 +131,7 @@ $(document).ready(() => {
           const orderedLoops = text.trim().split('\n');
           const getRandom = (a) => (firstLoop === a.split('_')[0]) ? -1 : Math.random();
           const loops = orderedLoops.map(a => ({ sort: getRandom(a), value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
-          const numLoops = maxLoops >= 0 ? maxLoops : loops.length;
-          for (let i = 0; i < numLoops; i++) {
+          for (let i = 0; i < loops.length; i++) {
             if (loops[i].match(filterRegex)) {
               const audioPath = getLoopsPath(loops[i]);
               gapless.addTrack(audioPath);
