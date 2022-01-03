@@ -17,27 +17,29 @@ $(document).ready(() => {
   const EXT_TO_TYPE = {
     wav: 'audio/x-wav',
     mp3: 'audio/mpeg',
-    m4a: 'audio/mp4',
-    flac: 'audio/flac',
   };
   const PLAYLIST_FILTERS = {
     'select1': '',
     'select2': /\d+D_.*/,
     'select3': /\d+A_.*/,
   }
-  const HOLD_MODES = [
-    [2, 4], // RND: 2-4
-    [0, 0], // Hold single loop
-    [1, 8], // RND (1-8)
-    [1, 1], // No hold (play each loop once)
-  ];
+  // hold modes are cycled in the order below
+  // keys match "mode" attributes for "hold-mode" button in CSS file
+  // value is [min, max] or [constant] number of repeats
+  const HOLD_MODES = {
+    rnd24: [2, 4],
+    hold: [0], // Repeat single loop forever
+    rnd: [1, 8],
+    off: [1], // Play each loop once
+  };
+  const [ DEFAULT_MODE ] = Object.keys(HOLD_MODES);
 
   // CONFIG
   const queryParams = new URLSearchParams(window.location.search); // low, med, high
   const quality = queryParams.get('quality') || 'low';
   const maxLoops = parseInt(queryParams.get('maxLoops') || -1);
   const loadLimit = parseInt(queryParams.get('loadLimit') || 5);
-  const startMode = parseInt(queryParams.get('mode') || 0);
+  const startMode = queryParams.get('mode') || DEFAULT_MODE;
   const startLoop = queryParams.get('id');
 
   // UTILITIES
@@ -374,15 +376,15 @@ $(document).ready(() => {
     buildLoops();
   }
 
-  function setHoldMode(modeIndex) {
-    looperTransportButton("hold-mode").attr("mode", modeIndex);
-    [holdMin, holdMax] = HOLD_MODES[modeIndex];
+  function setHoldMode(mode) {
+    looperTransportButton("hold-mode").attr("mode", mode);
+    [holdMin, holdMax] = HOLD_MODES[mode] || HOLD_MODES[DEFAULT_MODE];
     if (holdMin === 0 || holdMax === 0) {
       loopState.forever = true;
     } else {
       loopState.forever = false;
       loopState.min = holdMin;
-      loopState.max = holdMax;
+      loopState.max = holdMax || holdMin;
     }
     resetLoopState();
     updateTransportButtons();
@@ -414,14 +416,15 @@ $(document).ready(() => {
 
     setupButton("share-link", () => {
       const [loopId] = toFilename(getLoop()).split('.')[0].split('_');
-      const newLink = `${document.URL}?id=${loopId}&mode=1`;
+      const newLink = `${document.URL}?id=${loopId}&mode=hold`;
       navigator.clipboard.writeText(newLink);
     });
 
     setupButton("hold-mode", (selector) => {
-      const prevIndex = parseInt(selector.attr("mode"));
-      const nextIndex = prevIndex === HOLD_MODES.length - 1 ? 0 : prevIndex + 1;
-      setHoldMode(nextIndex);
+      const modes = Object.keys(HOLD_MODES);
+      const prevIndex = modes.indexOf(selector.attr("mode"));
+      const nextIndex = prevIndex === modes.length - 1 ? 0 : prevIndex + 1;
+      setHoldMode(modes[nextIndex]);
     });
 
     setupButton("play-pause", () => {
