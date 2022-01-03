@@ -37,6 +37,8 @@ $(document).ready(() => {
   const quality = queryParams.get('quality') || 'low';
   const maxLoops = parseInt(queryParams.get('maxLoops') || -1);
   const loadLimit = parseInt(queryParams.get('loadLimit') || 5);
+  const startMode = parseInt(queryParams.get('mode') || 0);
+  const startLoop = queryParams.get('id');
 
   // UTILITIES
   const toFilename = (path) => path.replace(/^.*[\\\/]/, '');
@@ -109,9 +111,9 @@ $(document).ready(() => {
   const getLoop = (offset = 0) => gapless.getTracks()[gapless.getIndex() + offset];
   const getPrev = () => getLoop(-1);
   const getNext = () => getLoop(1);
-  setHoldMode(0);
+  setHoldMode(startMode);
 
-  function buildLoops() {
+  function buildLoops(firstLoop) {
     const filterMode = $('#filter-selection').attr('mode');
     const filterRegex = PLAYLIST_FILTERS[filterMode];
 
@@ -123,7 +125,8 @@ $(document).ready(() => {
         .then((response) => response.text())
         .then((text) => {
           const orderedLoops = text.trim().split('\n');
-          const loops = orderedLoops.map(a => ({ sort: Math.random(), value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
+          const getRandom = (a) => (firstLoop === a.split('_')[0]) ? -1 : Math.random();
+          const loops = orderedLoops.map(a => ({ sort: getRandom(a), value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
           const numLoops = maxLoops >= 0 ? maxLoops : loops.length;
           for (let i = 0; i < numLoops; i++) {
             if (loops[i].match(filterRegex)) {
@@ -135,7 +138,7 @@ $(document).ready(() => {
         .catch(() => alert(`Failed to fetch list from ${listPath}`));
     }
   }
-  buildLoops();
+  buildLoops(startLoop);
   
   // define analyser canvas
   function visualize() {
@@ -372,6 +375,7 @@ $(document).ready(() => {
   }
 
   function setHoldMode(modeIndex) {
+    looperTransportButton("hold-mode").attr("mode", modeIndex);
     [holdMin, holdMax] = HOLD_MODES[modeIndex];
     if (holdMin === 0 || holdMax === 0) {
       loopState.forever = true;
@@ -409,13 +413,14 @@ $(document).ready(() => {
     };
 
     setupButton("share-link", () => {
-      // IMPLEMENTATION TBD
+      const [loopId] = toFilename(getLoop()).split('.')[0].split('_');
+      const newLink = `${document.URL}?id=${loopId}&mode=1`;
+      navigator.clipboard.writeText(newLink);
     });
 
     setupButton("hold-mode", (selector) => {
       const prevIndex = parseInt(selector.attr("mode"));
       const nextIndex = prevIndex === HOLD_MODES.length - 1 ? 0 : prevIndex + 1;
-      selector.attr("mode", nextIndex);
       setHoldMode(nextIndex);
     });
 
