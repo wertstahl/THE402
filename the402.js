@@ -366,6 +366,7 @@ $(document).ready(() => {
   function resetTracks(forcePlay = false) {
     looper.pause();
     looper.removeAttribute('src');
+    $("#loop-visualizer").fadeOut(200);
     resetCurrentLoopProgress();
     gapless.stop();
     gapless.removeAllTracks();
