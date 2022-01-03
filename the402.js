@@ -22,7 +22,8 @@ $(document).ready(() => {
     'select1': '',
     'select2': /\d+D_.*/,
     'select3': /\d+A_.*/,
-  }
+  };
+  const [ DEFAULT_FILTER ] = Object.keys(PLAYLIST_FILTERS);
   
   // hold modes are cycled in the order below
   // keys match "mode" attributes for "hold-mode" button in CSS file
@@ -40,21 +41,21 @@ $(document).ready(() => {
   // automated query params (e.g. from shared link)
   const startMode = queryParams.get('mode') || DEFAULT_MODE;
   const startLoop = queryParams.get('id');
+  const startFilter = queryParams.get('filter') || DEFAULT_FILTER;
   // manual query params
   const loadLimit = parseInt(queryParams.get('loadLimit') || 5);
   const quality = queryParams.get('quality') || 'low';  // low, med, high
 
   // UTILITIES
   const toFilename = (path) => path.replace(/^.*[\\\/]/, '');
-  const looperTransportButton = (target) => $(`.looper-transport button[target=${target}]`);
+  const toExt = (path) => path.split('.').pop();
+  const toTokens = (path) => toFilename(path).split('.')[0].split('_');
   const getLoopsPath = (path) => `${LOOPS_REPOSITORY}/${quality}/${path}`;
-
-  // SELECTORS
-  const sequenceIndicator = document.querySelector('#loop-sequence');
-  const looper = document.querySelector('audio');
+  const looperTransportButton = (target) => $(`.looper-transport button[target=${target}]`);
 
   // STATE
   let playOnLoad = false;
+  let preserveLoopState = false;
   const loadedAudio = {}; // for visualizer, downloads, enabling prev/next, etc.
   const loopState = { forever: false, min: 1, max: 1 };
   const getLoopHold = () => loopState.forever || (loopState.current < loopState.last - 1);
@@ -70,13 +71,11 @@ $(document).ready(() => {
   });
   gapless.onloadstart = (audioPath) => {
     const fileName = toFilename(audioPath);
-    const ext = fileName.split('.')[1].toLowerCase();
-    const mediaType = EXT_TO_TYPE[ext];
+    const mediaType = EXT_TO_TYPE[toExt(audioPath).toLowerCase()];
     fetch(audioPath).then((response) => response.blob())
     .then((blob) => {
       const file = new File([ blob ], fileName, { type: mediaType });
-      const blobURL = URL.createObjectURL(file);
-      loadedAudio[audioPath] = blobURL;
+      loadedAudio[audioPath] = URL.createObjectURL(file);
       updateTransportButtons();
       if (playOnLoad && audioPath === gapless.getTracks()[0]) {
         playOnLoad = false;
@@ -97,6 +96,7 @@ $(document).ready(() => {
   };
 
   // Local audio context for visualizer and progress bar
+  const looper = document.querySelector('audio');
   const audioContext = new AudioContext();
   const analyser = function() {
     const analyserNode = audioContext.createAnalyser();
@@ -115,7 +115,6 @@ $(document).ready(() => {
   const getLoop = (offset = 0) => gapless.getTracks()[gapless.getIndex() + offset];
   const getPrev = () => getLoop(-1);
   const getNext = () => getLoop(1);
-  setHoldMode(startMode);
 
   function buildLoops(firstLoop) {
     const filterMode = $('#filter-selection').attr('mode');
@@ -129,7 +128,7 @@ $(document).ready(() => {
         .then((response) => response.text())
         .then((text) => {
           const orderedLoops = text.trim().split('\n');
-          const getRandom = (a) => (firstLoop === a.split('_')[0]) ? -1 : Math.random();
+          const getRandom = (a) => (firstLoop === toTokens(a)[0]) ? -1 : Math.random();
           const loops = orderedLoops.map(a => ({ sort: getRandom(a), value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
           for (let i = 0; i < loops.length; i++) {
             if (loops[i].match(filterRegex)) {
@@ -141,6 +140,7 @@ $(document).ready(() => {
         .catch(() => alert(`Failed to fetch list from ${listPath}`));
     }
   }
+  $('#filter-selection').attr('mode', startFilter);
   buildLoops(startLoop);
   
   // define analyser canvas
@@ -235,7 +235,6 @@ $(document).ready(() => {
   };
 
   function resetCurrentLoopProgress() {
-    $("button[target=remove-loop]").removeClass("disabled");
     looperTransportButton("play-pause").attr("mode", "play");
     $("#loop-title").text("");
     $("#loop-name").text("");
@@ -246,6 +245,7 @@ $(document).ready(() => {
   }
   
   function updateSequenceIndicator() {
+    const sequenceIndicator = document.querySelector('#loop-sequence');
     sequenceIndicator.replaceChildren([]);
     if (!loopState.forever) {
       for (i=0; i<loopState.last; i++) {
@@ -269,7 +269,6 @@ $(document).ready(() => {
     gapless.loop = gapless.singleMode;
     updateSequenceIndicator();
   }
-  resetLoopState();
 
   // which loop is playing next
   function continuity(audioPath) {
@@ -305,7 +304,11 @@ $(document).ready(() => {
     if (audioPath !== getLoop() || looper.src === '') {
       // switching to a new track
       if (playAudio) {
-        resetLoopState();
+        if (!preserveLoopState) {
+          resetLoopState();
+        } else {
+          preserveLoopState = false;
+        }
         gapless.gotoTrack(audioPath);
         gapless.play();
       }
@@ -349,7 +352,7 @@ $(document).ready(() => {
     enableTransportButton("hold-mode", true); // hold mode can be changed regardless of state
 
     if (audioPath) {
-      const [id, tempo, name] = toFilename(audioPath).split('.')[0].split('_');
+      const [ id, tempo, name ] = toTokens(audioPath);
       $("#loop-title").text(id);
       $("#loop-name").text(name);
       $("#loop-tempo").text(`${tempo} BPM`);
@@ -378,6 +381,7 @@ $(document).ready(() => {
     updateTransportButtons();
     playOnLoad = forcePlay;
     buildLoops();
+    resetLoopState();
   }
 
   function setHoldMode(mode) {
@@ -393,6 +397,8 @@ $(document).ready(() => {
     resetLoopState();
     updateTransportButtons();
   }
+  setHoldMode(startMode);
+  preserveLoopState = true;
 
   function downloadContent(content, type, filename) {
     const link = document.createElement("a");
@@ -419,8 +425,10 @@ $(document).ready(() => {
     };
 
     setupButton("share-link", () => {
-      const [loopId] = toFilename(getLoop()).split('.')[0].split('_');
-      const newLink = `${document.URL}?id=${loopId}&mode=hold`;
+      const [ loopId ] = toTokens(getLoop());
+      const [ url ] = document.URL.split('?');
+      const filter = $('#filter-selection').attr('mode');
+      const newLink = `${url}?id=${loopId}&mode=hold&filter=${filter}`;
       navigator.clipboard.writeText(newLink);
     });
 
