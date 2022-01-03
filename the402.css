@@ -48,7 +48,7 @@ a {
   text-decoration: inherit;
 }
 
-button {
+button, .link-button {
   background: transparent;
   border: 0;
   outline: 0 !important;
@@ -372,4 +372,10 @@ button[target=select3] {
   position: absolute;
   bottom: 10px;
   right: 10px;
+}
+
+#source-link {
+  position: absolute;
+  bottom: 11px;
+  left: 12px;
 }
