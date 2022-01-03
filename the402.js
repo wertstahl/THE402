@@ -337,6 +337,7 @@ $(document).ready(() => {
     const audioPath = getLoop();
     const canPlay = audioPath in loadedAudio;
     enableTransportButton("play-pause", canPlay);
+    enableTransportButton("share-link", canPlay);
     enableTransportButton("download", canPlay);
     enableTransportButton("hold-mode", true); // hold mode can be changed regardless of state
 
@@ -346,13 +347,9 @@ $(document).ready(() => {
       $("#loop-tempo").text(`${tempo} BPM`);
     }
     if (!canPlay) {
-      enableTransportButton("shuffle-loops", false);
       enableTransportButton("prev-loop", false);
       enableTransportButton("next-loop", false);
     } else if (gapless.getIndex() >= 0) {
-      // don't allow shuffle if a track is playing or paused
-      enableTransportButton("shuffle-loops", !gapless.isPlaying());
-
       // disable prev/next based on if playing first or last track
       enableTransportButton("prev-loop", gapless.isPlaying() && getPrev() in loadedAudio);
       enableTransportButton("next-loop", gapless.isPlaying() && getNext() in loadedAudio);
@@ -411,7 +408,9 @@ $(document).ready(() => {
       });
     };
 
-    setupButton("shuffle-loops", () => resetTracks(false));
+    setupButton("share-link", () => {
+      // IMPLEMENTATION TBD
+    });
 
     setupButton("hold-mode", (selector) => {
       const prevIndex = parseInt(selector.attr("mode"));
