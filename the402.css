@@ -250,8 +250,8 @@ button[target=hold-mode][mode="2"] {
 button[target=hold-mode][mode="3"] {
   background-image: url('./assets-gui/loop_disable.png');
 }
-button[target=shuffle-loops] {
-  background-image: url('./assets-gui/reshuffle.png');
+button[target=share-link] {
+  background-image: url('./assets-gui/share_link.png');
 }
 button[target=download] {
   background-image: url('./assets-gui/dl_loop.png');
