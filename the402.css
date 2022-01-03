@@ -91,7 +91,7 @@ span, div, button {
     padding-right: 0 !important;
     width: 100% !important;
   }
-  #loop-name {
+  #loop-title {
     font-size: 72px !important;
   }
   #loop-visualizer {
@@ -130,7 +130,7 @@ span, div, button {
 
 /* Now-Playing Section */
 
-#loop-name {
+#loop-title {
   display: block;
   width: auto;
   color: #000;
@@ -141,17 +141,24 @@ span, div, button {
   z-index: 1;
 }
 
-#loop-tempo {
+#loop-tempo, #loop-name {
   display: block;
   position: absolute;
   width: auto;
-  right: 1em;
   bottom: 12px;
   color: #000;
   font-family: "Futura";
   font-weight: 200;
   font-size: 12px;
   z-index: 1;
+}
+
+#loop-name {
+  left: 1em;
+}
+
+#loop-tempo {
+  right: 1em;
 }
 
 #loop-progress {

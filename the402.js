@@ -236,6 +236,7 @@ $(document).ready(() => {
   function resetCurrentLoopProgress() {
     $("button[target=remove-loop]").removeClass("disabled");
     looperTransportButton("play-pause").attr("mode", "play");
+    $("#loop-title").text("");
     $("#loop-name").text("");
     $("#loop-tempo").text("");
     $("#loop-progress").stop(true, true).animate({ width:'0%' }, 10, 'linear');
@@ -347,8 +348,9 @@ $(document).ready(() => {
     enableTransportButton("hold-mode", true); // hold mode can be changed regardless of state
 
     if (audioPath) {
-      const [id, tempo, _name] = toFilename(audioPath).split('.')[0].split('_');
-      $("#loop-name").text(id);
+      const [id, tempo, name] = toFilename(audioPath).split('.')[0].split('_');
+      $("#loop-title").text(id);
+      $("#loop-name").text(name);
       $("#loop-tempo").text(`${tempo} BPM`);
     }
     if (!canPlay) {
