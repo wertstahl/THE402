@@ -269,6 +269,17 @@ button[target=share-link] {
 button[target=download] {
   background-image: url('./assets-gui/dl_loop.png');
 }
+#notification_banner {
+  display: none;
+  top: -95px; 
+  margin-bottom: -96px;
+  left: 2px;
+  z-index: 1;
+  background-image: url('./assets-gui/share_link_notif.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
 
 /* Bottom Panels */
 

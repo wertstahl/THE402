@@ -11,6 +11,8 @@ $(document).ready(() => {
   // CONSTANTS
   const WAVES_IN_WINDOW = 100; // number of peak+vally square waves in canvas
   const SAMPLES_IN_WINDOW = 1024; // number of samples represented in canvas
+  const NOTIFICATION_MS = 1000;
+  const FADE_MS = 200;
   const LICENSE_MESSAGE = "You are welcome to use this loop in a non-commercial fashion, royalty free, after getting written permission by sending an email to info@battlecommand.org";
   
   const LOOPS_REPOSITORY = 'https://the402.wertstahl.de';
@@ -221,7 +223,7 @@ $(document).ready(() => {
       if (currentTime === 0) {
         $("#loop-progress").stop(true, true).animate({ width:'0%' }, 10, 'linear');
       } else {
-        $("#loop-progress").stop(true, true).animate({ width:`${100.0 * (currentTime + 0.4) / duration }%` }, 200, 'linear');
+        $("#loop-progress").stop(true, true).animate({ width:`${100.0 * (currentTime + 0.4) / duration }%` }, FADE_MS, 'linear');
       }
     });
   }
@@ -335,9 +337,9 @@ $(document).ready(() => {
     }
 
     if (paused) {
-      $("#loop-visualizer").fadeOut(200);
+      $("#loop-visualizer").fadeOut(FADE_MS);
     } else {
-      $("#loop-visualizer").fadeIn(200);
+      $("#loop-visualizer").fadeIn(FADE_MS);
     }
     looperTransportButton("play-pause").attr("mode", paused ? "play" : "pause");
     updateTransportButtons();
@@ -370,7 +372,7 @@ $(document).ready(() => {
   function resetTracks(forcePlay = false) {
     looper.pause();
     looper.removeAttribute('src');
-    $("#loop-visualizer").fadeOut(200);
+    $("#loop-visualizer").fadeOut(FADE_MS);
     resetCurrentLoopProgress();
     gapless.stop();
     gapless.removeAllTracks();
@@ -430,6 +432,12 @@ $(document).ready(() => {
       const filter = $('#filter-selection').attr('mode');
       const newLink = `${url}?id=${loopId}&mode=hold&filter=${filter}`;
       navigator.clipboard.writeText(newLink);
+      $("#notification_banner").fadeIn(FADE_MS,
+        () => setTimeout(
+          () => $("#notification_banner").fadeOut(FADE_MS),
+          NOTIFICATION_MS,
+        ),
+      );
     });
 
     setupButton("hold-mode", (selector) => {

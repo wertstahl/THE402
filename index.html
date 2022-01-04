@@ -15,27 +15,27 @@
     <script defer src="jszip.min.js" type="text/javascript"></script>
     <title>the402</title>
   </head>
-  <body>
-    <header>
-      <div id="player-block">
-        <div class="looper-row">
-          <canvas id="loop-visualizer" class="hide"></canvas>
-          <span id="loop-title"></span>
-          <span id="loop-tempo"></span>
-          <span id="loop-name"></span>
-          <div id="loop-progress"></div>
-          <div id="loop-sequence"></div>
-        </div>
-        <div class="looper-row looper-transport">
-          <button class="disabled" target="prev-loop"></button>
-          <button class="disabled" target="play-pause" mode="play"></button>
-          <button class="disabled" target="next-loop"></button>
-        </div>
-        <div class="looper-row looper-transport">
-          <button class="disabled" target="hold-mode"></button>
-          <button class="disabled" target="share-link"></button>
-          <button class="disabled" target="download"></button>
+  <body><header>
+    <div id="player-block">
+      <div class="looper-row">
+        <canvas id="loop-visualizer" class="hide"></canvas>
+        <span id="loop-title"></span>
+        <span id="loop-tempo"></span>
+        <span id="loop-name"></span>
+        <div id="loop-progress"></div>
+        <div id="loop-sequence"></div>
       </div>
+      <div class="looper-row looper-transport">
+        <button class="disabled" target="prev-loop"></button>
+        <button class="disabled" target="play-pause" mode="play"></button>
+        <button class="disabled" target="next-loop"></button>
+      </div>
+      <div class="looper-row looper-transport">
+        <button class="disabled" target="hold-mode"></button>
+        <button class="disabled" target="share-link"></button>
+        <button class="disabled" target="download"></button>
+      </div>
+      <div class="looper-row" id="notification_banner"></div>
 
       <div id="banner-bottom">
 
@@ -71,7 +71,7 @@
           <button class="filter-button" target="select3"></button>
         </div>
         <div id="filters-logo" />
-        <a id="source-link" class="link-button" href="https://github.com/wertstahl/THE402" target="_blank">source</a>
+        <a id="source-link" class="link-button" href="https://github.com/wertstahl/THE402" target="_blank">code</a>
         <button id="credits-toggle">credits</button>
         <div id="filter-selection" mode="select1" />
       </div>
