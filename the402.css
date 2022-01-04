@@ -108,6 +108,17 @@ span, div, button {
   }
 }
 
+@media only screen and (orientation:landscape) {
+  div {
+    border-radius: 0 !important;
+  }
+  #player-block, body, header {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    height: 100% !important;
+  }
+}
+
 /* Overall Layout */
 
 #player-block {
