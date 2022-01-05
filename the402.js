@@ -430,10 +430,12 @@ $(document).ready(() => {
 
     setupButton("share-link", () => {
       const [ loopId ] = toTokens(getLoop());
-      const [ url ] = document.URL.split('?');
-      const filter = $('#filter-selection').attr('mode');
-      const newLink = `${url}?id=${loopId}&mode=hold&filter=${filter}`;
-      navigator.clipboard.writeText(newLink);
+
+      const newLink = new URL(document.URL);
+      newLink.searchParams.set("id", loopId);
+      newLink.searchParams.set("mode", "hold");
+      newLink.searchParams.set("filter", $('#filter-selection').attr('mode'));
+      navigator.clipboard.writeText(newLink.href);
       $("#notification_banner").fadeIn(FADE_MS,
         () => setTimeout(
           () => $("#notification_banner").fadeOut(FADE_MS),
