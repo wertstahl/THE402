@@ -108,7 +108,7 @@ span, div, button {
   }
 }
 
-@media only screen and (orientation:landscape) {
+@media only screen and (orientation:landscape) and (max-height: 400px) {
   div {
     border-radius: 0 !important;
   }

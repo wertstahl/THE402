@@ -19,6 +19,8 @@ $(document).ready(() => {
   const EXT_TO_TYPE = {
     wav: 'audio/x-wav',
     mp3: 'audio/mpeg',
+    m4a: 'audio/mp4',
+    flac: 'audio/flac',
   };
   const PLAYLIST_FILTERS = {
     'select1': '',
@@ -46,7 +48,7 @@ $(document).ready(() => {
   const startFilter = queryParams.get('filter') || DEFAULT_FILTER;
   // manual query params
   const loadLimit = parseInt(queryParams.get('loadLimit') || 5);
-  const quality = queryParams.get('quality') || 'low';  // low, med, high
+  const quality = queryParams.get('quality') || 'low';  // low, high
 
   // UTILITIES
   const toFilename = (path) => path.replace(/^.*[\\\/]/, '');
