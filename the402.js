@@ -132,8 +132,8 @@ $(document).ready(() => {
         .then((response) => response.text())
         .then((text) => {
           const orderedLoops = text.trim().split('\n');
-          const getRandom = (a) => (firstLoop === toTokens(a)[0]) ? -1 : Math.random();
-          const loops = orderedLoops.map(a => ({ sort: getRandom(a), value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
+          const getLoopIndex = (a) => (firstLoop === toTokens(a)[0]) ? -1 : Math.random();
+          const loops = orderedLoops.map(a => ({ sort: getLoopIndex(a), value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
           for (let i = 0; i < loops.length; i++) {
             if (loops[i].match(filterRegex)) {
               const audioPath = getLoopsPath(loops[i]);

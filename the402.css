@@ -247,7 +247,7 @@ span, div, button {
 /* preload hack */
 body::after{
   position:absolute; width:0; height:0; overflow:hidden; z-index:-1;
-  content:url('./assets-gui/play_paused.png') url('./assets-gui/loop_rnd2-4.png') url('./assets-gui/loop_hold.png') url('./assets-gui/loop_rnd.png') url('./assets-gui/loop_disable.png') url('./assets-gui/402_logo_creditpage.png');
+  content:url('./assets-gui/play_paused.png') url('./assets-gui/loop_rnd2-4.png') url('./assets-gui/loop_hold.png') url('./assets-gui/loop_rnd.png') url('./assets-gui/loop_disable.png') url('./assets-gui/402_logo_creditpage.png') url('./assets-gui/share_link_notif.png');
 }
 
 button[target=play-pause][mode=play] {
