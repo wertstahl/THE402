@@ -2,39 +2,37 @@
 <html lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta content="True" name="HandheldFriendly">
-    <meta content="320" name="MobileOptimized">
-    <meta content="on" http-equiv="cleartype">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#323742">
     <link rel="shortcut icon" href="favicon.ico" />
     <link rel="stylesheet" href="the402.css">
-    <script src="jquery.js" type="text/javascript"></script>
-    <script src="gapless5.js" type="text/javascript"></script>
-    <script src="the402.js" type="text/javascript"></script>
-    <script src="jszip.min.js" type="text/javascript"></script>
+    <script defer src="jquery.js" type="text/javascript"></script>
+    <script defer src="gapless5.js" type="text/javascript"></script>
+    <script defer src="the402.js" type="text/javascript"></script>
+    <script defer src="jszip.min.js" type="text/javascript"></script>
     <title>the402</title>
   </head>
-  <body>
-    <header>
-      <div id="player-block">
-        <div class="looper-row">
-          <canvas id="loop-visualizer" class="hide"></canvas>
-          <span id="loop-name"></span>
-          <span id="loop-tempo"></span>
-          <div id="loop-progress"></div>
-          <div id="loop-sequence"></div>
-        </div>
-        <div class="looper-row looper-transport">
-          <button class="disabled" target="prev-loop"></button>
-          <button class="disabled" target="play-pause" mode="play"></button>
-          <button class="disabled" target="next-loop"></button>
-        </div>
-        <div class="looper-row looper-transport">
-          <button class="disabled" target="hold-mode" mode="0"></button>
-          <button class="disabled" target="shuffle-loops"></button>
-          <button class="disabled" target="download"></button>
+  <body><header>
+    <div id="player-block">
+      <div class="looper-row">
+        <canvas id="loop-visualizer" class="hide"></canvas>
+        <span id="loop-title"></span>
+        <span id="loop-tempo"></span>
+        <span id="loop-name"></span>
+        <div id="loop-progress"></div>
+        <div id="loop-sequence"></div>
       </div>
+      <div class="looper-row looper-transport">
+        <button class="disabled" target="prev-loop"></button>
+        <button class="disabled" target="play-pause" mode="play"></button>
+        <button class="disabled" target="next-loop"></button>
+      </div>
+      <div class="looper-row looper-transport">
+        <button class="disabled" target="hold-mode"></button>
+        <button class="disabled" target="share-link"></button>
+        <button class="disabled" target="download"></button>
+      </div>
+      <div class="looper-row" id="notification_banner"></div>
 
       <div id="banner-bottom">
 
@@ -46,10 +44,7 @@
             </div>
             <div class="credits-cell">
               <div id="credits-text-1">
-                An endless album in random order,<br>
-                consisting of 402 parts, playable on all<br>
-                devices and platforms, no additional<br>
-                software or installation required, free.<br>
+                An endless album in random order, consisting of 402 parts, playable on all devices and platforms, no additional software or installation required, free.
               </div>
             </div>
           </div>
@@ -73,6 +68,7 @@
           <button class="filter-button" target="select3"></button>
         </div>
         <div id="filters-logo" />
+        <a id="source-link" class="link-button" href="https://github.com/wertstahl/THE402" target="_blank">code</a>
         <button id="credits-toggle">credits</button>
         <div id="filter-selection" mode="select1" />
       </div>

@@ -11,6 +11,8 @@ $(document).ready(() => {
   // CONSTANTS
   const WAVES_IN_WINDOW = 100; // number of peak+vally square waves in canvas
   const SAMPLES_IN_WINDOW = 1024; // number of samples represented in canvas
+  const NOTIFICATION_MS = 1000;
+  const FADE_MS = 200;
   const LICENSE_MESSAGE = "You are welcome to use this loop in a non-commercial fashion, royalty free, after getting written permission by sending an email to info@battlecommand.org";
   
   const LOOPS_REPOSITORY = 'https://the402.wertstahl.de';
@@ -24,31 +26,40 @@ $(document).ready(() => {
     'select1': '',
     'select2': /\d+D_.*/,
     'select3': /\d+A_.*/,
-  }
-  const HOLD_MODES = [
-    [2, 4], // RND: 2-4
-    [1, 8], // RND (1-8)
-    [0, 0], // Hold single loop
-    [1, 1], // No hold (play each loop once)
-  ];
+  };
+  const [ DEFAULT_FILTER ] = Object.keys(PLAYLIST_FILTERS);
+  
+  // hold modes are cycled in the order below
+  // keys match "mode" attributes for "hold-mode" button in CSS file
+  // value is [min, max] or [constant] number of repeats
+  const HOLD_MODES = {
+    rnd24: [2, 4],
+    hold: [0], // Repeat single loop forever
+    rnd: [1, 8],
+    off: [1], // Play each loop once
+  };
+  const [ DEFAULT_MODE ] = Object.keys(HOLD_MODES);
 
   // CONFIG
-  const queryParams = new URLSearchParams(window.location.search); // low, med, high
-  const quality = queryParams.get('quality') || 'low';
-  const maxLoops = parseInt(queryParams.get('maxLoops') || -1);
+  const queryParams = new URLSearchParams(window.location.search);
+  // automated query params (e.g. from shared link)
+  const startMode = queryParams.get('mode') || DEFAULT_MODE;
+  const startLoop = queryParams.get('id');
+  const startFilter = queryParams.get('filter') || DEFAULT_FILTER;
+  // manual query params
   const loadLimit = parseInt(queryParams.get('loadLimit') || 5);
+  const quality = queryParams.get('quality') || 'low';  // low, high
 
   // UTILITIES
   const toFilename = (path) => path.replace(/^.*[\\\/]/, '');
-  const looperTransportButton = (target) => $(`.looper-transport button[target=${target}]`);
+  const toExt = (path) => path.split('.').pop();
+  const toTokens = (path) => toFilename(path).split('.')[0].split('_');
   const getLoopsPath = (path) => `${LOOPS_REPOSITORY}/${quality}/${path}`;
-
-  // SELECTORS
-  const sequenceIndicator = document.querySelector('#loop-sequence');
-  const looper = document.querySelector('audio');
+  const looperTransportButton = (target) => $(`.looper-transport button[target=${target}]`);
 
   // STATE
   let playOnLoad = false;
+  let preserveLoopState = false;
   const loadedAudio = {}; // for visualizer, downloads, enabling prev/next, etc.
   const loopState = { forever: false, min: 1, max: 1 };
   const getLoopHold = () => loopState.forever || (loopState.current < loopState.last - 1);
@@ -123,13 +134,11 @@ $(document).ready(() => {
   
   gapless.forEach(player => player.onloadstart = (audioPath) => {
     const fileName = toFilename(audioPath);
-    const ext = fileName.split('.')[1].toLowerCase();
-    const mediaType = EXT_TO_TYPE[ext];
+    const mediaType = EXT_TO_TYPE[toExt(audioPath).toLowerCase()];
     fetch(audioPath).then((response) => response.blob())
     .then((blob) => {
       const file = new File([ blob ], fileName, { type: mediaType });
-      const blobURL = URL.createObjectURL(file);
-      loadedAudio[audioPath] = blobURL;
+      loadedAudio[audioPath] = URL.createObjectURL(file);
       updateTransportButtons();
       if (playOnLoad && audioPath === gapless.current().getTracks()[0]) {
         playOnLoad = false;
@@ -144,13 +153,13 @@ $(document).ready(() => {
     URL.revokeObjectURL(loadedAudio[audioPath]);
     delete loadedAudio[audioPath];
   });
-  
   gapless.forEach(player => player.onfinishedtrack = () => {
     resetCurrentLoopProgress();
     continuity(getLoop());
   });
 
   // Local audio context for visualizer and progress bar
+  const looper = document.querySelector('audio');
   const audioContext = new AudioContext();
   const analyser = function() {
     const analyserNode = audioContext.createAnalyser();
@@ -164,8 +173,7 @@ $(document).ready(() => {
     analyserNode.fftSize = SAMPLES_IN_WINDOW;
     return analyserNode;
   }();
-
-  function buildLoops() {
+  function buildLoops(firstLoop) {
     const filterMode = $('#filter-selection').attr('mode');
     const filterRegex = PLAYLIST_FILTERS[filterMode];
 
@@ -177,7 +185,8 @@ $(document).ready(() => {
         .then((response) => response.text())
         .then((text) => {
           const orderedLoops = text.trim().split('\n');
-          const loops = orderedLoops.map(a => ({ sort: Math.random(), value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
+          const getLoopIndex = (a) => (firstLoop === toTokens(a)[0]) ? -1 : Math.random();
+          const loops = orderedLoops.map(a => ({ sort: getLoopIndex value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
           const numLoops = maxLoops >= 0 ? maxLoops : loops.length;
           for (let i = 0; i < numLoops; i++) {
             if (loops[i].match(filterRegex)) {
@@ -189,7 +198,8 @@ $(document).ready(() => {
         .catch(() => alert(`Failed to fetch list from ${listPath}`));
     }
   }
-  buildLoops();
+  $('#filter-selection').attr('mode', startFilter);
+  buildLoops(startLoop);
   
   // define analyser canvas
   function visualize() {
@@ -269,7 +279,7 @@ $(document).ready(() => {
       if (currentTime === 0) {
         $("#loop-progress").stop(true, true).animate({ width:'0%' }, 10, 'linear');
       } else {
-        $("#loop-progress").stop(true, true).animate({ width:`${100.0 * (currentTime + 0.4) / duration }%` }, 200, 'linear');
+        $("#loop-progress").stop(true, true).animate({ width:`${100.0 * (currentTime + 0.4) / duration }%` }, FADE_MS, 'linear');
       }
     });
   }
@@ -283,8 +293,8 @@ $(document).ready(() => {
   };
 
   function resetCurrentLoopProgress() {
-    $("button[target=remove-loop]").removeClass("disabled");
     looperTransportButton("play-pause").attr("mode", "play");
+    $("#loop-title").text("");
     $("#loop-name").text("");
     $("#loop-tempo").text("");
     $("#loop-progress").stop(true, true).animate({ width:'0%' }, 10, 'linear');
@@ -293,6 +303,7 @@ $(document).ready(() => {
   }
   
   function updateSequenceIndicator() {
+    const sequenceIndicator = document.querySelector('#loop-sequence');
     sequenceIndicator.replaceChildren([]);
     if (!loopState.forever) {
       for (i=0; i<loopState.last; i++) {
@@ -316,7 +327,6 @@ $(document).ready(() => {
     gapless.forEach((player) => { player.loop = player.singleMode });
     updateSequenceIndicator();
   }
-  resetLoopState();
 
   // which loop is playing next
   function continuity(audioPath) {
@@ -355,7 +365,11 @@ $(document).ready(() => {
     if (audioPath !== getLoop() || looper.src === '') {
       // switching to a new track
       if (playAudio) {
-        resetLoopState();
+        if (!preserveLoopState) {
+          resetLoopState();
+        } else {
+          preserveLoopState = false;
+        }
         gapless.gotoTrack(audioPath);
         looper.playbackRate = gapless.getPlaybackRate(gapless.current());
         gapless.forEach((player) => { 
@@ -383,9 +397,9 @@ $(document).ready(() => {
     }
 
     if (paused) {
-      $("#loop-visualizer").fadeOut(200);
+      $("#loop-visualizer").fadeOut(FADE_MS);
     } else {
-      $("#loop-visualizer").fadeIn(200);
+      $("#loop-visualizer").fadeIn(FADE_MS);
     }
     looperTransportButton("play-pause").attr("mode", paused ? "play" : "pause");
     updateTransportButtons();
@@ -395,23 +409,21 @@ $(document).ready(() => {
     const audioPath = getLoop();
     const canPlay = audioPath in loadedAudio;
     enableTransportButton("play-pause", canPlay);
+    enableTransportButton("share-link", canPlay);
     enableTransportButton("download", canPlay);
     enableTransportButton("hold-mode", true); // hold mode can be changed regardless of state
 
     if (audioPath) {
-      const [id, tempo, _name] = toFilename(audioPath).split('.')[0].split('_');
-      $("#loop-name").text(id);
+      const [ id, tempo, name ] = toTokens(audioPath);
+      $("#loop-title").text(id);
+      $("#loop-name").text(name);
       $("#loop-tempo").text(`${tempo} BPM`);
     }
 
     if (!canPlay) {
-      enableTransportButton("shuffle-loops", false);
       enableTransportButton("prev-loop", false);
       enableTransportButton("next-loop", false);
     } else if (gapless.current().getIndex() >= 0) {
-      // don't allow shuffle if a track is playing or paused
-      enableTransportButton("shuffle-loops", !gapless.current().isPlaying());
-
       // disable prev/next based on if playing first or last track
       enableTransportButton("prev-loop", gapless.current().isPlaying() && getPrev() in loadedAudio);
       enableTransportButton("next-loop", gapless.current().isPlaying() && getNext() in loadedAudio);
@@ -421,6 +433,7 @@ $(document).ready(() => {
   function resetTracks(forcePlay = false) {
     looper.pause();
     looper.removeAttribute('src');
+    $("#loop-visualizer").fadeOut(FADE_MS);
     resetCurrentLoopProgress();
     gapless.forEach(player => {
       player.stop;
@@ -433,20 +446,24 @@ $(document).ready(() => {
     updateTransportButtons();
     playOnLoad = forcePlay;
     buildLoops();
+    resetLoopState();
   }
 
-  function setHoldMode(modeIndex) {
-    [holdMin, holdMax] = HOLD_MODES[modeIndex];
+  function setHoldMode(mode) {
+    looperTransportButton("hold-mode").attr("mode", mode);
+    [holdMin, holdMax] = HOLD_MODES[mode] || HOLD_MODES[DEFAULT_MODE];
     if (holdMin === 0 || holdMax === 0) {
       loopState.forever = true;
     } else {
       loopState.forever = false;
       loopState.min = holdMin;
-      loopState.max = holdMax;
+      loopState.max = holdMax || holdMin;
     }
     resetLoopState();
     updateTransportButtons();
   }
+  setHoldMode(startMode);
+  preserveLoopState = true;
 
   function downloadContent(content, type, filename) {
     const link = document.createElement("a");
@@ -472,18 +489,32 @@ $(document).ready(() => {
       });
     };
 
-    setupButton("shuffle-loops", () => resetTracks(false));
+    setupButton("share-link", () => {
+      const [ loopId ] = toTokens(getLoop());
+
+      const newLink = new URL(document.URL);
+      newLink.searchParams.set("id", loopId);
+      newLink.searchParams.set("mode", "hold");
+      newLink.searchParams.set("filter", $('#filter-selection').attr('mode'));
+      navigator.clipboard.writeText(newLink.href);
+      $("#notification_banner").fadeIn(FADE_MS,
+        () => setTimeout(
+          () => $("#notification_banner").fadeOut(FADE_MS),
+          NOTIFICATION_MS,
+        ),
+      );
+    });
 
     setupButton("hold-mode", (selector) => {
-      const prevIndex = parseInt(selector.attr("mode"));
-      const nextIndex = prevIndex === HOLD_MODES.length - 1 ? 0 : prevIndex + 1;
-      selector.attr("mode", nextIndex);
-      setHoldMode(nextIndex);
+      const modes = Object.keys(HOLD_MODES);
+      const prevIndex = modes.indexOf(selector.attr("mode"));
+      const nextIndex = prevIndex === modes.length - 1 ? 0 : prevIndex + 1;
+      setHoldMode(modes[nextIndex]);
     });
 
     setupButton("play-pause", () => {
-      if (gapless.current().getIndex() === -1) {
-        playLoop(gapless.current().getTracks()[0]);
+      if (gapless.getIndex() === -1) {
+        playLoop(gapless.getTracks()[0]);
       } else {
         playLoop(getLoop());
       }

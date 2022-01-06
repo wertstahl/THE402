@@ -48,7 +48,7 @@ a {
   text-decoration: inherit;
 }
 
-button {
+button, .link-button {
   background: transparent;
   border: 0;
   outline: 0 !important;
@@ -79,6 +79,46 @@ span, div, button {
                                   supported by Chrome, Edge, Opera and Firefox */
 }
 
+/* Mobile Overrides */
+
+@media only screen and (max-width: 400px) {
+  div {
+    border-radius: 0 !important;
+  }
+  #player-block, body, header {
+    margin: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: 100% !important;
+  }
+  #loop-title {
+    font-size: 72px !important;
+  }
+  #loop-visualizer {
+    margin-top: -5px !important;
+  }
+  #filter-selection[mode=select1] {
+    left: calc(12% - 44px) !important;
+  }
+  #filter-selection[mode=select2] {
+    left: calc(50% - 66px) !important;
+  }
+  #filter-selection[mode=select3] {
+    left: calc(88% - 88px) !important;
+  }
+}
+
+@media only screen and (orientation:landscape) and (max-height: 400px) {
+  div {
+    border-radius: 0 !important;
+  }
+  #player-block, body, header {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    height: 100% !important;
+  }
+}
+
 /* Overall Layout */
 
 #player-block {
@@ -101,7 +141,7 @@ span, div, button {
 
 /* Now-Playing Section */
 
-#loop-name {
+#loop-title {
   display: block;
   width: auto;
   color: #000;
@@ -112,11 +152,10 @@ span, div, button {
   z-index: 1;
 }
 
-#loop-tempo {
+#loop-tempo, #loop-name {
   display: block;
   position: absolute;
   width: auto;
-  right: 1em;
   bottom: 12px;
   color: #000;
   font-family: "Futura";
@@ -125,10 +164,18 @@ span, div, button {
   z-index: 1;
 }
 
+#loop-name {
+  left: 1em;
+}
+
+#loop-tempo {
+  right: 1em;
+}
+
 #loop-progress {
   position: absolute;
   z-index: 999;
-  width: 0px;
+  width: 0;
   height: 5px;
   background: #ff2f1b;
   bottom:0;
@@ -197,6 +244,12 @@ span, div, button {
   opacity: 0.8;
 }
 
+/* preload hack */
+body::after{
+  position:absolute; width:0; height:0; overflow:hidden; z-index:-1;
+  content:url('./assets-gui/play_paused.png') url('./assets-gui/loop_rnd2-4.png') url('./assets-gui/loop_hold.png') url('./assets-gui/loop_rnd.png') url('./assets-gui/loop_disable.png') url('./assets-gui/402_logo_creditpage.png') url('./assets-gui/share_link_notif.png');
+}
+
 button[target=play-pause][mode=play] {
   background-image: url('./assets-gui/play_continue.png');
 }
@@ -209,23 +262,34 @@ button[target=prev-loop] {
 button[target=next-loop] {
   background-image: url('./assets-gui/skip_forth.png');
 }
-button[target=hold-mode][mode="0"] {
+button[target=hold-mode][mode="rnd24"] {
   background-image: url('./assets-gui/loop_rnd2-4.png');
 }
-button[target=hold-mode][mode="1"] {
-  background-image: url('./assets-gui/loop_rnd.png');
-}
-button[target=hold-mode][mode="2"] {
+button[target=hold-mode][mode="hold"] {
   background-image: url('./assets-gui/loop_hold.png');
 }
-button[target=hold-mode][mode="3"] {
+button[target=hold-mode][mode="rnd"] {
+  background-image: url('./assets-gui/loop_rnd.png');
+}
+button[target=hold-mode][mode="off"] {
   background-image: url('./assets-gui/loop_disable.png');
 }
-button[target=shuffle-loops] {
-  background-image: url('./assets-gui/reshuffle.png');
+button[target=share-link] {
+  background-image: url('./assets-gui/share_link.png');
 }
 button[target=download] {
-  background-image: url('./assets-gui/dl_wav.png');
+  background-image: url('./assets-gui/dl_loop.png');
+}
+#notification_banner {
+  display: none;
+  top: -95px; 
+  margin-bottom: -96px;
+  left: 2px;
+  z-index: 1;
+  background-image: url('./assets-gui/share_link_notif.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
 }
 
 /* Bottom Panels */
@@ -267,12 +331,14 @@ button[target=download] {
   padding-top: 4px;
   color: #fefb00 !important;
   line-height: 125%;
+  max-width: 200px;
 }
 
 #credits-text-2 {
   padding-top: 4px;
   padding-left: 10px;
   line-height: 125%;
+  white-space: nowrap;
 }
 
 #close-toggle {
@@ -341,4 +407,10 @@ button[target=select3] {
   position: absolute;
   bottom: 10px;
   right: 10px;
+}
+
+#source-link {
+  position: absolute;
+  bottom: 11px;
+  left: 12px;
 }
