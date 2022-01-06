@@ -63,17 +63,76 @@ $(document).ready(() => {
   const loadedAudio = {}; // for visualizer, downloads, enabling prev/next, etc.
   const loopState = { forever: false, min: 1, max: 1 };
   const getLoopHold = () => loopState.forever || (loopState.current < loopState.last - 1);
+  const getLoopsRemaining = () => loopState.forever ? -1 : (loopState.last - loopState.current);
 
   // CONTEXTS
-  const gapless = new Gapless5({
-    loop: true,
-    singleMode: false,
-    useHTML5Audio: false, // save memory
-    loadLimit,
-    shuffle: false, // we handle (re-)shuffling ourselves
-    logLevel: LogLevel.Info, // LogLevel.Debug,
-  });
-  gapless.onloadstart = (audioPath) => {
+  // A wrapper for 2 Gapless5 players to cross-fade between tracks, etc
+  function Gapless5Wrapper(inLoadLimit) {
+    const gaplessOptions = {
+      loop: false, // we handle looping ourselves, so that we can re-shuffle beforehand
+      singleMode: false,
+      useHTML5Audio: false, // save memory
+      loadLimit: inLoadLimit,
+      shuffle: false, // we handle (re-)shuffling ourselves
+      logLevel: LogLevel.Info, // LogLevel.Debug,
+    };
+    const players = [
+      new Gapless5(gaplessOptions), // even tracks
+      new Gapless5(gaplessOptions), // odd tracks
+    ];
+
+    let tempo = 0; // use whatever first track you play
+    const getTempo = (audioPath) => toFilename(audioPath).split('.')[0].split('_')[1] * 1;
+
+    let index = 0;
+
+    this.current = () => players[index % 2];
+    this.standby = () => players[(index + 1) % 2];
+    this.forEach = (func) => {
+      players.forEach(player => func(player));
+    };
+    this.onfinishedtrack = () => {};
+    this.numTracks = () => this.current().getTracks().length;
+    this.getPlaybackRate = (track) => tempo / getTempo(track.currentSource().audioPath);
+
+    this.gotoTrack = (audioPath) => {
+      if (tempo === 0) {
+        tempo = getTempo(audioPath);
+      }
+      index = players[0].findTrack(audioPath);
+      const currentTrack = this.current();
+      currentTrack.gotoTrack(index);
+      currentTrack.setPlaybackRate(this.getPlaybackRate(currentTrack));
+      currentTrack.setVolume(1);
+      currentTrack.onfinishedtrack = this.onfinishedtrack;
+
+      const standbyTrack = this.standby();
+      standbyTrack.gotoTrack((index + 1) % this.numTracks());
+      standbyTrack.setPlaybackRate(this.getPlaybackRate(standbyTrack));
+      standbyTrack.setVolume(0);
+      standbyTrack.onfinishedtrack = () => {};
+    };
+
+    this.onStartedTrack = (repsLeft) => {
+      if (repsLeft === 1) {
+        const currentTrack = this.current();
+        const standbyTrack = this.standby();
+        const duration = currentTrack.currentSource().getDuration() / this.getPlaybackRate(currentTrack);
+        const duration2 = standbyTrack.currentSource().getDuration() / this.getPlaybackRate(standbyTrack);
+        currentTrack.setVolume(0, duration);
+        standbyTrack.setVolume(1, duration2);
+      }
+    }
+  };
+  const gapless = new Gapless5Wrapper(loadLimit);
+
+  // CONTEXT UTILITIES
+  const getLoop = (offset = 0) => gapless.current().getTracks()[gapless.current().getIndex() + offset];
+  const getPrev = () => getLoop(-1);
+  const getNext = () => getLoop(1);
+  setHoldMode(0);
+  
+  gapless.forEach(player => player.onloadstart = (audioPath) => {
     const fileName = toFilename(audioPath);
     const mediaType = EXT_TO_TYPE[toExt(audioPath).toLowerCase()];
     fetch(audioPath).then((response) => response.blob())
@@ -81,23 +140,23 @@ $(document).ready(() => {
       const file = new File([ blob ], fileName, { type: mediaType });
       loadedAudio[audioPath] = URL.createObjectURL(file);
       updateTransportButtons();
-      if (playOnLoad && audioPath === gapless.getTracks()[0]) {
+      if (playOnLoad && audioPath === gapless.current().getTracks()[0]) {
         playOnLoad = false;
         playLoop(audioPath);
       }
     }).catch((err) => console.error(err));
-  };
-  gapless.onload = () => {
+  });
+  gapless.forEach(player => player.onload = () => {
     updateTransportButtons();
-  }
-  gapless.onunload = (audioPath) => {
+  });
+  gapless.forEach(player => player.onunload = (audioPath) => {
     URL.revokeObjectURL(loadedAudio[audioPath]);
     delete loadedAudio[audioPath];
-  };
-  gapless.onfinishedtrack = () => {
+  });
+  gapless.forEach(player => player.onfinishedtrack = () => {
     resetCurrentLoopProgress();
     continuity(getLoop());
-  };
+  });
 
   // Local audio context for visualizer and progress bar
   const looper = document.querySelector('audio');
@@ -106,7 +165,7 @@ $(document).ready(() => {
     const analyserNode = audioContext.createAnalyser();
     const track = audioContext.createMediaElementSource(looper);
     track.connect(analyserNode);
-  
+
     const gainNode = audioContext.createGain();
     gainNode.gain.value = 0;
     gainNode.connect(audioContext.destination);
@@ -114,12 +173,6 @@ $(document).ready(() => {
     analyserNode.fftSize = SAMPLES_IN_WINDOW;
     return analyserNode;
   }();
-
-  // CONTEXT UTILITIES
-  const getLoop = (offset = 0) => gapless.getTracks()[gapless.getIndex() + offset];
-  const getPrev = () => getLoop(-1);
-  const getNext = () => getLoop(1);
-
   function buildLoops(firstLoop) {
     const filterMode = $('#filter-selection').attr('mode');
     const filterRegex = PLAYLIST_FILTERS[filterMode];
@@ -133,11 +186,12 @@ $(document).ready(() => {
         .then((text) => {
           const orderedLoops = text.trim().split('\n');
           const getLoopIndex = (a) => (firstLoop === toTokens(a)[0]) ? -1 : Math.random();
-          const loops = orderedLoops.map(a => ({ sort: getLoopIndex(a), value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
-          for (let i = 0; i < loops.length; i++) {
+          const loops = orderedLoops.map(a => ({ sort: getLoopIndex value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
+          const numLoops = maxLoops >= 0 ? maxLoops : loops.length;
+          for (let i = 0; i < numLoops; i++) {
             if (loops[i].match(filterRegex)) {
               const audioPath = getLoopsPath(loops[i]);
-              gapless.addTrack(audioPath);
+              gapless.forEach(player => player.addTrack(audioPath));
             }
           }
         })
@@ -264,13 +318,13 @@ $(document).ready(() => {
 
   function resetLoopState() {
     if (loopState.forever) {
-      gapless.singleMode = true;
+      gapless.forEach((player) => { player.singleMode = true });
     } else {
       loopState.last = loopState.min + Math.round(Math.random() * (loopState.max - loopState.min));
       loopState.current = 0;
-      gapless.singleMode = getLoopHold();
+      gapless.forEach((player) => { player.singleMode = getLoopHold() });
     }
-    gapless.loop = gapless.singleMode;
+    gapless.forEach((player) => { player.loop = player.singleMode });
     updateSequenceIndicator();
   }
 
@@ -282,11 +336,13 @@ $(document).ready(() => {
     let nextPath = audioPath;
     if (getLoopHold()) {
       loopState.current += 1;
-      gapless.singleMode = loopState.forever || getLoopHold();
-      gapless.loop = gapless.singleMode;
+      gapless.forEach((player) => {
+        player.singleMode = loopState.forever || getLoopHold();
+        player.loop = player.singleMode;
+      });
       updateSequenceIndicator();
     } else if (!loopState.forever) {
-      nextPath = gapless.getTracks()[gapless.findTrack(audioPath) + 1];
+      nextPath = gapless.current().getTracks()[gapless.current().findTrack(audioPath) + 1];
       if (nextPath === undefined) {
         // re-shuffle at end of playlist
         resetTracks(true);
@@ -295,6 +351,7 @@ $(document).ready(() => {
       resetLoopState();
     }
     playLoop(nextPath, false);
+    gapless.onStartedTrack(getLoopsRemaining());
   }
 
   function playLoop(audioPath, playAudio = true) {
@@ -314,15 +371,16 @@ $(document).ready(() => {
           preserveLoopState = false;
         }
         gapless.gotoTrack(audioPath);
-        gapless.play();
+        looper.playbackRate = gapless.getPlaybackRate(gapless.current());
+        gapless.forEach((player) => { 
+          player.play();
+         });
+        gapless.onStartedTrack(getLoopsRemaining());
       }
-      looper.src = loadedAudio[getLoop()];
-      looper.load();
-      looper.play();
-    } else if (!gapless.isPlaying()) {
+    } else if (!gapless.current().isPlaying()) {
       // unpausing
       if (playAudio) {
-        gapless.play();
+        gapless.forEach((player) => { player.play() });
       }
       looper.play();
     } else if (looperTransportButton("play-pause").attr("mode") === "play") {
@@ -333,7 +391,7 @@ $(document).ready(() => {
       // pausing
       paused = true;
       if (playAudio) {
-        gapless.pause();
+        gapless.forEach((player) => { player.pause() });
       }
       looper.pause();
     }
@@ -361,13 +419,14 @@ $(document).ready(() => {
       $("#loop-name").text(name);
       $("#loop-tempo").text(`${tempo} BPM`);
     }
+
     if (!canPlay) {
       enableTransportButton("prev-loop", false);
       enableTransportButton("next-loop", false);
-    } else if (gapless.getIndex() >= 0) {
+    } else if (gapless.current().getIndex() >= 0) {
       // disable prev/next based on if playing first or last track
-      enableTransportButton("prev-loop", gapless.isPlaying() && getPrev() in loadedAudio);
-      enableTransportButton("next-loop", gapless.isPlaying() && getNext() in loadedAudio);
+      enableTransportButton("prev-loop", gapless.current().isPlaying() && getPrev() in loadedAudio);
+      enableTransportButton("next-loop", gapless.current().isPlaying() && getNext() in loadedAudio);
     }
   }
 
@@ -376,8 +435,10 @@ $(document).ready(() => {
     looper.removeAttribute('src');
     $("#loop-visualizer").fadeOut(FADE_MS);
     resetCurrentLoopProgress();
-    gapless.stop();
-    gapless.removeAllTracks();
+    gapless.forEach(player => {
+      player.stop;
+      player.removeAllTracks();
+    });
     for (const audioPath in loadedAudio) {
       URL.revokeObjectURL(loadedAudio[audioPath]);
       delete loadedAudio[audioPath];
