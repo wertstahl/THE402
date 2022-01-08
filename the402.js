@@ -23,7 +23,7 @@ $(document).ready(() => {
     flac: 'audio/flac',
   };
   const PLAYLIST_FILTERS = {
-    'select1': '',
+    'select1': /\d+[D|A]_.*/,
     'select2': /\d+D_.*/,
     'select3': /\d+A_.*/,
   };
@@ -54,6 +54,7 @@ $(document).ready(() => {
   const toFilename = (path) => path.replace(/^.*[\\\/]/, '');
   const toExt = (path) => path.split('.').pop();
   const toTokens = (path) => toFilename(path).split('.')[0].split('_');
+  const toLoopId = (path) => toTokens(path)[0];
   const getLoopsPath = (path) => `${LOOPS_REPOSITORY}/${quality}/${path}`;
   const looperTransportButton = (target) => $(`.looper-transport button[target=${target}]`);
 
@@ -132,14 +133,13 @@ $(document).ready(() => {
         .then((response) => response.text())
         .then((text) => {
           const orderedLoops = text.trim().split('\n');
-          const getLoopIndex = (a) => (firstLoop === toTokens(a)[0]) ? -1 : Math.random();
+          const getLoopIndex = (a) => (firstLoop === toLoopId(a)) ? -1 : Math.random();
           const loops = orderedLoops.map(a => ({ sort: getLoopIndex(a), value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
-          for (let i = 0; i < loops.length; i++) {
-            if (loops[i].match(filterRegex)) {
-              const audioPath = getLoopsPath(loops[i]);
-              gapless.addTrack(audioPath);
+          loops.forEach(loop => {
+            if (loop.match(filterRegex) || (firstLoop === toLoopId(loop))) {
+              gapless.addTrack(getLoopsPath(loop));
             }
-          }
+          });
         })
         .catch(() => alert(`Failed to fetch list from ${listPath}`));
     }
@@ -429,10 +429,8 @@ $(document).ready(() => {
     };
 
     setupButton("share-link", () => {
-      const [ loopId ] = toTokens(getLoop());
-
       const newLink = new URL(document.URL);
-      newLink.searchParams.set("id", loopId);
+      newLink.searchParams.set("id", toLoopId(getLoop()));
       newLink.searchParams.set("mode", "hold");
       newLink.searchParams.set("filter", $('#filter-selection').attr('mode'));
       navigator.clipboard.writeText(newLink.href);
