@@ -247,7 +247,6 @@ $(document).ready(() => {
     $("#loop-tempo").text("");
     $("#loop-progress").stop(true, true).animate({ width:'0%' }, 10, 'linear');
     updateTransportButtons();
-    updateSequenceIndicator();
   }
   
   function updateSequenceIndicator() {
