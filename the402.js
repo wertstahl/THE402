@@ -265,7 +265,7 @@ $(document).ready(() => {
     }
   }
 
-  function resetLoopState() {
+  function resetLoopState(updateIndicator) {
     if (loopState.forever) {
       gapless.singleMode = true;
     } else {
@@ -274,7 +274,9 @@ $(document).ready(() => {
       gapless.singleMode = getLoopHold();
     }
     gapless.loop = gapless.singleMode;
-    updateSequenceIndicator();
+    if (updateIndicator) {
+      updateSequenceIndicator();
+    }
   }
 
   // which loop is playing next
@@ -287,7 +289,6 @@ $(document).ready(() => {
       loopState.current += 1;
       gapless.singleMode = loopState.forever || getLoopHold();
       gapless.loop = gapless.singleMode;
-      updateSequenceIndicator();
     } else if (!loopState.forever) {
       nextPath = gapless.getTracks()[gapless.findTrack(audioPath) + 1];
       if (nextPath === undefined) {
@@ -295,9 +296,10 @@ $(document).ready(() => {
         resetTracks(true);
         return;
       }
-      resetLoopState();
+      resetLoopState(false);
     }
     playLoop(nextPath, false);
+    updateSequenceIndicator();
   }
 
   function playLoop(audioPath, playAudio = true) {
