@@ -3,7 +3,6 @@ THE402 (c) 2008 - 2022 SyS Audio Research
 __type: js
 __version: 0.4
 __author: Rego Sen
-__additional-code: D. Zahn
 __additional-code: S. I. Hartmann
 */
 
@@ -38,7 +37,7 @@ body {
   height: 100%;
   width: calc(100% - 48px);
   padding: 16px 12px;
-  margin: 200px 12px 16px 12px;
+/*  margin: 200px 12px 16px 12px; */
   font-family: "Futura", "Helvetica", "sans-serif";
   background: #ddd;
 }
@@ -425,3 +424,39 @@ button[target=select3] {
   bottom: 11px;
   left: 12px;
 }
+
+
+
+
+/*<----------------- Writeup ------------------->*/
+
+/*<!-- A BLACK SHADOW. -->*/
+
+#writeup { 
+/*		 display: flex;
+ 		 flex-direction: column;
+  	 align-items: center; */
+  	 position: relative;
+     top: 435px;
+  	 width: calc(100% - 48px);
+     clear: both;
+     z-index: 1;
+
+			border-radius: 10px;
+			width: 356px; 
+			margin: 30px auto; 
+			padding: 20px;
+			color: black; 
+			background: white; 
+			-moz-box-shadow: 0 0 20px black;
+			-webkit-box-shadow: 0 0 20px black; 
+			box-shadow: 0 0 20px black; 
+			text-indent: 0px; 
+			}
+					
+		p {  
+			margin: 0 0 30px 0; 
+			text-indent: 0px; 
+			line-height: 15px; 
+		}
+
