@@ -436,7 +436,7 @@ $(document).ready(() => {
     setupButton("share-link", () => {
       const newLink = new URL(document.URL);
       newLink.searchParams.set("id", toLoopId(getLoop()));
-      newLink.searchParams.set("mode", "hold");
+      newLink.searchParams.set("mode", "rnd24");
       newLink.searchParams.set("filter", $('#filter-selection').attr('mode'));
       navigator.clipboard.writeText(newLink.href);
       $("#notification_banner").fadeIn(FADE_MS,
