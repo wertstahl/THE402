@@ -7,13 +7,15 @@
     <link rel="shortcut icon" href="favicon.ico" />
     <link rel="stylesheet" href="the402.css">
     <script defer src="jquery.js" type="text/javascript"></script>
-    <script defer src="gapless5.min.js" type="text/javascript"></script>
-    <script defer src="the402.js" type="text/javascript"></script>
+    <script>
+      document.write("<script defer type='text/javascript' src='gapless5.min.js?v=" + Date.now() + "'><\/script>");
+      document.write("<script defer type='text/javascript' src='the402.js?v=" + Date.now() + "'><\/script>");
+    </script>
     <script defer src="jszip.min.js" type="text/javascript"></script>
     <title>the402</title>
   </head>
   <body>	 
-  	<img src="/player/assets-gui/atmeau.gif" class="bg"> 
+  	<img src="./assets-gui/atmeau.gif" class="bg">
   	<header>
     <div id="player-block">
       <div class="looper-row">

@@ -53,7 +53,7 @@ $(document).ready(() => {
 
   // UTILITIES
   const toFilename = (path) => path.replace(/^.*[\\\/]/, '');
-  const toExt = (path) => path.split('.').pop();
+  const toExtLower = (path) => path.split('.').pop().toLowerCase();
   const toTokens = (path) => toFilename(path).split('.')[0].split('_');
   const toLoopId = (path) => toTokens(path)[0];
   const getLoopsPath = (path) => `${LOOPS_REPOSITORY}/${quality}/${path}`;
@@ -77,7 +77,7 @@ $(document).ready(() => {
   });
   gapless.onloadstart = (audioPath) => {
     const fileName = toFilename(audioPath);
-    const mediaType = EXT_TO_TYPE[toExt(audioPath).toLowerCase()];
+    const mediaType = EXT_TO_TYPE[toExtLower(audioPath)];
     fetch(audioPath).then((response) => response.blob())
     .then((blob) => {
       const file = new File([ blob ], fileName, { type: mediaType });
@@ -89,6 +89,9 @@ $(document).ready(() => {
       }
     }).catch((err) => console.error(err));
   };
+  gapless.onplay = () => { 
+    updateTransportButtons();
+  }
   gapless.onload = () => {
     updateTransportButtons();
   }
@@ -135,7 +138,7 @@ $(document).ready(() => {
         .then((text) => {
           const orderedLoops = text.trim().split('\n');
           const getLoopIndex = (a) => (firstLoop === toLoopId(a)) ? -1 : Math.random();
-          const loops = orderedLoops.map(a => ({ sort: getLoopIndex(a), value: a })).sort((a, b) => a.sort - b.sort).map(a => a.value);
+          const loops = orderedLoops.map(a => ({ sort: getLoopIndex(a), value: a.trim() })).sort((a, b) => a.sort - b.sort).map(a => a.value);
           loops.forEach(loop => {
             if (loop.match(filterRegex) || (firstLoop === toLoopId(loop))) {
               gapless.addTrack(getLoopsPath(loop));
@@ -189,24 +192,26 @@ $(document).ready(() => {
   
     const draw = () => {
       requestAnimationFrame(draw);
-      const canvasState = $('#loop-visualizer');
-      canvas.width = canvasState.width();
-      canvas.height = canvasState.height();
-      canvasCtx.translate(0, canvas.height / 2); // Set Y = 0 to be in the middle of the canvas
-      canvasCtx.scale(1, 0.5); // give it some vertical padding
-  
-      analyser.getByteTimeDomainData(arrayBuffer);
-      const filteredData = filterData(arrayBuffer);
-      const normalizedData = normalizeData(filteredData);
-      
-      // draw the line segments
-      canvasCtx.clearRect(0, -canvas.height/2, canvas.width, canvas.height);
-      const width = canvas.width / normalizedData.length;
-      const height = canvas.height / 2;
-      for (let i = 0; i < normalizedData.length; i++) {
-        const x = width * i;
-        const y = height * normalizedData[i];
-        drawLineSegment(canvasCtx, x, y, width, (i + 1) % 2);
+      if (!looper.error) {
+        const canvasState = $('#loop-visualizer');
+        canvas.width = canvasState.width();
+        canvas.height = canvasState.height();
+        canvasCtx.translate(0, canvas.height / 2); // Set Y = 0 to be in the middle of the canvas
+        canvasCtx.scale(1, 0.5); // give it some vertical padding
+    
+        analyser.getByteTimeDomainData(arrayBuffer);
+        const filteredData = filterData(arrayBuffer);
+        const normalizedData = normalizeData(filteredData);
+        
+        // draw the line segments
+        canvasCtx.clearRect(0, -canvas.height/2, canvas.width, canvas.height);
+        const width = canvas.width / normalizedData.length;
+        const height = canvas.height / 2;
+        for (let i = 0; i < normalizedData.length; i++) {
+          const x = width * i;
+          const y = height * normalizedData[i];
+          drawLineSegment(canvasCtx, x, y, width, (i + 1) % 2);
+        }
       }
     };
     draw();
@@ -374,6 +379,7 @@ $(document).ready(() => {
       enableTransportButton("prev-loop", gapless.isPlaying() && getPrev() in loadedAudio);
       enableTransportButton("next-loop", gapless.isPlaying() && getNext() in loadedAudio);
     }
+    updateSequenceIndicator();
   }
 
   function resetTracks(forcePlay = false) {
