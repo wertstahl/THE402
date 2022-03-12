@@ -426,37 +426,35 @@ button[target=select3] {
 }
 
 
-
-
 /*<----------------- Writeup ------------------->*/
 
-/*<!-- A BLACK SHADOW. -->*/
-
 #writeup { 
-/*		 display: flex;
- 		 flex-direction: column;
-  	 align-items: center; */
   	 position: relative;
      top: 435px;
-  	 width: calc(100% - 48px);
-     clear: both;
      z-index: 1;
 
-			border-radius: 10px;
-			width: 356px; 
+		 /*  box sizing */
+     -webkit-box-sizing: border-box;     /* Safari/Chrome, other WebKit */
+		 -moz-box-sizing: border-box;    		 /* Firefox, other Gecko */
+		 box-sizing: border-box;             /* Opera/IE 8+ */
+
+		 /*  black shadow  */
+		 -webkit-box-shadow: 0 0 20px black; /* Safari/Chrome, other WebKit */
+ 		 -moz-box-shadow: 0 0 20px black;    /* Firefox, other Gecko */
+ 		 box-shadow: 0 0 20px black; 		     /* Opera/IE 8+ */
+
+ 		 border-radius: 10px;
+
 			margin: 30px auto; 
 			padding: 20px;
 			color: black; 
 			background: white; 
-			-moz-box-shadow: 0 0 20px black;
-			-webkit-box-shadow: 0 0 20px black; 
-			box-shadow: 0 0 20px black; 
 			text-indent: 0px; 
 			}
-					
-		p {  
-			margin: 0 0 30px 0; 
-			text-indent: 0px; 
-			line-height: 15px; 
-		}
+			
+p{  
+	 		margin: 0 0 30px 0; 
+	 		text-indent: 0px; 
+	 		line-height: 15px; 
+ }
 
