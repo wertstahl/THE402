@@ -47,6 +47,7 @@ $(document).ready(() => {
   const startMode = queryParams.get('mode') || DEFAULT_MODE;
   const startLoop = queryParams.get('id');
   const startFilter = queryParams.get('filter') || DEFAULT_FILTER;
+  const logLevel = queryParams.get('debug') === 'true' ? LogLevel.Debug : LogLevel.Info;
   // manual query params
   const loadLimit = parseInt(queryParams.get('loadLimit') || 5);
   const quality = queryParams.get('quality') || 'low';  // low, high
@@ -73,7 +74,7 @@ $(document).ready(() => {
     useHTML5Audio: false, // save memory
     loadLimit,
     shuffle: false, // we handle (re-)shuffling ourselves
-    logLevel: LogLevel.Info, // LogLevel.Debug,
+    logLevel,
   });
   gapless.onloadstart = (audioPath) => {
     const fileName = toFilename(audioPath);
@@ -445,9 +446,9 @@ $(document).ready(() => {
       newLink.searchParams.set("mode", "rnd24");
       newLink.searchParams.set("filter", $('#filter-selection').attr('mode'));
       navigator.clipboard.writeText(newLink.href);
-      $("#notification_banner").fadeIn(FADE_MS,
+      $("#notification-banner").fadeIn(FADE_MS,
         () => setTimeout(
-          () => $("#notification_banner").fadeOut(FADE_MS),
+          () => $("#notification-banner").fadeOut(FADE_MS),
           NOTIFICATION_MS,
         ),
       );
