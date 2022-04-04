@@ -293,8 +293,10 @@ $(document).ready(() => {
     let nextPath = audioPath;
     if (getLoopHold()) {
       loopState.current += 1;
-      gapless.singleMode = loopState.forever || getLoopHold();
-      gapless.loop = gapless.singleMode;
+      setTimeout(() => {
+        gapless.singleMode = loopState.forever || getLoopHold();
+        gapless.loop = gapless.singleMode;
+      }, 100);
     } else if (!loopState.forever) {
       nextPath = gapless.getTracks()[gapless.findTrack(audioPath) + 1];
       if (nextPath === undefined) {
