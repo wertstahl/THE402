@@ -180,6 +180,10 @@ button {
     z-index: 1;
 }
 
+.error {
+    color: red !important;
+}
+
 #loop-name {
     left: 12px;
 }

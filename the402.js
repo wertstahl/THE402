@@ -64,6 +64,7 @@ $(document).ready(() => {
   let playOnLoad = false;
   let preserveLoopState = false;
   const loadedAudio = {}; // for visualizer, downloads, enabling prev/next, etc.
+  const errors = new Set([]); // set of audio paths with errors
   const loopState = { forever: false, min: 1, max: 1 };
   const getLoopHold = () => loopState.forever || (loopState.current < loopState.last - 1);
 
@@ -88,12 +89,18 @@ $(document).ready(() => {
         playOnLoad = false;
         playLoop(audioPath);
       }
-    }).catch((err) => console.error(err));
+    }).catch((err) => {
+      console.error(err);
+      errors.add(audioPath);
+      updateTransportButtons();
+    });
   };
-  gapless.onplay = () => { 
+  gapless.onplay = (audioPath) => { 
+    errors.delete(audioPath);
     updateTransportButtons();
   }
-  gapless.onload = () => {
+  gapless.onload = (audioPath) => {
+    errors.delete(audioPath);
     updateTransportButtons();
   }
   gapless.onunload = (audioPath) => {
@@ -103,6 +110,10 @@ $(document).ready(() => {
   gapless.onfinishedtrack = () => {
     resetCurrentLoopProgress();
     continuity(getLoop());
+  };
+  gapless.onerror = (audioPath) => {
+    errors.add(audioPath);
+    updateTransportButtons();
   };
 
   // Local audio context for visualizer and progress bar
@@ -372,7 +383,13 @@ $(document).ready(() => {
       const [ id, tempo, name ] = toTokens(audioPath);
       $("#loop-title").text(id);
       $("#loop-name").text(name);
-      $("#loop-tempo").text(`${tempo} BPM`);
+      if (errors.has(audioPath)) {
+        $("#loop-tempo").text('NETWORK ERR!');
+        $("#loop-tempo").addClass('error');
+      } else {
+        $("#loop-tempo").text(`${tempo} BPM`);
+        $("#loop-tempo").removeClass('error');
+      }
     }
     if (!canPlay) {
       enableTransportButton("prev-loop", false);
