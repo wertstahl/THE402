@@ -156,6 +156,9 @@ $(document).ready(() => {
               gapless.addTrack(getLoopsPath(loop));
             }
           });
+          if (logLevel === LogLevel.Debug) {
+            console.log(gapless.getTracks().join('\n'));
+          }
         })
         .catch(() => alert(`Failed to fetch list from ${listPath}`));
     }
