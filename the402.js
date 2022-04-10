@@ -416,6 +416,7 @@ $(document).ready(() => {
 
   function resetTracks(forcePlay = false) {
     looper.pause();
+    looper.currentTime = 0;
     looper.removeAttribute('src');
     $("#loop-visualizer").fadeOut(FADE_MS);
     resetCurrentLoopProgress();
