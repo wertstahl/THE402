@@ -268,6 +268,15 @@ $(document).ready(() => {
     $("#loop-progress").stop(true, true).animate({ width:'0%' }, 10, 'linear');
     updateTransportButtons();
   }
+
+  function sequenceAttribute(index, currentIndex) {
+    if (index === currentIndex) {
+      return 'current';
+    } else if (index > currentIndex) {
+      return 'played';
+    }
+    return 'unplayed';
+  } 
   
   function updateSequenceIndicator() {
     const sequenceIndicator = document.querySelector('#loop-sequence');
@@ -275,11 +284,11 @@ $(document).ready(() => {
     if (!loopState.forever) {
       const { currentTime, duration } = looper;
       const offset = (duration - currentTime) < SEQUENCE_LOOKAHEAD_SEC ? -1 : 0;
+      const playedIdx = (loopState.last + offset - loopState.current);
       for (i=0; i<loopState.last; i++) {
         const ball = document.createElement('div');
-        const hasPlayed = i >= (loopState.last + offset - loopState.current);
         ball.className = 'loop-sequence-indicator';
-        ball.setAttribute('mode', hasPlayed ? 'played' : 'unplayed')
+        ball.setAttribute('mode', sequenceAttribute(i, playedIdx - 1));
         sequenceIndicator.appendChild(ball);
       }
     }

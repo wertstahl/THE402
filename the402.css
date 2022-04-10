@@ -242,6 +242,9 @@ button {
     background-image: url('./assets-gui/loopdot-outline_56x56.png');
 }
 
+.loop-sequence-indicator[mode=current] {
+    background-image: url('./assets-gui/loopdot-curr_56x56.png');
+}
 
 /* Transport Buttons */
 
