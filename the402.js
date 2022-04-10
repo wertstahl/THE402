@@ -270,7 +270,7 @@ $(document).ready(() => {
   }
 
   function sequenceAttribute(index, currentIndex) {
-    if (index === currentIndex) {
+    if (index === currentIndex && gapless.isPlaying()) {
       return 'current';
     } else if (index > currentIndex) {
       return 'played';
