@@ -28,7 +28,7 @@ as would be with a classic fixed-tracks-album.<br>
 On- or Offline usage is optional. Usage is free of charge.<br>
 <br>
 <i>Notice: be aware that mobile use might generate some traffic<br>
-on your device. Probably 270MB/h on low quality. (In comparison,<br>
+on your device. Probably 64MB/h on normal quality. (In comparison,<br>
 one hour of 720p youtube video generates 1,5GB of traffic.)</i><br>
 
 ## License
