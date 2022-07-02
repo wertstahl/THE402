@@ -63,9 +63,11 @@ $(document).ready(() => {
   // STATE
   let playOnLoad = false;
   let preserveLoopState = false;
+  let lastDotFrame = -1;
   const loadedAudio = {}; // for visualizer, downloads, enabling prev/next, etc.
   const errors = new Set([]); // set of audio paths with errors
   const loopState = { forever: false, min: 1, max: 1 };
+  let lastRenderedState = { ...loopState };
   const getLoopHold = () => loopState.forever || (loopState.current < loopState.last - 1);
 
   // CONTEXTS
@@ -285,23 +287,30 @@ $(document).ready(() => {
     if (!forever && last === 0) {
       return; // do nothing, we're just switching tracks
     }
-    const sequenceIndicator = document.querySelector('#loop-sequence');
-    sequenceIndicator.replaceChildren([]);
-    if (!forever) {
-      const playedIdx = last - current;
-      for (i=0; i<last; i++) {
-        const ball = document.createElement('div');
-        ball.className = 'loop-sequence-indicator';
-        ball.setAttribute('mode', sequenceAttribute(i, playedIdx - 1));
-        sequenceIndicator.appendChild(ball);
+    if (JSON.stringify(lastRenderedState) !== JSON.stringify(loopState)) {
+      lastRenderedState = { ...loopState };
+      lastDotFrame = -1;
+      const sequenceIndicator = document.querySelector('#loop-sequence');
+      sequenceIndicator.replaceChildren([]);
+      if (!forever) {
+        const playedIdx = last - current;
+        for (i=0; i<last; i++) {
+          const ball = document.createElement('div');
+          ball.className = 'loop-sequence-indicator';
+          ball.setAttribute('mode', sequenceAttribute(i, playedIdx - 1));
+          sequenceIndicator.appendChild(ball);
+        }
       }
     }
     const currentDot = document.querySelector('.loop-sequence-indicator[mode=current]');
     if (currentDot && !isNaN(duration)) {
-      const progress = NUM_DOT_ANIM_FRAMES * (currentTime / duration);
-      const progressStr = String(progress.toFixed(0)).padStart(2, '0');
-      const filename = `url('./assets-gui/progressdot/frame_${progressStr}.gif')`;
-      currentDot.setAttribute('style', `background-image: ${filename}`);
+      const frame = (NUM_DOT_ANIM_FRAMES * (currentTime / duration)).toFixed(0);
+      if (lastDotFrame !== frame) {
+        lastDotFrame = frame;
+        const progressStr = String(frame).padStart(2, '0');
+        const filename = `url('./assets-gui/progressdot/frame_${progressStr}.gif')`;
+        currentDot.setAttribute('style', `background-image: ${filename}`);
+      }
     }
   }
 
