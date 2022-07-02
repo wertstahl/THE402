@@ -243,7 +243,7 @@ button {
 }
 
 .loop-sequence-indicator[mode=current] {
-    background-image: url('./assets-gui/loopdot-curr_56x56.gif');
+    background-image: url('./assets-gui/loopdot-outline_56x56.png');
 }
 
 /* Transport Buttons */
@@ -279,7 +279,7 @@ body::after {
     height: 0;
     overflow: hidden;
     z-index: -1;
-    content: url('./assets-gui/play_paused.png') url('./assets-gui/loop_rnd2-4.png') url('./assets-gui/loop_hold.png') url('./assets-gui/loop_rnd.png') url('./assets-gui/loop_disable.png') url('./assets-gui/402_logo_creditpage.png') url('./assets-gui/share_link_notif.png');
+    content: url('./assets-gui/play_paused.png') url('./assets-gui/loop_rnd2-4.png') url('./assets-gui/loop_hold.png') url('./assets-gui/loop_rnd.png') url('./assets-gui/loop_disable.png') url('./assets-gui/402_logo_creditpage.png') url('./assets-gui/share_link_notif.png') url('./assets-gui/progressdot/frame_00.gif') url('./assets-gui/progressdot/frame_01.gif') url('./assets-gui/progressdot/frame_02.gif') url('./assets-gui/progressdot/frame_03.gif') url('./assets-gui/progressdot/frame_04.gif') url('./assets-gui/progressdot/frame_05.gif') url('./assets-gui/progressdot/frame_06.gif') url('./assets-gui/progressdot/frame_07.gif') url('./assets-gui/progressdot/frame_08.gif') url('./assets-gui/progressdot/frame_09.gif') url('./assets-gui/progressdot/frame_10.gif') url('./assets-gui/progressdot/frame_11.gif') url('./assets-gui/progressdot/frame_12.gif') url('./assets-gui/progressdot/frame_13.gif') url('./assets-gui/progressdot/frame_14.gif') url('./assets-gui/progressdot/frame_15.gif') url('./assets-gui/progressdot/frame_16.gif') url('./assets-gui/progressdot/frame_17.gif') url('./assets-gui/progressdot/frame_18.gif') url('./assets-gui/progressdot/frame_19.gif') url('./assets-gui/progressdot/frame_20.gif') url('./assets-gui/progressdot/frame_21.gif') url('./assets-gui/progressdot/frame_22.gif') url('./assets-gui/progressdot/frame_23.gif') url('./assets-gui/progressdot/frame_24.gif') url('./assets-gui/progressdot/frame_25.gif') url('./assets-gui/progressdot/frame_26.gif') url('./assets-gui/progressdot/frame_27.gif') url('./assets-gui/progressdot/frame_28.gif') url('./assets-gui/progressdot/frame_29.gif') url('./assets-gui/progressdot/frame_30.gif');
 }
 
 button[target=play-pause][mode=play] {

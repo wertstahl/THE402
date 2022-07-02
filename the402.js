@@ -12,8 +12,8 @@ $(document).ready(() => {
   const WAVES_IN_WINDOW = 100; // number of peak+vally square waves in canvas
   const SAMPLES_IN_WINDOW = 1024; // number of samples represented in canvas
   const NOTIFICATION_MS = 1000;
-  const SEQUENCE_LOOKAHEAD_SEC = 0.5;
   const FADE_MS = 200;
+  const NUM_DOT_ANIM_FRAMES = 30;
   const LICENSE_MESSAGE = "You are welcome to use this loop in a non-commercial fashion, royalty free, after getting written permission by sending an email to info@battlecommand.org";
   
   const LOOPS_REPOSITORY = 'https://the402.wertstahl.de';
@@ -227,6 +227,7 @@ $(document).ready(() => {
           const y = height * normalizedData[i];
           drawLineSegment(canvasCtx, x, y, width, (i + 1) % 2);
         }
+        updateSequenceIndicator();
       }
     };
     draw();
@@ -270,7 +271,7 @@ $(document).ready(() => {
   }
 
   function sequenceAttribute(index, currentIndex) {
-    if (index === currentIndex && gapless.isPlaying()) {
+    if (index === currentIndex) {
       return 'current';
     } else if (index > currentIndex) {
       return 'played';
@@ -279,18 +280,28 @@ $(document).ready(() => {
   } 
   
   function updateSequenceIndicator() {
+    const { currentTime, duration } = looper;
+    const { current, forever, last } = loopState;
+    if (!forever && last === 0) {
+      return; // do nothing, we're just switching tracks
+    }
     const sequenceIndicator = document.querySelector('#loop-sequence');
     sequenceIndicator.replaceChildren([]);
-    if (!loopState.forever) {
-      const { currentTime, duration } = looper;
-      const offset = (duration - currentTime) < SEQUENCE_LOOKAHEAD_SEC ? -1 : 0;
-      const playedIdx = (loopState.last + offset - loopState.current);
-      for (i=0; i<loopState.last; i++) {
+    if (!forever) {
+      const playedIdx = last - current;
+      for (i=0; i<last; i++) {
         const ball = document.createElement('div');
         ball.className = 'loop-sequence-indicator';
         ball.setAttribute('mode', sequenceAttribute(i, playedIdx - 1));
         sequenceIndicator.appendChild(ball);
       }
+    }
+    const currentDot = document.querySelector('.loop-sequence-indicator[mode=current]');
+    if (currentDot && !isNaN(duration)) {
+      const progress = NUM_DOT_ANIM_FRAMES * (currentTime / duration);
+      const progressStr = String(progress.toFixed(0)).padStart(2, '0');
+      const filename = `url('./assets-gui/progressdot/frame_${progressStr}.gif')`;
+      currentDot.setAttribute('style', `background-image: ${filename}`);
     }
   }
 
