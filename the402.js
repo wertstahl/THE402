@@ -63,11 +63,11 @@ $(document).ready(() => {
   // STATE
   let playOnLoad = false;
   let preserveLoopState = false;
-  let lastDotFrame = -1;
+  let lastRenderedDotFrame = -1;
   const loadedAudio = {}; // for visualizer, downloads, enabling prev/next, etc.
   const errors = new Set([]); // set of audio paths with errors
   const loopState = { forever: false, min: 1, max: 1 };
-  let lastRenderedState = { ...loopState };
+  let lastRenderedState = {};
   const getLoopHold = () => loopState.forever || (loopState.current < loopState.last - 1);
 
   // CONTEXTS
@@ -289,7 +289,7 @@ $(document).ready(() => {
     }
     if (JSON.stringify(lastRenderedState) !== JSON.stringify(loopState)) {
       lastRenderedState = { ...loopState };
-      lastDotFrame = -1;
+      lastRenderedDotFrame = -1;
       const sequenceIndicator = document.querySelector('#loop-sequence');
       sequenceIndicator.replaceChildren([]);
       if (!forever) {
@@ -305,8 +305,8 @@ $(document).ready(() => {
     const currentDot = document.querySelector('.loop-sequence-indicator[mode=current]');
     if (currentDot && !isNaN(duration)) {
       const frame = (NUM_DOT_ANIM_FRAMES * (currentTime / duration)).toFixed(0);
-      if (lastDotFrame !== frame) {
-        lastDotFrame = frame;
+      if (lastRenderedDotFrame !== frame) {
+        lastRenderedDotFrame = frame;
         const progressStr = String(frame).padStart(2, '0');
         const filename = `url('./assets-gui/progressdot/frame_${progressStr}.gif')`;
         currentDot.setAttribute('style', `background-image: ${filename}`);
