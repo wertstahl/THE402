@@ -12,8 +12,9 @@ $(document).ready(() => {
   const WAVES_IN_WINDOW = 100; // number of peak+vally square waves in canvas
   const SAMPLES_IN_WINDOW = 1024; // number of samples represented in canvas
   const NOTIFICATION_MS = 1000;
-  const FADE_MS = 200;
-  const NUM_DOT_ANIM_FRAMES = 30;
+  const VISUAL_FADE_MS = 200;
+  const NUM_DOT_ANIM_FRAMES = 100;
+  const CROSSFADE_SEC = 3;
   const LICENSE_MESSAGE = "You are welcome to use this loop in a non-commercial fashion, royalty free, after getting written permission by sending an email to info@battlecommand.org";
   
   const LOOPS_REPOSITORY = 'https://the402.wertstahl.de';
@@ -51,6 +52,8 @@ $(document).ready(() => {
   // manual query params
   const loadLimit = parseInt(queryParams.get('loadLimit') || 5);
   const quality = queryParams.get('quality') || 'low';  // low, high
+  const crossfadeAmount = queryParams.get('crossfade') || 0.2;
+  const tailGain = queryParams.get('tailgain') || 1.0;
 
   // UTILITIES
   const toFilename = (path) => path.replace(/^.*[\\\/]/, '');
@@ -58,26 +61,46 @@ $(document).ready(() => {
   const toTokens = (path) => toFilename(path).split('.')[0].split('_');
   const toLoopId = (path) => toTokens(path)[0];
   const getLoopsPath = (path) => `${LOOPS_REPOSITORY}/${quality}/${path}`;
+  const getHeadPath = (path) => `${LOOPS_REPOSITORY}/tail/${toLoopId(path)}_IN.${toExtLower(path)}`;
+  const getTailPath = (path) => `${LOOPS_REPOSITORY}/tail/${toLoopId(path)}_OUT.${toExtLower(path)}`;
   const looperTransportButton = (target) => $(`.looper-transport button[target=${target}]`);
 
   // STATE
-  let playOnLoad = false;
-  let preserveLoopState = false;
-  let lastRenderedDotFrame = -1;
   const loadedAudio = {}; // for visualizer, downloads, enabling prev/next, etc.
   const errors = new Set([]); // set of audio paths with errors
   const loopState = { forever: false, min: 1, max: 1 };
-  let lastRenderedState = {};
   const getLoopHold = () => loopState.forever || (loopState.current < loopState.last - 1);
+  let playOnLoad = false;
+  let preserveLoopState = false;
+  let lastRenderedDotFrame = -1;
+  let lastRenderedState = {};
+  let timeToPlayLeadIn = -1;
 
   // CONTEXTS
-  const gapless = new Gapless5({
+  const gapless = new Gapless5({ // main player
     loop: true,
     singleMode: false,
     useHTML5Audio: false, // save memory
     loadLimit,
     shuffle: false, // we handle (re-)shuffling ourselves
     logLevel,
+    volume: 1,
+  });
+  const gaplessHeads = new Gapless5({ // "in" transitions
+    loop: true,
+    singleMode: false,
+    useHTML5Audio: false,
+    loadLimit,
+    logLevel,
+    volume: tailGain,
+  });
+  const gaplessTails = new Gapless5({ // "out" transitions
+    loop: true,
+    singleMode: false,
+    useHTML5Audio: false,
+    loadLimit,
+    logLevel,
+    volume: tailGain,
   });
   gapless.onloadstart = (audioPath) => {
     const fileName = toFilename(audioPath);
@@ -112,6 +135,12 @@ $(document).ready(() => {
   gapless.onfinishedtrack = () => {
     resetCurrentLoopProgress();
     continuity(getLoop());
+  };
+  gaplessHeads.onfinishedtrack = () => {
+    gaplessHeads.stop();
+  };
+  gaplessTails.onfinishedtrack = () => {
+    gaplessTails.stop();
   };
   gapless.onerror = (audioPath) => {
     errors.add(audioPath);
@@ -154,12 +183,32 @@ $(document).ready(() => {
           const getLoopIndex = (a) => (firstLoop === toLoopId(a)) ? -1 : Math.random();
           const loops = orderedLoops.map(a => ({ sort: getLoopIndex(a), value: a.trim() })).sort((a, b) => a.sort - b.sort).map(a => a.value);
           loops.forEach(loop => {
+            // Option A: add all the transition tracks to gaplessTrans,
+            //    queue current tail after next head
+            // Option B: 3 gapless players: loops, heads, tails
+            //    trigger each track manually
+            // idea: can you front-load silence in an "in" track to match length of current loop?
+            // that way you can just pause/play alongside the loop
+
+            // As for levels, options are:
+            // X: set gain on all gapless players to 80%
+            // Y: ramp gain to 80% as head/tails peak
+
             if (loop.match(filterRegex) || (firstLoop === toLoopId(loop))) {
               gapless.addTrack(getLoopsPath(loop));
+              gaplessHeads.addTrack(getHeadPath(loop));
+              gaplessTails.addTrack(getTailPath(loop));
             }
           });
+          // move forward one track for heads, opposite for tails
+          gaplessHeads.gotoTrack(1);
+          timeToPlayLeadIn = gaplessHeads.currentLength() / 1000;
+          gaplessTails.gotoTrack(gaplessTails.totalTracks() - 1);
+
           if (logLevel === LogLevel.Debug) {
             console.log(gapless.getTracks().join('\n'));
+            console.log(gaplessHeads.getTracks().join('\n'));
+            console.log(gaplessTails.getTracks().join('\n'));
           }
         })
         .catch(() => alert(`Failed to fetch list from ${listPath}`));
@@ -229,7 +278,7 @@ $(document).ready(() => {
           const y = height * normalizedData[i];
           drawLineSegment(canvasCtx, x, y, width, (i + 1) % 2);
         }
-        updateSequenceIndicator();
+        updateProgress();
       }
     };
     draw();
@@ -249,9 +298,9 @@ $(document).ready(() => {
       if (currentTime === 0) {
         $("#loop-progress").stop(true, true).animate({ width:'0%' }, 10, 'linear');
       } else {
-        $("#loop-progress").stop(true, true).animate({ width:`${100.0 * (currentTime + 0.4) / duration }%` }, FADE_MS, 'linear');
+        $("#loop-progress").stop(true, true).animate({ width:`${100.0 * (currentTime + 0.4) / duration }%` }, VISUAL_FADE_MS, 'linear');
       }
-      updateSequenceIndicator();
+      updateProgress();
     });
   }
   
@@ -281,12 +330,13 @@ $(document).ready(() => {
     return 'unplayed';
   } 
   
-  function updateSequenceIndicator() {
+  function updateProgress() {
     const { currentTime, duration } = looper;
     const { current, forever, last } = loopState;
     if (!forever && last === 0) {
       return; // do nothing, we're just switching tracks
     }
+    // update number of dots
     if (JSON.stringify(lastRenderedState) !== JSON.stringify(loopState)) {
       lastRenderedState = { ...loopState };
       lastRenderedDotFrame = -1;
@@ -302,14 +352,39 @@ $(document).ready(() => {
         }
       }
     }
+    // update playing dot animation
     const currentDot = document.querySelector('.loop-sequence-indicator[mode=current]');
     if (currentDot && !isNaN(duration)) {
       const frame = (NUM_DOT_ANIM_FRAMES * (currentTime / duration)).toFixed(0);
       if (lastRenderedDotFrame !== frame) {
         lastRenderedDotFrame = frame;
-        const progressStr = String(frame).padStart(2, '0');
-        const filename = `url('./assets-gui/progressdot/frame_${progressStr}.gif')`;
+        const progressStr = String(frame).padStart(3, '0');
+        const filename = `url('./assets-gui/progressdot/loopdot${progressStr}.gif')`;
         currentDot.setAttribute('style', `background-image: ${filename}`);
+      }
+    }
+    // decide when to trigger fade-in
+    if (timeToPlayLeadIn > 0 && !getLoopHold()) {
+      const timeRemaining = duration - currentTime;
+      if (timeRemaining < timeToPlayLeadIn) {
+        timeToPlayLeadIn = -1;
+        gaplessHeads.play();
+      }
+    }
+    // cross-fade when playing alongside fades
+    if (gapless.isPlaying()) {
+      let volume = 1.0;
+      if (!loopState.forever && loopState.current === 0 && currentTime <= CROSSFADE_SEC) {
+        volume = (1.0 - crossfadeAmount) + (crossfadeAmount * (currentTime / CROSSFADE_SEC));
+        gapless.setVolume(volume);
+      } else if (!getLoopHold()) {
+        const timeRemaining = duration - currentTime;
+        if (timeRemaining < CROSSFADE_SEC) {
+          volume = (1.0 - crossfadeAmount) + (crossfadeAmount * (timeRemaining / CROSSFADE_SEC));
+        }
+      }
+      if (gapless.gainNode.gain.value !== volume) {
+        gapless.setVolume(volume);
       }
     }
   }
@@ -324,7 +399,7 @@ $(document).ready(() => {
     }
     gapless.loop = gapless.singleMode;
     if (updateIndicator) {
-      updateSequenceIndicator();
+      updateProgress();
     }
   }
 
@@ -350,7 +425,7 @@ $(document).ready(() => {
       resetLoopState(false);
     }
     playLoop(nextPath, false);
-    updateSequenceIndicator();
+    updateProgress();
   }
 
   function playLoop(audioPath, playAudio = true) {
@@ -372,6 +447,14 @@ $(document).ready(() => {
         gapless.gotoTrack(audioPath);
         gapless.play();
       }
+      const index = gapless.getIndex(audioPath);
+      const headIndex = index === gaplessTails.totalTracks() - 1 ? 0 : index + 1;
+      const tailIndex = index === 0 ? (gaplessTails.totalTracks() - 1) : index - 1;
+      gaplessHeads.gotoTrack(headIndex);
+      gaplessHeads.stop();
+      timeToPlayLeadIn = gaplessHeads.currentLength() / 1000;
+      gaplessTails.gotoTrack(tailIndex);
+      gaplessTails.play();
       looper.src = loadedAudio[getLoop()];
       looper.load();
       looper.play();
@@ -379,6 +462,12 @@ $(document).ready(() => {
       // unpausing
       if (playAudio) {
         gapless.play();
+        if (gaplessHeads.currentTime > 0) {
+          gaplessHeads.play();
+        }
+        if (gaplessTails.currentTime > 0) {
+          gaplessTails.play();
+        }
       }
       looper.play();
     } else if (looperTransportButton("play-pause").attr("mode") === "play") {
@@ -390,14 +479,16 @@ $(document).ready(() => {
       paused = true;
       if (playAudio) {
         gapless.pause();
+        gaplessHeads.pause();
+        gaplessTails.pause();
       }
       looper.pause();
     }
 
     if (paused) {
-      $("#loop-visualizer").fadeOut(FADE_MS);
+      $("#loop-visualizer").fadeOut(VISUAL_FADE_MS);
     } else {
-      $("#loop-visualizer").fadeIn(FADE_MS);
+      $("#loop-visualizer").fadeIn(VISUAL_FADE_MS);
     }
     looperTransportButton("play-pause").attr("mode", paused ? "play" : "pause");
     updateTransportButtons();
@@ -431,15 +522,17 @@ $(document).ready(() => {
       enableTransportButton("prev-loop", gapless.isPlaying() && getPrev() in loadedAudio);
       enableTransportButton("next-loop", gapless.isPlaying() && getNext() in loadedAudio);
     }
-    updateSequenceIndicator();
+    updateProgress();
   }
 
   function resetTracks(forcePlay = false) {
     looper.pause();
     looper.currentTime = 0;
     looper.removeAttribute('src');
-    $("#loop-visualizer").fadeOut(FADE_MS);
+    $("#loop-visualizer").fadeOut(VISUAL_FADE_MS);
     resetCurrentLoopProgress();
+    gaplessHeads.stop();
+    gaplessTails.stop();
     gapless.stop();
     gapless.removeAllTracks();
     for (const audioPath in loadedAudio) {
@@ -498,9 +591,9 @@ $(document).ready(() => {
       newLink.searchParams.set("mode", "rnd24");
       newLink.searchParams.set("filter", $('#filter-selection').attr('mode'));
       navigator.clipboard.writeText(newLink.href);
-      $("#notification-banner").fadeIn(FADE_MS,
+      $("#notification-banner").fadeIn(VISUAL_FADE_MS,
         () => setTimeout(
-          () => $("#notification-banner").fadeOut(FADE_MS),
+          () => $("#notification-banner").fadeOut(VISUAL_FADE_MS),
           NOTIFICATION_MS,
         ),
       );
