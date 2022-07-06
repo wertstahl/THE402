@@ -53,7 +53,8 @@ $(document).ready(() => {
   const loadLimit = parseInt(queryParams.get('loadLimit') || 5);
   const quality = queryParams.get('quality') || 'low';  // low, high
   const crossfadeAmount = queryParams.get('crossfade') || 0.2;
-  const tailGain = queryParams.get('tailgain') || 1.0;
+  const inGain = queryParams.get('ingain') || 1.0;
+  const outGain = queryParams.get('outgain') || 0.8;
 
   // UTILITIES
   const toFilename = (path) => path.replace(/^.*[\\\/]/, '');
@@ -92,7 +93,7 @@ $(document).ready(() => {
     useHTML5Audio: false,
     loadLimit,
     logLevel,
-    volume: tailGain,
+    volume: inGain,
   });
   const gaplessTails = new Gapless5({ // "out" transitions
     loop: true,
@@ -100,7 +101,7 @@ $(document).ready(() => {
     useHTML5Audio: false,
     loadLimit,
     logLevel,
-    volume: tailGain,
+    volume: outGain,
   });
   gapless.onloadstart = (audioPath) => {
     const fileName = toFilename(audioPath);
@@ -454,7 +455,9 @@ $(document).ready(() => {
       gaplessHeads.stop();
       timeToPlayLeadIn = gaplessHeads.currentLength() / 1000;
       gaplessTails.gotoTrack(tailIndex);
-      gaplessTails.play();
+      if (!playAudio) { // only play tail on natural continuation
+        gaplessTails.play();
+      }
       looper.src = loadedAudio[getLoop()];
       looper.load();
       looper.play();
