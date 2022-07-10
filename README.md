@@ -44,5 +44,5 @@ deDokter, E:FOPE Media (c)2003 <br>
 Queshion: Why is it, there aint no transitions happ'nin? Huh?<br>
 Anshwer: If it was easy to do in JS, it would have been implemented.<br>
 Technical Anshwer: WebAudio API doesn't preserve pitch when affecting playback rate.<br>
-Shurprishe: There are swift transitions now. Coder's Magic!<br>
+Shurprise: There are swift transitions now. Coder's Magic!<br>
 
