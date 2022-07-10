@@ -52,8 +52,8 @@ $(document).ready(() => {
   // manual query params
   const loadLimit = parseInt(queryParams.get('loadLimit') || 5);
   const quality = queryParams.get('quality') || 'low';  // low, high
-  const crossfadeAmount = queryParams.get('crossfade') || 0.2;
-  const inGain = queryParams.get('ingain') || 1.0;
+  const crossfadeAmount = queryParams.get('crossfade') || 0;
+  const inGain = queryParams.get('ingain') || 0.8;
   const outGain = queryParams.get('outgain') || 0.8;
 
   // UTILITIES
@@ -62,8 +62,8 @@ $(document).ready(() => {
   const toTokens = (path) => toFilename(path).split('.')[0].split('_');
   const toLoopId = (path) => toTokens(path)[0];
   const getLoopsPath = (path) => `${LOOPS_REPOSITORY}/${quality}/${path}`;
-  const getHeadPath = (path) => `${LOOPS_REPOSITORY}/tail/${toLoopId(path)}_IN.${toExtLower(path)}`;
-  const getTailPath = (path) => `${LOOPS_REPOSITORY}/tail/${toLoopId(path)}_OUT.${toExtLower(path)}`;
+  const getHeadPath = (path) => `${LOOPS_REPOSITORY}/tail/${toLoopId(path)}_IN.mp3`;
+  const getTailPath = (path) => `${LOOPS_REPOSITORY}/tail/${toLoopId(path)}_OUT.mp3`;
   const looperTransportButton = (target) => $(`.looper-transport button[target=${target}]`);
 
   // STATE
@@ -71,6 +71,7 @@ $(document).ready(() => {
   const errors = new Set([]); // set of audio paths with errors
   const loopState = { forever: false, min: 1, max: 1 };
   const getLoopHold = () => loopState.forever || (loopState.current < loopState.last - 1);
+  const callbackCheat = (quality === 'low' ? 25 : 6);
   let playOnLoad = false;
   let preserveLoopState = false;
   let lastRenderedDotFrame = -1;
@@ -86,6 +87,7 @@ $(document).ready(() => {
     shuffle: false, // we handle (re-)shuffling ourselves
     logLevel,
     volume: 1,
+    callbackCheat,
   });
   const gaplessHeads = new Gapless5({ // "in" transitions
     loop: true,
@@ -373,7 +375,7 @@ $(document).ready(() => {
       }
     }
     // cross-fade when playing alongside fades
-    if (gapless.isPlaying()) {
+    if ((crossfadeAmount !== 0) && gapless.isPlaying()) {
       let volume = 1.0;
       if (!loopState.forever && loopState.current === 0 && currentTime <= CROSSFADE_SEC) {
         volume = (1.0 - crossfadeAmount) + (crossfadeAmount * (currentTime / CROSSFADE_SEC));
@@ -445,7 +447,7 @@ $(document).ready(() => {
         } else {
           preserveLoopState = false;
         }
-        gapless.gotoTrack(audioPath);
+        gapless.gotoTrack(audioPath, false, false, true);
         gapless.play();
       }
       const index = gapless.getIndex(audioPath);
