@@ -292,20 +292,7 @@ $(document).ready(() => {
   armLooperTransport();
 
   // provide looper events
-  armLooperEvents();
-  
-  function armLooperEvents() {
-    // provide progress bar
-    looper.addEventListener("timeupdate", () => {
-      const { currentTime, duration } = looper;
-      if (currentTime === 0) {
-        $("#loop-progress").stop(true, true).animate({ width:'0%' }, 10, 'linear');
-      } else {
-        $("#loop-progress").stop(true, true).animate({ width:`${100.0 * (currentTime + 0.4) / duration }%` }, VISUAL_FADE_MS, 'linear');
-      }
-      updateProgress();
-    });
-  }
+  looper.addEventListener("timeupdate", updateProgress);
   
   function enableTransportButton(target, enable) {
     if (enable) {
@@ -336,6 +323,11 @@ $(document).ready(() => {
   function updateProgress() {
     const { currentTime, duration } = looper;
     const { current, forever, last } = loopState;
+    if (currentTime === 0) {
+      $("#loop-progress").stop(true, true).animate({ width:'0%' }, 10, 'linear');
+    } else {
+      $("#loop-progress").stop(true, true).animate({ width:`${100.0 * (currentTime + 0.4) / duration }%` }, VISUAL_FADE_MS, 'linear');
+    }
     if (!forever && last === 0) {
       return; // do nothing, we're just switching tracks
     }
@@ -358,7 +350,7 @@ $(document).ready(() => {
     // update playing dot animation
     const currentDot = document.querySelector('.loop-sequence-indicator[mode=current]');
     if (currentDot && !isNaN(duration)) {
-      const frame = (NUM_DOT_ANIM_FRAMES * (currentTime / duration)).toFixed(0);
+      const frame = Math.round(NUM_DOT_ANIM_FRAMES * (currentTime / duration) + 0.5);
       if (lastRenderedDotFrame !== frame) {
         lastRenderedDotFrame = frame;
         const progressStr = String(frame).padStart(3, '0');
@@ -415,9 +407,10 @@ $(document).ready(() => {
     if (getLoopHold()) {
       loopState.current += 1;
       setTimeout(() => {
+        // setting this on a timeout is a hack.  Otherwise we get told to stop
         gapless.singleMode = loopState.forever || getLoopHold();
         gapless.loop = gapless.singleMode;
-      }, 100);
+      }, 250);
     } else if (!loopState.forever) {
       nextPath = gapless.getTracks()[gapless.findTrack(audioPath) + 1];
       if (nextPath === undefined) {
