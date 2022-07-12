@@ -71,6 +71,7 @@ $(document).ready(() => {
   const errors = new Set([]); // set of audio paths with errors
   const loopState = { forever: false, min: 1, max: 1 };
   const getLoopHold = () => loopState.forever || (loopState.current < loopState.last - 1);
+  const isOddHold = () => loopState.forever && (loopState.current % 2 === 1);
   const callbackCheat = (quality === 'low' ? 25 : 6);
   let playOnLoad = false;
   let preserveLoopState = false;
@@ -323,38 +324,46 @@ $(document).ready(() => {
   function updateProgress() {
     const { currentTime, duration } = looper;
     const { current, forever, last } = loopState;
-    if (currentTime === 0) {
-      $("#loop-progress").stop(true, true).animate({ width:'0%' }, 10, 'linear');
-    } else {
-      $("#loop-progress").stop(true, true).animate({ width:`${100.0 * (currentTime + 0.4) / duration }%` }, VISUAL_FADE_MS, 'linear');
-    }
     if (!forever && last === 0) {
       return; // do nothing, we're just switching tracks
     }
+    
+    const isReverseBar = isOddHold();
+    if (currentTime === 0) {
+      const width = isReverseBar ? '100%' : '0%';
+      $("#loop-progress").stop(true, true).animate({ width }, 10, 'linear');
+    } else {
+      const progress = 102.5 * currentTime / duration;
+      const width = `${isReverseBar ? 101 - progress : progress}%`;
+      const left = `${isReverseBar ? progress : 0}%`;
+      $("#loop-progress").stop(true, true).animate({ width, left }, VISUAL_FADE_MS, 'linear');
+    }
+    
     // update number of dots
     if (JSON.stringify(lastRenderedState) !== JSON.stringify(loopState)) {
       lastRenderedState = { ...loopState };
       lastRenderedDotFrame = -1;
       const sequenceIndicator = document.querySelector('#loop-sequence');
       sequenceIndicator.replaceChildren([]);
-      if (!forever) {
-        const playedIdx = last - current;
-        for (i=0; i<last; i++) {
-          const ball = document.createElement('div');
-          ball.className = 'loop-sequence-indicator';
-          ball.setAttribute('mode', sequenceAttribute(i, playedIdx - 1));
-          sequenceIndicator.appendChild(ball);
-        }
+      const playedIdx = forever ? 1 : last - current;
+      const lastIdx = forever ? 1 : last;
+      for (let i = 0; i < lastIdx; i++) {
+        const ball = document.createElement('div');
+        ball.className = 'loop-sequence-indicator';
+        ball.setAttribute('mode', sequenceAttribute(i, playedIdx - 1));
+        sequenceIndicator.appendChild(ball);
       }
     }
     // update playing dot animation
     const currentDot = document.querySelector('.loop-sequence-indicator[mode=current]');
-    if (currentDot && !isNaN(duration)) {
-      const frame = Math.round(NUM_DOT_ANIM_FRAMES * (currentTime / duration) + 0.5);
+    if (currentDot) {
+      const totalTime = isNaN(duration) ? 1 : duration;
+      const frame = Math.round(NUM_DOT_ANIM_FRAMES * (currentTime / totalTime) + 0.5);
       if (lastRenderedDotFrame !== frame) {
         lastRenderedDotFrame = frame;
         const progressStr = String(frame).padStart(3, '0');
-        const filename = `url('./assets-gui/progressdot/loopdot${progressStr}.gif')`;
+        const folder = isOddHold() ? 'progressdotneg' : 'progressdot';
+        const filename = `url('./assets-gui/${folder}/loopdot${progressStr}.gif')`;
         currentDot.setAttribute('style', `background-image: ${filename}`);
       }
     }
@@ -387,6 +396,7 @@ $(document).ready(() => {
   function resetLoopState(updateIndicator) {
     if (loopState.forever) {
       gapless.singleMode = true;
+      loopState.current = 0;
     } else {
       loopState.last = loopState.min + Math.round(Math.random() * (loopState.max - loopState.min));
       loopState.current = 0;
