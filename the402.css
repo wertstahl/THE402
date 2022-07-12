@@ -171,6 +171,7 @@ button {
 }
 
 #loop-tempo,
+#loop-quality,
 #loop-name {
     display: block;
     position: absolute;
@@ -193,6 +194,17 @@ button {
 
 #loop-tempo {
     right: 12px;
+}
+
+#loop-quality {
+    top: 0;
+    left: 12px;
+    height: 14px;
+    padding: 1px 6px 0 6px;
+    background-color: black;
+    color: white;
+    border-radius: 4px;
+    display: none;
 }
 
 #loop-progress {

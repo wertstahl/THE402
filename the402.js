@@ -124,7 +124,7 @@ $(document).ready(() => {
       updateTransportButtons();
     });
   };
-  gapless.onplay = (audioPath) => { 
+  gapless.onplay = (audioPath) => {
     errors.delete(audioPath);
     updateTransportButtons();
   }
@@ -518,6 +518,8 @@ $(document).ready(() => {
         $("#loop-tempo").text('NETWORK ERR!');
         $("#loop-tempo").addClass('error');
       } else {
+        $('#loop-quality').css('display', 'block');
+        $("#loop-quality").text(toExtLower(audioPath).toUpperCase());
         $("#loop-tempo").text(`${tempo} BPM`);
         $("#loop-tempo").removeClass('error');
       }
