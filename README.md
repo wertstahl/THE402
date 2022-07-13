@@ -45,6 +45,8 @@ deDokter, E:FOPE Media (c)2003 <br>
 ## Brand
 Might sound bold, but please always refer to this as THE402<br>
 - all caps, no space between letters and numbers. Thank you!<br>
+Subtext:<br>
+- A Cyberpunk-Industrial Loop-Player
 
 ## FAQ
 Queshion: Why is it, there aint no transitions happ'nin? Huh?<br>
