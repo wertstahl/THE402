@@ -33,7 +33,7 @@ On- or Offline usage is optional. Usage is free of charge.<br>
 <i>Notice: be aware that mobile use might generate substancial traffic<br>
 on your device. <b>Approx. 48MB/h on low quality (or about 130MB in total)</b>.<br>
 In comparison, one hour of 720p youtube video generates 1,5GB of traffic.</i><br>
-The high quality setting, which uses FLAC data, will amount to a total of
+The high quality setting, which uses FLAC data, will amount to a total of<br>
 approx 490MB - probably not recommended for pure mobile traffic usage.
 
 ## License
