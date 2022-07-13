@@ -29,9 +29,12 @@ An experience much broader and more individual<br>
 as would be with a classic fixed-tracks-album.<br>
 On- or Offline usage is optional. Usage is free of charge.<br>
 <br>
+## Traffic
 <i>Notice: be aware that mobile use might generate substancial traffic<br>
-on your device. Probably 64MB/h on low quality (or about 470MB in total).<br>
+on your device. <b>Approx. 48MB/h on low quality (or about 130MB in total)</b>.<br>
 In comparison, one hour of 720p youtube video generates 1,5GB of traffic.</i><br>
+The high quality setting, which uses FLAC data, will amount to a total of
+approx 490MB - probably not recommended for pure mobile traffic usage.
 
 ## License
 Partial/re-use is welcomed, under the condition<br>
