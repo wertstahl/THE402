@@ -28,21 +28,26 @@ as would be with a classic fixed-tracks-album.<br>
 On- or Offline usage is optional. Usage is free of charge.<br>
 <br>
 <i>Notice: be aware that mobile use might generate some traffic<br>
-on your device. Probably 64MB/h on normal quality. (In comparison,<br>
-one hour of 720p youtube video generates 1,5GB of traffic.)</i><br>
+on your device. Probably 64MB/h on low quality (or about 470MB in total).<br>
+In comparison, one hour of 720p youtube video generates 1,5GB of traffic.</i><br>
 
 ## License
 Partial/re-use is welcomed, under the condition<br>
 that you request our written permission, prior to publication.<br>
 No fees and royalty-free, contact: info @ battlecommand . org<br>
 Topic "THE402 loop re-use"<br>
+
 ## Copyright
 (c)2008-2022 SyS Audio Research - all rights reserved<br>
 PSAUX is a BC//AD product (c) 1998, 2005, 2022 <br>
 deDokter, E:FOPE Media (c)2003 <br>
 
+## Brand
+Might sound bold, but please always refer to this as THE402,
+all caps, no space between letters and numbers. Thank you!<br>
+
+## FAQ
 Queshion: Why is it, there aint no transitions happ'nin? Huh?<br>
 Anshwer: If it was easy to do in JS, it would have been implemented.<br>
 Technical Anshwer: WebAudio API doesn't preserve pitch when affecting playback rate.<br>
 Shurprise: There are swift transitions now. Coder's Magic!<br>
-
