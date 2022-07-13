@@ -29,7 +29,7 @@ An experience much broader and more individual<br>
 as would be with a classic fixed-tracks-album.<br>
 On- or Offline usage is optional. Usage is free of charge.<br>
 <br>
-<i>Notice: be aware that mobile use might generate some traffic<br>
+<i>Notice: be aware that mobile use might generate substancial traffic<br>
 on your device. Probably 64MB/h on low quality (or about 470MB in total).<br>
 In comparison, one hour of 720p youtube video generates 1,5GB of traffic.</i><br>
 
