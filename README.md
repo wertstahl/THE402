@@ -6,6 +6,7 @@ A new model of an electronic music loops experience, in JavaScript (and HTML5).<
 code and <a href="https://github.com/regosen/Gapless-5">Gapless-5 library</a>: Rego Sen<br>
 concept and design: Sebastian I. Hartmann<br>
 content: S.I. Hartmann, S. Sippel<br>
+additional UI/UX design: Rego Sen<br>
 ## What
 An endless album in random order,<br>
 consisting of 402 parts, playable on all<br>
