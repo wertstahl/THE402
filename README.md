@@ -1,4 +1,5 @@
 # THE402<br>
+- A Cyberpunk-Industrial Loop-Player
 A new model of an electronic music loops experience, in JavaScript (and HTML5).<br>
 
 ## Credits
