@@ -43,8 +43,8 @@ PSAUX is a BC//AD product (c) 1998, 2005, 2022 <br>
 deDokter, E:FOPE Media (c)2003 <br>
 
 ## Brand
-Might sound bold, but please always refer to this as THE402,
-all caps, no space between letters and numbers. Thank you!<br>
+Might sound bold, but please always refer to this as THE402<br>
+- all caps, no space between letters and numbers. Thank you!<br>
 
 ## FAQ
 Queshion: Why is it, there aint no transitions happ'nin? Huh?<br>
