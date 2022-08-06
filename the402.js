@@ -187,17 +187,6 @@ $(document).ready(() => {
           const getLoopIndex = (a) => (firstLoop === toLoopId(a)) ? -1 : Math.random();
           const loops = orderedLoops.map(a => ({ sort: getLoopIndex(a), value: a.trim() })).sort((a, b) => a.sort - b.sort).map(a => a.value);
           loops.forEach(loop => {
-            // Option A: add all the transition tracks to gaplessTrans,
-            //    queue current tail after next head
-            // Option B: 3 gapless players: loops, heads, tails
-            //    trigger each track manually
-            // idea: can you front-load silence in an "in" track to match length of current loop?
-            // that way you can just pause/play alongside the loop
-
-            // As for levels, options are:
-            // X: set gain on all gapless players to 80%
-            // Y: ramp gain to 80% as head/tails peak
-
             if (loop.match(filterRegex) || (firstLoop === toLoopId(loop))) {
               gapless.addTrack(getLoopsPath(loop));
               gaplessHeads.addTrack(getHeadPath(loop));
@@ -512,7 +501,7 @@ $(document).ready(() => {
 
     if (audioPath) {
       const [ id, tempo, name ] = toTokens(audioPath);
-      $("#loop-title").text(id);
+      $("#loop-title").text(id.replace(/\D/g,''));
       $("#loop-name").text(name);
       if (errors.has(audioPath)) {
         $("#loop-tempo").text('NETWORK ERR!');
