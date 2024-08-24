@@ -65,7 +65,6 @@ Shurprise: There are swift transitions now. Coder's Magic!<br>
 OK, but.. why?: Please read our statement below the player.
 
 ## Update
-Shared Loops will now play in HOLD mode - HOLD loop indicator will flash<br>
-The list of all the loops is now revealed in list_all.txt<br>
-The loops ending on X are not responding well to any following parameters,<br>
-just try  https://the402.wertstahl.de/player/?quality=low&id=404X  for example.<br>
+Shared Loops will now play in HOLD mode - HOLD loop indicator will flash (see example below)<br>
+The list of <b>all the loops</b> is now revealed in list_all.txt<br>
+Also this: https://the402.wertstahl.de/player/?quality=low&id=403X&mode=hold&filter=select1<br>
