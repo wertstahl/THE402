@@ -31,6 +31,7 @@ the number of repeats is random or user-interacted.<br>
 An experience much broader and more individual<br>
 as would be with a classic fixed-tracks-album.<br>
 On- or Offline usage is optional. Usage is free of charge.<br>
+Check out my favourite loop: https://the402.wertstahl.de/player/?quality=low&id=385A&mode=hold&filter=select1<br>
 <br>
 ## Traffic
 <i>Notice: be aware that mobile use might generate substancial traffic<br>
