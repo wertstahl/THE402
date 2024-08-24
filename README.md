@@ -62,3 +62,8 @@ Anshwer: If it was easy to do in JS, it would have been implemented.<br>
 Technical Anshwer: WebAudio API doesn't preserve pitch when affecting playback rate.<br>
 Shurprise: There are swift transitions now. Coder's Magic!<br>
 OK, but.. why?: Please read our statement below the player.
+
+## Update
+The list of all the loops is now revealed in list_all.txt<br>
+The loops ending on X are not responding well to any following parameters,<br>
+just try  https://the402.wertstahl.de/player/?quality=low&id=404X  for example.<br>
